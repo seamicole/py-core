@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "py-core"
+version = "0.1.0"
+description = "A repository for core Python utilities"
+authors = ["Sean O'Leary <seamicole@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "py_core"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pytz = "^2023.3"
+types-pytz = "^2023.3.0.1"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+mypy = "^1.5.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
