@@ -12,6 +12,7 @@ class Error(Exception):
 
     def __init__(self, message: str) -> None:
         """Init Method"""
+
         # Set message
         self.message = message
 
