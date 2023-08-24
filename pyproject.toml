@@ -13,8 +13,11 @@ pytz = "^2023.3"
 types-pytz = "^2023.3.0.1"
 
 [tool.poetry.group.dev.dependencies]
+aiohttp = "^3.8.5"
 black = "^23.7.0"
 mypy = "^1.5.1"
+requests = "^2.31.0"
+types-requests = "^2.31.0.2"
 
 [build-system]
 requires = ["poetry-core"]

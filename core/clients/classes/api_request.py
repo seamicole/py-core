@@ -2,31 +2,45 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Any, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ PROJECT IMPORTS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+if TYPE_CHECKING:
+    from core.enums import HTTPMethod
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ ARGS AND KWARGS
+# │ API REQUEST
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-# Define a generic Args type
-Args = tuple[Any, ...]
 
-# Define a generic Kwargs type
-Kwargs = Any
+class APIRequest:
+    """A utility class that represents API requests"""
 
-# ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ JSON
-# └─────────────────────────────────────────────────────────────────────────────────────
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ CLASS ATTRIBUTES
+    # └─────────────────────────────────────────────────────────────────────────────────
 
-# Define a generic JSON value type
-JSONValue = str | int | float | bool | None
+    # Declare type of URL
+    url: str
 
-# Define a generic JSON dict type
-JSONDict = dict[str, Union[JSONValue, "JSON", list["JSON"]]]
+    # Declare type of method
+    method: HTTPMethod
 
-# Define a generic JSON list type
-JSONList = list[Union[JSONValue, "JSON", JSONDict]]
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __INIT__
+    # └─────────────────────────────────────────────────────────────────────────────────
 
-# Define a generic JSON type
-JSON = JSONValue | JSONDict | JSONList
+    def __init__(self, url: str, method: HTTPMethod) -> None:
+        """Init Method"""
+
+        # Set URL
+        self.url = url
+
+        # Set method
+        self.method = method

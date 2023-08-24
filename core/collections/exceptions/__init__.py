@@ -20,4 +20,4 @@ class DoesNotExistError(Error):
 
 
 class DuplicateKeyError(Error):
-    """Raised when a duplicate key is found"""
+    """Raised when a resource with a duplicate key is found"""

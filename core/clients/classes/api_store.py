@@ -1,32 +1,12 @@
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ GENERAL IMPORTS
+# │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Any, Union
+from core.collections.classes.store import Store
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ ARGS AND KWARGS
+# │ API STORE
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-# Define a generic Args type
-Args = tuple[Any, ...]
-
-# Define a generic Kwargs type
-Kwargs = Any
-
-# ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ JSON
-# └─────────────────────────────────────────────────────────────────────────────────────
-
-# Define a generic JSON value type
-JSONValue = str | int | float | bool | None
-
-# Define a generic JSON dict type
-JSONDict = dict[str, Union[JSONValue, "JSON", list["JSON"]]]
-
-# Define a generic JSON list type
-JSONList = list[Union[JSONValue, "JSON", JSONDict]]
-
-# Define a generic JSON type
-JSON = JSONValue | JSONDict | JSONList
+api_store = Store()

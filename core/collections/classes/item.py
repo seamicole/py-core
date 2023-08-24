@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -13,6 +13,11 @@ from typing import Any
 
 from core.collections.classes.collection import Collection
 from core.collections.classes.items import Items
+from core.functions.dictionary import dget, dset
+
+if TYPE_CHECKING:
+    from core.types import JSONDict, JSONList
+    from core.clients.types import JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -114,6 +119,22 @@ class Item(metaclass=ItemMetaclass):
     _imeta: Item.InstanceMeta
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __EQ__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __eq__(self, other: Any) -> bool:
+        """Equality Method"""
+
+        # Check if other is an item
+        if isinstance(other, Item):
+            # Check if items have the same ID
+            if self._imeta.id == other._imeta.id:
+                return True
+
+        # Call super method
+        return super().__eq__(other)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -164,6 +185,62 @@ class Item(metaclass=ItemMetaclass):
 
         # Return the hex ID of the item
         return hex(id(self))
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FROM DICT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @classmethod
+    def from_dict(
+        cls: type[Item],
+        data: dict[Any, Any],
+        schema: JSONSchema | None = None,
+        root_data: JSONList | JSONDict | None = None,
+    ) -> Item:
+        """Initializes an item from a dictionary"""
+
+        # Initialize kwargs
+        kwargs = data
+
+        # Check if data is a dictionary
+        if schema is not None and isinstance(data, dict):
+            # Initialize kwargs
+            kwargs = {}
+
+            # Iterate over schema
+            for setter, getter in (schema or {}).items():
+                # Check if getter is callable
+                if callable(getter):
+                    # Get value to set
+                    value_to_set = getter(root_data, data)
+
+                # Otherwise handle case of string path
+                else:
+                    # Get value to set
+                    value_to_set = dget(data, getter, delimiter=".")
+
+                # Check if the setter is a tuple
+                if isinstance(setter, tuple):
+                    # Check if the value to set is not a tuple or list
+                    if not isinstance(value_to_set, (tuple, list)):
+                        # Convert value to set to a list
+                        value_to_set = [value_to_set] * len(setter)
+
+                    # Iterate over zip of setter and value to set
+                    for setter_item, value_to_set_item in zip(setter, value_to_set):
+                        # Remap data
+                        dset(kwargs, setter_item, value_to_set_item)
+
+                # Otherwise, simply remap data
+                else:
+                    # Remap data
+                    dset(kwargs, setter, value_to_set)
+
+        # Initialize item
+        item = cls(**kwargs)
+
+        # Return item
+        return item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
