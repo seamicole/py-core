@@ -14,8 +14,7 @@ from core.clients.classes.api import API
 from core.clients.classes.api_endpoint import APIEndpoint
 
 if TYPE_CHECKING:
-    from core.clients.types import JSONSchema
-    from core.types import Args, Kwargs
+    from core.types import Args, JSONSchema, Kwargs
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

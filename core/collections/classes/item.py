@@ -15,9 +15,10 @@ from core.collections.classes.item_metaclass import ItemMetaclass
 from core.functions.dictionary import dget, dset
 
 if TYPE_CHECKING:
-    from core.clients.types import JSONSchema
+    from core.collections.classes.collection import Collection
     from core.collections.classes.item_meta import InstanceMeta
-    from core.types import JSONDict, JSONList
+    from core.collections.classes.items import Items
+    from core.types import JSONDict, JSONList, JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -46,9 +47,13 @@ class Item(metaclass=ItemMetaclass):
         """Equality Method"""
 
         # Check if other is an item
-        if isinstance(other, Item):
+        if isinstance(other, type(self)):
             # Check if items have the same ID
-            if self._imeta.id == other._imeta.id:
+            if (
+                self._imeta.id is not None
+                and other._imeta.id is not None
+                and self._imeta.id == other._imeta.id
+            ):
                 return True
 
         # Call super method
@@ -185,3 +190,16 @@ class Item(metaclass=ItemMetaclass):
 
     class Meta(ClassMeta):
         """Meta Class"""
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ CLASS ATTRIBUTES
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        # Initialize items
+        ITEMS: Collection | Items | None = None
+
+        # Initialize keys
+        KEYS: tuple[str | tuple[str, ...], ...] = ()
+
+        # Initialize indexes
+        INDEXES: tuple[str | tuple[str, ...], ...] = ()

@@ -2,7 +2,7 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Any, Union
+from typing import Any, Callable, Union
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -30,3 +30,6 @@ JSONList = list[Union[JSONValue, "JSON", JSONDict]]
 
 # Define a generic JSON type
 JSON = JSONValue | JSONDict | JSONList
+
+# Define a generic JSON schema type
+JSONSchema = dict[str | tuple[str, ...], str | Callable[[Any, Any], Any]]

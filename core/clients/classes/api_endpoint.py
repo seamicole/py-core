@@ -18,8 +18,7 @@ from core.enums import HTTPMethod
 if TYPE_CHECKING:
     from core.clients.classes.api import API
     from core.clients.classes.api_response import APIResponse
-    from core.clients.types import JSONSchema
-    from core.types import Args, Kwargs
+    from core.types import Args, JSONSchema, Kwargs
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
