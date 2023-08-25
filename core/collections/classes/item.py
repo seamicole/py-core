@@ -4,100 +4,20 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.collections.classes.collection import Collection
-from core.collections.classes.items import Items
+from core.collections.classes.item_meta import ClassMeta
+from core.collections.classes.item_metaclass import ItemMetaclass
 from core.functions.dictionary import dget, dset
 
 if TYPE_CHECKING:
-    from core.types import JSONDict, JSONList
     from core.clients.types import JSONSchema
-
-
-# ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ ITEM METACLASS
-# └─────────────────────────────────────────────────────────────────────────────────────
-
-
-class ItemMetaclass(type):
-    """A metaclass for the Item class"""
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ CLASS ATTRIBUTES
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    # Declare type of Meta
-    Meta: type[Item.Meta]
-
-    # Declare type of InstanceMeta
-    InstanceMeta: type[Item.InstanceMeta]
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ INSTANCE ATTRIBUTES
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    # Declare type of class meta
-    _cmeta: Item.Meta
-
-    # Declare type of instance meta
-    _imeta: Item.InstanceMeta
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ __CALL__
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def __call__(cls, *args: Any, **kwargs: Any) -> Item:
-        """Call Method"""
-
-        # Create instance
-        instance: Item = super().__call__(*args, **kwargs)
-
-        # Initialize meta
-        instance._imeta = cls.InstanceMeta()
-
-        # Return instance
-        return instance
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ __INIT__
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def __init__(
-        cls, name: str, bases: tuple[type, ...], attrs: dict[str, Any]
-    ) -> None:
-        """Init Method"""
-
-        # Call super method
-        super().__init__(name, bases, attrs)
-
-        # Get Meta
-        Meta = cls.Meta
-
-        # Ensure that keys is a tuple
-        Meta.KEYS = tuple(Meta.KEYS)
-
-        # Ensure that indexes is a tuple
-        Meta.INDEXES = tuple(Meta.INDEXES)
-
-        # Initialize meta
-        cls._cmeta = Meta()
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ ITEMS
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    @property
-    def items(cls) -> Collection | Items:
-        """Returns the items of the item's meta instance"""
-
-        # Return meta items
-        return cls._cmeta.items
+    from core.collections.classes.item_meta import InstanceMeta
+    from core.types import JSONDict, JSONList
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -113,10 +33,10 @@ class Item(metaclass=ItemMetaclass):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     # Declare type of class meta
-    _cmeta: Item.Meta
+    _cmeta: ClassMeta
 
     # Declare type of instance meta
-    _imeta: Item.InstanceMeta
+    _imeta: InstanceMeta
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __EQ__
@@ -263,94 +183,5 @@ class Item(metaclass=ItemMetaclass):
     # │ META
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    class Meta:
+    class Meta(ClassMeta):
         """Meta Class"""
-
-        # ┌─────────────────────────────────────────────────────────────────────────────
-        # │ CLASS ATTRIBUTES
-        # └─────────────────────────────────────────────────────────────────────────────
-
-        # Initialize items
-        ITEMS: Collection | Items | None = None
-
-        # Initialize keys
-        KEYS: tuple[str | tuple[str, ...], ...] = ()
-
-        # Initialize indexes
-        INDEXES: tuple[str | tuple[str, ...], ...] = ()
-
-        # ┌─────────────────────────────────────────────────────────────────────────────
-        # │ INSTANCE ATTRIBUTES
-        # └─────────────────────────────────────────────────────────────────────────────
-
-        # Declare type of _items
-        _items: Items | None = None
-
-        # ┌─────────────────────────────────────────────────────────────────────────────
-        # │ __INIT__
-        # └─────────────────────────────────────────────────────────────────────────────
-
-        def __init__(self) -> None:
-            """Init Method"""
-
-            # Initialize items
-            self._items = (
-                self.ITEMS.all() if isinstance(self.ITEMS, Collection) else self.ITEMS
-            )
-
-        # ┌─────────────────────────────────────────────────────────────────────────────
-        # │ ITEMS
-        # └─────────────────────────────────────────────────────────────────────────────
-
-        @property
-        def items(self) -> Items:
-            """Returns the items of the meta instance"""
-
-            # Get items
-            items = self._items
-
-            # Check if items is None
-            if items is None:
-                # Raise AttributeError
-                raise AttributeError(
-                    f"{self.__class__.__name__}.Meta.ITEMS is undefined."
-                )
-
-            # Return items
-            return items
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ INSTANCE META
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    class InstanceMeta:
-        """Instance Meta Class"""
-
-        # ┌─────────────────────────────────────────────────────────────────────────────
-        # │ INSTANCE ATTRIBUTES
-        # └─────────────────────────────────────────────────────────────────────────────
-
-        # Declare type of ID
-        id: str | None
-
-        # Declare type of pushed at
-        pushed_at: datetime | None
-
-        # Declare type of pulled at
-        pulled_at: datetime | None
-
-        # ┌─────────────────────────────────────────────────────────────────────────────
-        # │ __INIT__
-        # └─────────────────────────────────────────────────────────────────────────────
-
-        def __init__(self) -> None:
-            """Init Method"""
-
-            # Initialize ID
-            self.id = None
-
-            # Initialize pushed at
-            self.pushed_at = None
-
-            # Initialize pulled at
-            self.pulled_at = None

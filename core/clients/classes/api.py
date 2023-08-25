@@ -71,7 +71,7 @@ class API(Item):
     @property
     def endpoints(self) -> Items:
         """Returns a list of endpoints of the API instance"""
-        return APIEndpoint._cmeta.items.filter(api=self)
+        return APIEndpoint.items.filter(api=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CONSTRUCT URL
