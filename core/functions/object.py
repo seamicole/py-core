@@ -2,13 +2,33 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Any
+from typing import Any, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.placeholders import Nothing
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ OFROM DICT
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+T = TypeVar("T")
+
+
+def ofrom_dict(Class: type[T], data: dict[Any, Any]) -> T:
+    """Initializes an item from a dictionary"""
+
+    # Initialize kwargs
+    kwargs = data
+
+    # Initialize item
+    item = Class(**kwargs)
+
+    # Return item
+    return item
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

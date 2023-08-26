@@ -12,13 +12,12 @@ from typing import Any, TYPE_CHECKING
 
 from core.collections.classes.item_meta import ClassMeta
 from core.collections.classes.item_metaclass import ItemMetaclass
-from core.functions.dictionary import dget, dset
+from core.functions.object import ofrom_dict
 
 if TYPE_CHECKING:
     from core.collections.classes.collection import Collection
     from core.collections.classes.item_meta import InstanceMeta
     from core.collections.classes.items import Items
-    from core.types import JSONDict, JSONList, JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -116,56 +115,11 @@ class Item(metaclass=ItemMetaclass):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @classmethod
-    def from_dict(
-        cls: type[Item],
-        data: dict[Any, Any],
-        schema: JSONSchema | None = None,
-        root_data: JSONList | JSONDict | None = None,
-    ) -> Item:
+    def from_dict(cls: type[Item], data: dict[Any, Any]) -> Item:
         """Initializes an item from a dictionary"""
 
-        # Initialize kwargs
-        kwargs = data
-
-        # Check if data is a dictionary
-        if schema is not None and isinstance(data, dict):
-            # Initialize kwargs
-            kwargs = {}
-
-            # Iterate over schema
-            for setter, getter in (schema or {}).items():
-                # Check if getter is callable
-                if callable(getter):
-                    # Get value to set
-                    value_to_set = getter(root_data, data)
-
-                # Otherwise handle case of string path
-                else:
-                    # Get value to set
-                    value_to_set = dget(data, getter, delimiter=".")
-
-                # Check if the setter is a tuple
-                if isinstance(setter, tuple):
-                    # Check if the value to set is not a tuple or list
-                    if not isinstance(value_to_set, (tuple, list)):
-                        # Convert value to set to a list
-                        value_to_set = [value_to_set] * len(setter)
-
-                    # Iterate over zip of setter and value to set
-                    for setter_item, value_to_set_item in zip(setter, value_to_set):
-                        # Remap data
-                        dset(kwargs, setter_item, value_to_set_item)
-
-                # Otherwise, simply remap data
-                else:
-                    # Remap data
-                    dset(kwargs, setter, value_to_set)
-
-        # Initialize item
-        item = cls(**kwargs)
-
-        # Return item
-        return item
+        # Initialize and return item
+        return ofrom_dict(cls, data)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
@@ -173,6 +127,8 @@ class Item(metaclass=ItemMetaclass):
 
     def push(self) -> None:
         """Pushes an item to the collection"""
+
+        # TODO: Handle recursion where two instances point to each other
 
         # Iterate over attributes
         for val in self.__dict__.values():

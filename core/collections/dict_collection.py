@@ -13,23 +13,12 @@ from typing import Any, Generator, Iterable, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collections.classes.collection import Collection
+from core.collections.classes.item import Item
 from core.collections.exceptions import DoesNotExistError, DuplicateKeyError
 from core.functions.object import oget
 
 if TYPE_CHECKING:
-    from core.collections.classes.item import Item
     from core.collections.classes.items import Items
-
-# ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ TO KEY
-# └─────────────────────────────────────────────────────────────────────────────────────
-
-
-def to_key(item: Any) -> Any:
-    """Converts an item to a key"""
-    if hasattr(item, "_imeta") and hasattr(item._imeta, "id"):
-        return (id(item.__class__), item._imeta.id)
-    return item
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -54,7 +43,7 @@ class DictCollection(Collection):
     _item_ids_by_key: dict[Any, int]
 
     # Declare type of keys by item ID
-    _keys_by_item_id: dict[int, list[Any]]
+    _keys_by_item_id: dict[int, set[Any]]
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -112,17 +101,78 @@ class DictCollection(Collection):
         return None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ _ISSUE ITEM ID
+    # │ _EXPOSE ITEM
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def _issue_item_id(self) -> int:
-        """Issues a new item ID"""
+    def _expose_item(self, item: Item) -> Item:
+        """Exposes an item from the collection"""
 
-        # Increment item ID
-        self._item_id += 1
+        # Check if item has an ID
+        if item._imeta.id is not None:
+            # Get item ID
+            item_id = int(item._imeta.id)
 
-        # Return item ID
-        return self._item_id
+            # Check if item ID is in items by ID
+            if item_id in self._items_by_id:
+                # Return item
+                return self._items_by_id[item_id]
+
+        # Return item
+        return item
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _INTERNALIZE ITEM
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _internalize_item(self, item: Item) -> Item:
+        """Internalizes an item for the collection"""
+
+        # Iterate over attributes in item
+        for attr in dir(item):
+            # Continue if attribute is private
+            if attr.startswith("__"):
+                continue
+
+            # Continue if attribute is a method
+            if callable(getattr(item, attr)):
+                continue
+
+            # Continue if attribute is a property
+            if hasattr(item.__class__, attr) and isinstance(
+                getattr(item.__class__, attr), property
+            ):
+                continue
+
+            # Internalize value
+            setattr(item, attr, self._internalize_value(getattr(item, attr)))
+
+        # Return item
+        return item
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _INTERNALIZE VALUE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _internalize_value(self, value: Any) -> Any:
+        """Internalizes a value for the collection"""
+
+        # Check if value is an item
+        if isinstance(value, Item) and value._imeta.id is not None:
+            # Check if item has the same collection type
+            if isinstance(value._cmeta.items._collection, type(self)):
+                # Return exposed item
+                return value._cmeta.items._collection._expose_item(value)
+
+            # Otherwie handle case of different collection type
+            else:
+                # Get class ID
+                class_id = id(value.__class__)
+
+                # Return internalized value
+                return (class_id, value._imeta.id)
+
+        # Return value
+        return value
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COLLECT
@@ -375,70 +425,93 @@ class DictCollection(Collection):
     def push(self, item: Item) -> None:
         """Pushes an item to the collection"""
 
-        # Get item ID
-        item_id = (
-            int(item._imeta.id) if item._imeta.id is not None else self._issue_item_id()
-        )
+        # Check if item already has an ID
+        if item._imeta.id is not None:
+            # Set creating to False
+            is_creating = False
 
-        # Get keys by item ID
-        keys_by_item_id = self._keys_by_item_id
+            # Get item ID
+            item_id = int(item._imeta.id)
 
-        # Get item IDs by key
-        item_ids_by_key = self._item_ids_by_key
+            # Iterate over values
+            for value in self._keys_by_item_id.pop(item_id, []):
+                # Remove item ID from item IDs by key
+                del self._item_ids_by_key[value]
 
-        # Iterate over values
-        for value in keys_by_item_id.pop(item_id, []):
-            # Remove item ID from item IDs by key
-            del item_ids_by_key[value]
+        # Otherwise, handle case of new item
+        else:
+            # Set creating to True
+            is_creating = True
 
-        # Initialize values
-        values = []
+            # Increment item ID
+            self._item_id += 1
 
-        # Initialize lookups
-        lookups = []
+            # Return item ID
+            item_id = self._item_id
 
-        # Iterate over keys
-        for key in item._cmeta.KEYS:
-            # Get value
-            value = (
-                tuple([getattr(item, k, None) for k in key])
-                if isinstance(key, tuple)
-                else getattr(item, key, None)
-            )
+        # Initialize keys
+        keys = []
 
-            # Get lookup
-            lookup = (
-                tuple([to_key(item) for item in value])
-                if isinstance(value, tuple)
-                else to_key(value)
-            )
+        # Iterate over key attriubutes
+        for attr in item._cmeta.KEYS:
+            # Check if attr is a tuple
+            if isinstance(attr, tuple):
+                # Get value
+                value = tuple([getattr(item, a, None) for a in attr])
 
-            # Check if value in item IDs by key
-            if lookup in item_ids_by_key:
+                # Get key
+                key = tuple([self._internalize_value(item) for item in value])
+
+            # Otherwise handle case of single attribute
+            else:
+                # Get value
+                value = getattr(item, attr, None)
+
+                # Get key
+                key = self._internalize_value(value)
+
+            # Check if key is in item IDs by key
+            if key in self._item_ids_by_key:
                 # Raise a duplicate key error
                 raise DuplicateKeyError(
                     f"An item with the key '{value}' already exists."
                 )
 
-            # Append value to values
-            values.append(value)
+            # Append key to keys
+            keys.append(key)
 
-            # Append lookup to lookups
-            lookups.append(lookup)
-
-        # Iterate over lookups
-        for lookup in lookups:
+        # Iterate over keys
+        for key in keys:
             # Add item ID to item IDs by key
-            item_ids_by_key[lookup] = item_id
+            self._item_ids_by_key[key] = item_id
 
             # Add value to keys by item ID
-            keys_by_item_id.setdefault(item_id, []).append(lookup)
+            self._keys_by_item_id.setdefault(item_id, set()).add(key)
 
         # Update item ID
         item._imeta.id = str(item_id)
 
-        # Deepcopy and add item to items by ID
-        self._items_by_id[item_id] = deepcopy(item)
+        # Check if creating
+        if is_creating:
+            # Deepcopy item
+            item = deepcopy(item)
+
+        # Otherwise, handle case of updating
+        else:
+            # Get item dict
+            item_dict = item.__dict__
+
+            # Expose item
+            item = self._expose_item(item)
+
+            # Update item dict
+            item.__dict__.update(deepcopy(item_dict))
+
+        # Internalize item
+        item = self._internalize_item(item)
+
+        # Add item to items by ID
+        self._items_by_id[item_id] = item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE
