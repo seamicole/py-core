@@ -2,4 +2,4 @@
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.api.mixins.api_mixin import APIMixin  # noqa: F401
+from core.api.mixins.api_mixin import APIMixin as APIMixin  # noqa: F401
