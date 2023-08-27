@@ -2,7 +2,41 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from enum import Enum
+from enum import Enum as _Enum
+from typing import Any
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ ENUM
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+class Enum(_Enum):
+    """A base class for enum subclasses"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __EQ__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __eq__(self, other: Any) -> bool:
+        """Equality Method"""
+
+        # Handle enum-enum equality
+        if isinstance(other, Enum):
+            return True if other.value == self.value else False
+
+        # Call super method
+        return True if other == self.value else False
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __HASH__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __hash__(self) -> int:
+        """Hash Method"""
+
+        # Return hash
+        return hash(self.value)
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
