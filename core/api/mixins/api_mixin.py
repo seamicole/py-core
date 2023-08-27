@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.clients.classes.api import API
-from core.clients.classes.api_endpoint import APIEndpoint
+from core.api.classes.api import API
+from core.api.classes.api_endpoint import APIEndpoint
 
 if TYPE_CHECKING:
     from core.types import Args, JSONSchema, Kwargs

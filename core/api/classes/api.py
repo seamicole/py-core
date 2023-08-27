@@ -19,10 +19,10 @@ except ImportError:
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.clients.classes.api_endpoint import APIEndpoint
-from core.clients.classes.api_response import APIResponse
-from core.clients.classes.api_store import api_store
-from core.clients.classes.api_transaction import APITransaction
+from core.api.classes.api_endpoint import APIEndpoint
+from core.api.classes.api_response import APIResponse
+from core.api.classes.api_store import api_store
+from core.api.classes.api_transaction import APITransaction
 from core.collections.classes.item import Item
 from core.enums import HTTPMethod
 
