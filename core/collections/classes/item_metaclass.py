@@ -11,6 +11,7 @@ from typing import Any, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collections.classes.item_meta import ClassMeta, InstanceMeta
+from core.collections.classes.items import Items
 
 if TYPE_CHECKING:
     from core.collections.classes.item import Item
@@ -101,7 +102,7 @@ class ItemMetaclass(type):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @property
-    def items(cls) -> Collection | Items:
+    def items(cls) -> Items:
         """Returns the items of the item's meta instance"""
 
         # Return meta items
