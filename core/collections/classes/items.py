@@ -205,46 +205,6 @@ class Items:
         return self._collection.filter(tuple(conditions), items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ FIRST
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def first(self) -> Item | None:
-        """Returns the first item in the collection"""
-
-        # Return the first item in the collection
-        return self._collection.first(items=self)
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ HEAD
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def head(self, n: int = 10) -> Items:
-        """Returns the first n items in the collection"""
-
-        # Initialize and return a subset of items
-        return self._collection.head(n=n, items=self)
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ KEY
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def key(self, key: Any) -> Item:
-        """Returns an item by key lookup"""
-
-        # Return the item by key lookup
-        return self._collection.key(key=key, items=self)
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ LAST
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def last(self) -> Item | None:
-        """Returns the last item in the collection"""
-
-        # Return the last item in the collection
-        return self._collection.last(items=self)
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -256,23 +216,3 @@ class Items:
 
         # Update pushed at timestamp
         item._imeta.pushed_at = utc_now()
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ SLICE
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def slice(self, start: int, stop: int) -> Items:
-        """Returns a slice of items in the collection"""
-
-        # Initialize and return a subset of items
-        return self._collection.slice(start=start, stop=stop, items=self)
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ TAIL
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def tail(self, n: int = 10) -> Items:
-        """Returns the last n items in the collection"""
-
-        # Initialize and return a subset of items
-        return self._collection.tail(n=n, items=self)

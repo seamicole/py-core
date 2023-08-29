@@ -13,7 +13,7 @@ from typing import Any, Generator, Iterable, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collections.classes.collection import Collection
-from core.collections.exceptions import DoesNotExistError, DuplicateKeyError
+from core.collections.exceptions import DuplicateKeyError
 from core.functions.object import oget
 
 if TYPE_CHECKING:
@@ -332,94 +332,6 @@ class DictCollection(Collection):
         return self.apply(items, lambda x: operation(x))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ FIRST
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def first(self, items: Items | None = None) -> Item | None:
-        """Returns the first item in the collection"""
-
-        # Initialize items
-        items = self.apply(items)
-
-        # Return the first item in the collection
-        return next(iter(items), None)
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ HEAD
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def head(self, n: int, items: Items | None = None) -> Items:
-        """Returns the first n items in the collection"""
-
-        def operation(
-            items: Generator[Item, None, None]
-        ) -> Generator[Item, None, None]:
-            """Yields the first n items in the collection"""
-
-            # Iterate over items
-            for i, item in enumerate(items):
-                # Check if i is greater than or equal to n
-                if i >= n:
-                    # Break
-                    break
-                # Yield item
-                yield item
-
-        # Apply head operation to items
-        return self.apply(items, lambda x: operation(x))
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ KEY
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def key(self, key: Any, items: Items | None = None) -> Item:
-        """Returns an item by key lookup"""
-
-        # Define does not exist error message
-        does_not_exist_error_message = f"An item with the key '{key}' does not exist"
-
-        # Check if key is not in item IDs by key
-        if key not in self._item_ids_by_key:
-            # Raise DoesNotExistError
-            raise DoesNotExistError(does_not_exist_error_message + ".")
-
-        # Get item ID
-        item_id = self._item_ids_by_key[key]
-
-        # Get item
-        item = self._items_by_id[item_id]
-
-        # Collect subset
-        subset = list(self.collect(items=items, subset=[item]))
-
-        # Check if subset is null
-        if not subset:
-            # Raise DoesNotExistError
-            raise DoesNotExistError(does_not_exist_error_message + " in this subset.")
-
-        # Unpack subset
-        [item] = subset
-
-        # Return item
-        return item
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ LAST
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def last(self, items: Items | None = None) -> Item | None:
-        """Returns the last item in the collection"""
-
-        # Initialize items
-        items = self.apply(items)
-
-        # Initialize window
-        window = deque(items, maxlen=1)
-
-        # Return the last item in the collection
-        return window.pop() if window else None
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -513,63 +425,3 @@ class DictCollection(Collection):
 
         # Add item to items by ID
         self._items_by_id[item_id] = item
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ SLICE
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def slice(self, start: int, stop: int, items: Items | None = None) -> Items:
-        """Returns a slice of items in the collection"""
-
-        def operation(
-            items: Generator[Item, None, None]
-        ) -> Generator[Item, None, None]:
-            """Yields a slice of items in the collection"""
-
-            # Check if either start or stop is less than 0
-            if start < 0 or stop < 0:
-                # Convert items to list and yield slice
-                yield from list(items)[start:stop]
-
-            # Iterate over items
-            for i, item in enumerate(items):
-                # Check if i is greater than or equal to stop
-                if i >= stop:
-                    # Break
-                    break
-
-                # Check if i is greater than or equal to start
-                if i >= start:
-                    # Yield item
-                    yield item
-
-        # Apply slice operation to items
-        return self.apply(items, lambda x: operation(x))
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ TAIL
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def tail(self, n: int, items: Items | None = None) -> Items:
-        """Returns the last n items in the collection"""
-
-        def operation(
-            items: Generator[Item, None, None]
-        ) -> Generator[Item, None, None]:
-            """Yields the last n items in the collection"""
-
-            # Initialize window
-            window: deque[Item] = deque(maxlen=n)
-
-            # Iterate over items
-            for item in items:
-                # Append item to window
-                window.append(item)
-
-            # Iterate over window
-            for item in window:
-                # Yield item
-                yield item
-
-        # Apply tail operation to items
-        return self.apply(items, lambda x: operation(x))

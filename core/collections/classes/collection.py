@@ -85,57 +85,9 @@ class Collection(ABC):
         """Filters items in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ FIRST
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    @abstractmethod
-    def first(self, items: Items | None = None) -> Item | None:
-        """Returns the first item in the collection"""
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ HEAD
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    @abstractmethod
-    def head(self, n: int, items: Items | None = None) -> Items:
-        """Returns the first n items in the collection"""
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ KEY
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    @abstractmethod
-    def key(self, key: Any, items: Items | None = None) -> Item:
-        """Returns an item by key lookup"""
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ LAST
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    @abstractmethod
-    def last(self, items: Items | None = None) -> Item | None:
-        """Returns the last item in the collection"""
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
     def push(self, item: Item) -> None:
         """Pushes an item to the collection"""
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ SLICE
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    @abstractmethod
-    def slice(self, start: int, stop: int, items: Items | None = None) -> Items:
-        """Returns a slice of items in the collection"""
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ TAIL
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    @abstractmethod
-    def tail(self, n: int, items: Items | None = None) -> Items:
-        """Returns the last n items in the collection"""
