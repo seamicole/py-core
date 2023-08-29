@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collections.classes.collection import Collection
+from core.collections.dict_collection import DictCollection
 
 if TYPE_CHECKING:
     from core.collections.classes.item_metaclass import ItemMetaclass
@@ -47,8 +48,8 @@ class ClassMeta:
     # │ INSTANCE ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    # Declare type of _items
-    _items: Items | None = None
+    # Declare type of items
+    items: Items
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -57,29 +58,21 @@ class ClassMeta:
     def __init__(self) -> None:
         """Init Method"""
 
-        # Initialize items
-        self._items = (
-            self.ITEMS.all() if isinstance(self.ITEMS, Collection) else self.ITEMS
-        )
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ ITEMS
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    @property
-    def items(self) -> Items:
-        """Returns the items of the meta instance"""
-
         # Get items
-        items = self._items
+        items = self.ITEMS
 
         # Check if items is None
         if items is None:
-            # Raise AttributeError
-            raise AttributeError(f"{self.__class__.__name__}.Meta.ITEMS is undefined.")
+            # Initialize collection
+            items = DictCollection()
 
-        # Return items
-        return items
+        # Check if items is a collection
+        if isinstance(items, Collection):
+            # Get items
+            items = items.all()
+
+        # Set items
+        self.items = items
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

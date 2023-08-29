@@ -117,6 +117,9 @@ class ItemMetaclass(type):
             # Add child to parent children
             Parent._cmeta.CHILDREN += (cls,)
 
+            # Add child to parent items
+            Parent._cmeta.items._children += (cls._cmeta.items,)
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ITEMS
     # └─────────────────────────────────────────────────────────────────────────────────

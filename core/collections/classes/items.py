@@ -35,11 +35,19 @@ class Items:
     # Declare type of operations
     _operations: tuple[Any, ...]
 
+    # Declare type of children
+    _children: tuple["Items", ...]
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, collection: Collection, operations: tuple[Any, ...] = ()):
+    def __init__(
+        self,
+        collection: Collection,
+        operations: tuple[Any, ...] = (),
+        children: tuple["Items", ...] = (),
+    ):
         """Init Method"""
 
         # Set collection
@@ -47,6 +55,9 @@ class Items:
 
         # Set operations
         self._operations = operations
+
+        # Set children
+        self._children = children
 
     # ┌────────────────────────────────────────────────────────────────────────────────
     # │ __ITER__
@@ -107,13 +118,15 @@ class Items:
         # Get pulled at
         pulled_at = utc_now()
 
-        # Iterate over collection
-        for item in self._collection.collect(items=self, quick=quick):
-            # Set pulled at
-            item._imeta.pulled_at = pulled_at
+        # Iterate over items
+        for items in (self,) + self._children:
+            # Iterate over collectio
+            for item in items._collection.collect(items=items, quick=quick):
+                # Set pulled at
+                item._imeta.pulled_at = pulled_at
 
-            # Yield item
-            yield item
+                # Yield item
+                yield item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _COPY
@@ -123,7 +136,11 @@ class Items:
         """Returns a copy of the current collection"""
 
         # Initialize and return a copy of the current collection
-        return Items(collection=self._collection, operations=self._operations)
+        return Items(
+            collection=self._collection,
+            operations=self._operations,
+            children=self._children,
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COUNT

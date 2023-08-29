@@ -13,11 +13,11 @@ from typing import Any, Generator, Iterable, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collections.classes.collection import Collection
-from core.collections.classes.item import Item
 from core.collections.exceptions import DoesNotExistError, DuplicateKeyError
 from core.functions.object import oget
 
 if TYPE_CHECKING:
+    from core.collections.classes.item import Item
     from core.collections.classes.items import Items
 
 
@@ -155,6 +155,7 @@ class DictCollection(Collection):
 
     def _internalize_value(self, value: Any) -> Any:
         """Internalizes a value for the collection"""
+        from core.collections.classes.item import Item
 
         # Check if value is an item
         if isinstance(value, Item) and value._imeta.id is not None:
@@ -163,7 +164,7 @@ class DictCollection(Collection):
                 # Return exposed item
                 return value._cmeta.items._collection._expose_item(value)
 
-            # Otherwie handle case of different collection type
+            # Otherwise handle case of different collection type
             else:
                 # Get class ID
                 class_id = id(value.__class__)
