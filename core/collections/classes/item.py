@@ -46,7 +46,7 @@ class Item(metaclass=ItemMetaclass):
         """Equality Method"""
 
         # Check if other is an item
-        if isinstance(other, type(self)):
+        if isinstance(other, self.__class__):
             # Check if items have the same ID
             if (
                 self._imeta.id is not None
