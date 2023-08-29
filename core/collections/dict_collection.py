@@ -180,21 +180,12 @@ class DictCollection(Collection):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def collect(
-        self,
-        items: Items | None = None,
-        subset: Iterable[Item] | None = None,
-        quick: bool = False,
+        self, operations: tuple[Any, ...] = (), expose: bool = False
     ) -> Generator[Item, None, None]:
         """Yields items in the collection"""
 
-        # Initialize items
-        items = self.apply(items)
-
-        # Get operations
-        operations = items._operations
-
         # Initialize collected items
-        collected = subset if subset is not None else iter(self._items_by_id.values())
+        collected = iter(self._items_by_id.values())
 
         # Iterate over operations
         for operation in operations:
@@ -206,25 +197,17 @@ class DictCollection(Collection):
         # Iterate over collected items
         for item in collected:
             # Deepcopy and yield item
-            yield item if quick else deepcopy(item)
+            yield item if expose else deepcopy(item)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COUNT
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def count(self, items: Items | None = None) -> int:
+    def count(self, operations: tuple[Any, ...] = ()) -> int:
         """Returns a count of items in the collection"""
 
-        # Initialize items
-        items = self.apply(items)
-
-        # Check if there are no operations
-        if not items._operations:
-            # Return the number of items in the collection
-            return len(self._items_by_id)
-
         # Return the number of items in the collection
-        return sum(1 for _ in items._collect(quick=True))
+        return sum(1 for _ in self.collect(operations=operations, expose=True))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ FILTER
@@ -236,9 +219,6 @@ class DictCollection(Collection):
         items: Items | None = None,
     ) -> Items:
         """Returns a filtered collection of items"""
-
-        # Initialize items
-        items = self.apply(items)
 
         def operation(
             items: Generator[Item, None, None]
@@ -330,6 +310,30 @@ class DictCollection(Collection):
 
         # Apply filter operation to items
         return self.apply(items, lambda x: operation(x))
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ HEAD
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _head(
+        self, n: int, items: Generator[Item, None, None]
+    ) -> Generator[Item, None, None]:
+        """Yields the first n items in the collection"""
+
+        # Iterate over items
+        for i, item in enumerate(items):
+            # Check if i is greater than or equal to n
+            if i >= n:
+                # Break
+                break
+            # Yield item
+            yield item
+
+    def head(self, n: int, operations: tuple[Any, ...] = ()) -> Items:
+        """Returns the first n items in the collection"""
+
+        # Apply head operation to items
+        return self.apply(*operations, lambda items: self._head(n=n, items=items))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH

@@ -39,17 +39,11 @@ class Collection(ABC):
     # │ APPLY
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def apply(self, items: Items | None, *operations: Any) -> Items:
-        """Applies a series of operations to a collection of items"""
-
-        # Initialize items
-        items = items._copy() if items is not None else self.all()
-
-        # Append head operation to operations
-        items._operations += operations
+    def apply(self, *operations: Any) -> Items:
+        """Applies operations to the collection"""
 
         # Return items
-        return items
+        return self.all().apply(*operations)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COLLECT
@@ -57,10 +51,7 @@ class Collection(ABC):
 
     @abstractmethod
     def collect(
-        self,
-        items: Items | None = None,
-        subset: Iterable[Item] | None = None,
-        quick: bool = False,
+        self, operations: tuple[Any, ...] = (), expose: bool = False
     ) -> Generator[Item, None, None]:
         """Yields items in the collection"""
 
@@ -69,7 +60,7 @@ class Collection(ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def count(self, items: Items | None = None) -> int:
+    def count(self, operations: tuple[Any, ...] = ()) -> int:
         """Returns a count of items in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -83,6 +74,14 @@ class Collection(ABC):
         items: Items | None = None,
     ) -> Items:
         """Filters items in the collection"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ HEAD
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def head(self, n: int, operations: tuple[Any, ...] = ()) -> Items:
+        """Returns the first n items in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH

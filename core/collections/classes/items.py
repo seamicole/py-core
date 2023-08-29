@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Iterator, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -29,35 +30,30 @@ class Items:
     # │ CLASS ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
 
+    # Declare type of children
+    _children: tuple[Items, ...]
+
     # Declare type of collection
     _collection: Collection
 
     # Declare type of operations
     _operations: tuple[Any, ...]
 
-    # Declare type of children
-    _children: tuple["Items", ...]
-
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(
-        self,
-        collection: Collection,
-        operations: tuple[Any, ...] = (),
-        children: tuple["Items", ...] = (),
-    ):
+    def __init__(self, collection: Collection):
         """Init Method"""
+
+        # Initialize children
+        self._children = ()
 
         # Set collection
         self._collection = collection
 
-        # Set operations
-        self._operations = operations
-
-        # Set children
-        self._children = children
+        # Initialize operations
+        self._operations = ()
 
     # ┌────────────────────────────────────────────────────────────────────────────────
     # │ __ITER__
@@ -92,7 +88,7 @@ class Items:
         head = self.head(n=n)
 
         # Get items
-        items = [item.__repr__() for item in head._collect(quick=True)]
+        items = [item.__repr__() for item in head._expose()]
 
         # Check if there are more than n items total
         if count > n:
@@ -112,35 +108,51 @@ class Items:
     # │ _COLLECT
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def _collect(self, quick: bool = False) -> Iterator[Item]:
+    def _collect(
+        self, pulled_at: datetime | None = None, expose: bool = False
+    ) -> Iterator[Item]:
         """Returns an iterator of items"""
 
         # Get pulled at
-        pulled_at = utc_now()
+        pulled_at = pulled_at if pulled_at is not None else utc_now()
 
-        # Iterate over items
-        for items in (self,) + self._children:
-            # Iterate over collectio
-            for item in items._collection.collect(items=items, quick=quick):
-                # Set pulled at
-                item._imeta.pulled_at = pulled_at
+        # Iterate over collectio
+        for item in self._collection.collect(
+            operations=self._operations, expose=expose
+        ):
+            # Set pulled at
+            item._imeta.pulled_at = pulled_at
 
-                # Yield item
-                yield item
+            # Yield item
+            yield item
+
+        # Iterate over children
+        for child in self._children:
+            # Yield from child
+            yield from child._collect(pulled_at=pulled_at, expose=expose)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ _COPY
+    # │ _EXPOSE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def _copy(self) -> Items:
-        """Returns a copy of the current collection"""
+    def _expose(self) -> Iterator[Item]:
+        """Returns an iterator of items"""
 
-        # Initialize and return a copy of the current collection
-        return Items(
-            collection=self._collection,
-            operations=self._operations,
-            children=self._children,
-        )
+        # Yield from collection
+        yield from self._collect(expose=True)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ APPLY
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def apply(self, *operations: Any) -> Items:
+        """Applies a series of operations to a collection of items"""
+
+        # Apply operations
+        self._operations += operations
+
+        # Return self
+        return self
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COUNT
@@ -149,8 +161,16 @@ class Items:
     def count(self) -> int:
         """Returns a count of items in the collection"""
 
-        # Return the number of items in the collection
-        return self._collection.count(items=self)
+        # Initialize count
+        count = self._collection.count(operations=self._operations)
+
+        # Iterate over children
+        for child in self._children:
+            # Increment count
+            count += child.count()
+
+        # Return count
+        return count
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ FILTER
@@ -203,6 +223,43 @@ class Items:
 
         # Initialize and return a filtered collection of items
         return self._collection.filter(tuple(conditions), items=self)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ HEAD
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def head(self, n: int = 10) -> Items:
+        """Returns the first n items in the collection"""
+
+        # Get head
+        head = self._collection.head(n=n, operations=self._operations)
+
+        # Decrement n
+        n -= head._collection.count(operations=head._operations)
+
+        # Get children
+        children = []
+
+        # Iterate over children
+        for child in self._children:
+            # Break if n is less than or equal to 0
+            if n <= 0:
+                break
+
+            # Get child head
+            child = child.head(n=n)
+
+            # Decrement n
+            n -= child.count()
+
+            # Append child to children
+            children.append(child)
+
+        # Set children
+        head._children = tuple(children)
+
+        # Return head
+        return head
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
