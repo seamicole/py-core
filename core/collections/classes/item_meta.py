@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 from core.collections.classes.collection import Collection
 
 if TYPE_CHECKING:
+    from core.collections.classes.item_metaclass import ItemMetaclass
     from core.collections.classes.items import Items
 
 
@@ -37,6 +38,10 @@ class ClassMeta:
 
     # Initialize indexes
     INDEXES: tuple[str | tuple[str, ...], ...] = ()
+
+    # Initialize parents and children
+    PARENTS: tuple[ItemMetaclass, ...] = ()
+    CHILDREN: tuple[ItemMetaclass, ...] = ()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INSTANCE ATTRIBUTES

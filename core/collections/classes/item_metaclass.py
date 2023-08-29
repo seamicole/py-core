@@ -97,6 +97,26 @@ class ItemMetaclass(type):
         # Initialize meta
         cls._cmeta = cls.Meta()
 
+        # Initialize parents
+        PARENTS = []
+
+        # Iterate over bases
+        for Base in cls.__bases__:
+            # Continue if base is not of type ItemMetaclass
+            if not isinstance(Base, ItemMetaclass):
+                continue
+
+            # Append base to parents
+            PARENTS.append(Base)
+
+        # Set parents
+        cls._cmeta.PARENTS = tuple(PARENTS)
+
+        # Iterate over parents
+        for Parent in cls._cmeta.PARENTS:
+            # Add child to parent children
+            Parent._cmeta.CHILDREN += (cls,)
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ITEMS
     # └─────────────────────────────────────────────────────────────────────────────────
