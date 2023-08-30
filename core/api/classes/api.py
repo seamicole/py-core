@@ -56,6 +56,26 @@ class API(Item):
         self.BASE_URL = base_url
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __GETATTR__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __getattr__(self, name: str) -> Any:
+        """Getattr Method"""
+
+        # Define endpoints suffix
+        endpoints_suffix = "_endpoints"
+
+        # Check if the name ends with endpoints suffix
+        if name.endswith(endpoints_suffix):
+            # Return endpoints filtered by kind
+            return self.endpoints.filter(kind=name[: -len(endpoints_suffix)])
+
+        # Rasie an AttributeError
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ BASE URL
     # └─────────────────────────────────────────────────────────────────────────────────
 
