@@ -120,6 +120,9 @@ class ItemMetaclass(type):
             # Add child to parent items
             Parent._cmeta.items._children += (cls._cmeta.items,)
 
+        # Add clean keys method to items
+        cls._cmeta.items._clean_keys = cls._cmeta.clean_keys
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ITEMS
     # └─────────────────────────────────────────────────────────────────────────────────

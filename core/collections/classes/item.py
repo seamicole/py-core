@@ -159,3 +159,13 @@ class Item(metaclass=ItemMetaclass):
 
         # Initialize indexes
         INDEXES: tuple[str | tuple[str, ...], ...] = ()
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ CLEAN KEYS
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        def clean_keys(self, keys: tuple[Any, ...]) -> tuple[Any, ...]:
+            """Cleans a series of key lookups"""
+
+            # Return keys
+            return keys

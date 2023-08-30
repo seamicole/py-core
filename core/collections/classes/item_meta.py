@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -73,6 +73,16 @@ class ClassMeta:
 
         # Set items
         self.items = items
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ CLEAN KEYS
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def clean_keys(self, keys: tuple[Any, ...]) -> tuple[Any, ...]:
+        """Cleans a series of key lookups"""
+
+        # Return keys
+        return keys
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

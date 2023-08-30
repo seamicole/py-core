@@ -106,6 +106,16 @@ class Items:
         return representation
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _CLEAN KEYS
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _clean_keys(self, keys: tuple[Any, ...]) -> tuple[Any, ...]:
+        """Cleans a series of key lookups"""
+
+        # Return keys
+        return keys
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _COLLECT
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -296,6 +306,9 @@ class Items:
 
     def keys(self, *keys: Any) -> Items:
         """Returns items in the collection by key lookup"""
+
+        # Clean keys
+        keys = self._clean_keys(*keys)
 
         # Get items
         items = self._collection.keys(keys=keys, operations=self._operations)
