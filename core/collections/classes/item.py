@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Generator, TYPE_CHECKING
+from typing import Any, Generator, TYPE_CHECKING, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -19,6 +19,12 @@ if TYPE_CHECKING:
     from core.collections.classes.item_meta import InstanceMeta
     from core.collections.classes.items import Items
     from core.types import JSONSchema
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ TYPE VARIABLES
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+T = TypeVar("T", bound="Item")
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -116,7 +122,7 @@ class Item(metaclass=ItemMetaclass):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @classmethod
-    def from_dict(cls: type[Item], data: dict[Any, Any]) -> Item:
+    def from_dict(cls: type[T], data: dict[Any, Any]) -> T:
         """Initializes an item from a dictionary"""
 
         # Initialize and return item
@@ -128,11 +134,11 @@ class Item(metaclass=ItemMetaclass):
 
     @classmethod
     def from_json(
-        cls: type[Item],
+        cls: type[T],
         data: Any,
         path: str | None = None,
         schema: JSONSchema | None = None,
-    ) -> Generator[Item, None, None]:
+    ) -> Generator[T, None, None]:
         """Yields items from a list of dictionaries"""
 
         # Yield from JSON object
