@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-from collections import deque
 from copy import deepcopy
 from typing import Any, Generator, Iterable, TYPE_CHECKING
 
@@ -13,7 +12,7 @@ from typing import Any, Generator, Iterable, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collections.classes.collection import Collection
-from core.collections.exceptions import DoesNotExistError, DuplicateKeyError
+from core.collections.exceptions import DuplicateKeyError
 from core.functions.object import oget
 
 if TYPE_CHECKING:
