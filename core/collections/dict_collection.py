@@ -13,7 +13,7 @@ from typing import Any, Generator, Iterable, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collections.classes.collection import Collection
-from core.collections.exceptions import DuplicateKeyError
+from core.collections.exceptions import DoesNotExistError, DuplicateKeyError
 from core.functions.object import oget
 
 if TYPE_CHECKING:
@@ -334,6 +334,33 @@ class DictCollection(Collection):
 
         # Apply head operation to items
         return self.apply(*operations, lambda items: self._head(n=n, items=items))
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ KEYS
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _keys(
+        self, keys: tuple[Any, ...], items: Generator[Item, None, None]
+    ) -> Generator[Item, None, None]:
+        """Yields items in the collection by key lookup"""
+
+        # Iterate over keys
+        for key in keys:
+            # Continue if key is not in item IDs by key
+            if key not in self._item_ids_by_key:
+                continue
+
+            # Get item ID
+            item_id = self._item_ids_by_key[key]
+
+            # Yield item
+            yield self._items_by_id[item_id]
+
+    def keys(self, keys: tuple[Any, ...], operations: tuple[Any, ...] = ()) -> Items:
+        """Returns items in the collection by key lookup"""
+
+        # Apply keys operation to items
+        return self.apply(lambda items: self._keys(keys=keys, items=items), *operations)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH

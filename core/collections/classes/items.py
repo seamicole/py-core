@@ -11,6 +11,7 @@ from typing import Any, Iterator, TYPE_CHECKING
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.collections.exceptions import DoesNotExistError, DuplicateKeyError
 from core.functions.datetime import utc_now
 
 if TYPE_CHECKING:
@@ -260,6 +261,61 @@ class Items:
 
         # Return head
         return head
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ KEY
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def key(self, key: Any) -> Item:
+        """Returns an item int the collection by key lookup"""
+
+        # Initialize item to None
+        item = None
+
+        # Iterate over items
+        for _item in self.keys(key):
+            # Check if item is not None
+            if item is not None:
+                # Raise DuplicateKeyError
+                raise DuplicateKeyError(f"Multiple items with the key '{key}' found.")
+
+            # Set item
+            item = _item
+
+        # Check if item is None
+        if item is None:
+            # Raise DoesNotExistError
+            raise DoesNotExistError(f"No item with the key '{key}' found.")
+
+        # Return item
+        return item
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ KEYS
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def keys(self, *keys: Any) -> Items:
+        """Returns items in the collection by key lookup"""
+
+        # Get items
+        items = self._collection.keys(keys=keys, operations=self._operations)
+
+        # Get children
+        children = []
+
+        # Iterate over children
+        for child in self._children:
+            # Get child items by key
+            child = child.keys(*keys)
+
+            # Append child to children
+            children.append(child)
+
+        # Set children
+        items._children = tuple(children)
+
+        # Return items
+        return items
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
