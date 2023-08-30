@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 from urllib.parse import urlparse
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ from core.enums import HTTPMethod
 if TYPE_CHECKING:
     from core.api.classes.api import API
     from core.api.classes.api_response import APIResponse
-    from core.types import Args, JSONSchema, Kwargs
+    from core.types import JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -48,8 +48,8 @@ class APIEndpoint(Item):
     # Declare type of base URL
     _base_url: str | None = None
 
-    # Declare type of JSON root
-    json_root: str | None = None
+    # Declare type of JSON path
+    json_path: str | None = None
 
     # Declare type of JSON schema
     json_schema: JSONSchema | None
@@ -66,10 +66,10 @@ class APIEndpoint(Item):
         url: str | None = None,
         route: str | None = None,
         base_url: str | None = None,
-        json_root: str | None = None,
+        json_path: str | None = None,
         json_schema: JSONSchema | None = None,
-        *args: Args,
-        **kwargs: Kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         """Initialize the API endpoint"""
 
@@ -113,8 +113,8 @@ class APIEndpoint(Item):
         # Set base URL
         self._base_url = base_url
 
-        # Set JSON root
-        self.json_root = json_root
+        # Set JSON path
+        self.json_path = json_path
 
         # Set JSON schema
         self.json_schema = json_schema

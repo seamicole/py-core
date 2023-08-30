@@ -47,9 +47,9 @@ def ofrom_json(
 ) -> Generator[T, None, None]:
     """Initializes an item from a JSON object"""
 
-    # Check if should get data from root
+    # Check if should get data from path
     if isinstance(data, dict) and path is not None:
-        # Get data from root
+        # Get data from path
         data = dget(data, path, delimiter=".")
 
     # Check if data is a dictionary
