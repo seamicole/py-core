@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, Generator, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -12,12 +12,13 @@ from typing import Any, TYPE_CHECKING
 
 from core.collections.classes.item_meta import ClassMeta
 from core.collections.classes.item_metaclass import ItemMetaclass
-from core.functions.object import ofrom_dict
+from core.functions.object import ofrom_dict, ofrom_json
 
 if TYPE_CHECKING:
     from core.collections.classes.collection import Collection
     from core.collections.classes.item_meta import InstanceMeta
     from core.collections.classes.items import Items
+    from core.types import JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -119,7 +120,23 @@ class Item(metaclass=ItemMetaclass):
         """Initializes an item from a dictionary"""
 
         # Initialize and return item
-        return ofrom_dict(cls, data)
+        return ofrom_dict(Class=cls, data=data)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FROM JSON
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @classmethod
+    def from_json(
+        cls: type[Item],
+        data: Any,
+        path: str | None = None,
+        schema: JSONSchema | None = None,
+    ) -> Generator[Item, None, None]:
+        """Yields items from a list of dictionaries"""
+
+        # Yield from JSON object
+        yield from ofrom_json(Class=cls, data=data, path=path, schema=schema)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH

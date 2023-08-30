@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from abc import ABCMeta
 from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class ItemMetaclass(type):
+class ItemMetaclass(ABCMeta):
     """A metaclass for the Item class"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -120,8 +121,8 @@ class ItemMetaclass(type):
             # Add child to parent items
             Parent._cmeta.items._children += (cls._cmeta.items,)
 
-        # Add clean keys method to items
-        cls._cmeta.items._clean_keys = cls._cmeta.clean_keys
+        # Assign clean keys method to items
+        setattr(cls._cmeta.items, "_clean_keys", cls._cmeta.clean_keys)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ITEMS

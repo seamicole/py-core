@@ -2,13 +2,65 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.placeholders import Nothing
+
+if TYPE_CHECKING:
+    from core.types import JSONSchema
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ DFROM SCHEMA
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+def dfrom_schema(data: dict[Any, Any], schema: JSONSchema) -> dict[Any, Any]:
+    """Remaps a dictionary using a schema"""
+
+    # Initialize root data
+    root_data = data
+
+    # Initialize mapped data
+    mapped_data: dict[Any, Any] = {}
+
+    # Check if schema is not None
+    if schema is not None:
+        # Iterate over schema
+        for setter, getter in (schema or {}).items():
+            # Check if getter is callable
+            if callable(getter):
+                # Get value to set
+                value_to_set = getter(root_data, data)
+
+            # Otherwise handle case of string path
+            else:
+                # Get value to set
+                value_to_set = dget(data, getter, delimiter=".")
+
+            # Check if the setter is a tuple
+            if isinstance(setter, tuple):
+                # Check if the value to set is not a tuple or list
+                if not isinstance(value_to_set, (tuple, list)):
+                    # Convert value to set to a list
+                    value_to_set = [value_to_set] * len(setter)
+
+                # Iterate over zip of setter and value to set
+                for setter_item, value_to_set_item in zip(setter, value_to_set):
+                    # Remap data
+                    dset(mapped_data, setter_item, value_to_set_item)
+
+            # Otherwise, simply remap data
+            else:
+                # Remap data
+                dset(mapped_data, setter, value_to_set)
+
+    # Return mapped data
+    return mapped_data
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
