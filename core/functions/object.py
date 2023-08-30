@@ -40,7 +40,11 @@ def ofrom_dict(Class: type[T], data: dict[Any, Any]) -> T:
 
 
 def ofrom_json(
-    Class: type[T], data: Any, path: str | None = None, schema: JSONSchema | None = None
+    Class: type[T],
+    data: Any,
+    path: str | None = None,
+    schema: JSONSchema | None = None,
+    overrides: dict[Any, Any] | None = None,
 ) -> Generator[T, None, None]:
     """Initializes an item from a JSON object"""
 
@@ -61,7 +65,7 @@ def ofrom_json(
             # Check if schema is not None
             if schema is not None:
                 # Get item from schema
-                item = dfrom_schema(item, schema=schema)
+                item = dfrom_schema(item, schema=schema, overrides=overrides)
 
             # Yield item from dictionary
             yield ofrom_dict(Class=Class, data=item)

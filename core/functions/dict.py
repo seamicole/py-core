@@ -21,7 +21,9 @@ if TYPE_CHECKING:
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def dfrom_schema(data: dict[Any, Any], schema: JSONSchema) -> dict[Any, Any]:
+def dfrom_schema(
+    data: dict[Any, Any], schema: JSONSchema, overrides: dict[Any, Any] | None = None
+) -> dict[Any, Any]:
     """Remaps a dictionary using a schema"""
 
     # Initialize root data
@@ -44,22 +46,13 @@ def dfrom_schema(data: dict[Any, Any], schema: JSONSchema) -> dict[Any, Any]:
                 # Get value to set
                 value_to_set = dget(data, getter, delimiter=".")
 
-            # Check if the setter is a tuple
-            if isinstance(setter, tuple):
-                # Check if the value to set is not a tuple or list
-                if not isinstance(value_to_set, (tuple, list)):
-                    # Convert value to set to a list
-                    value_to_set = [value_to_set] * len(setter)
+            # Set value to set to mapped data
+            dset(mapped_data, setter, value_to_set)
 
-                # Iterate over zip of setter and value to set
-                for setter_item, value_to_set_item in zip(setter, value_to_set):
-                    # Remap data
-                    dset(mapped_data, setter_item, value_to_set_item)
-
-            # Otherwise, simply remap data
-            else:
-                # Remap data
-                dset(mapped_data, setter, value_to_set)
+    # Iterate over overrides
+    for setter, getter in (overrides or {}).items():
+        # Set value to set to mapped data
+        dset(mapped_data, setter, getter)
 
     # Return mapped data
     return mapped_data
@@ -135,22 +128,41 @@ def dpop(
 
 
 def dset(
-    dictionary: dict[Any, Any], path: str, value: Any, delimiter: str = "."
+    dictionary: dict[Any, Any], path: Any, value: Any, delimiter: str = "."
 ) -> None:
     """Sets a value in a nested dictionary using a path string"""
 
-    # Split the path into keys
-    keys = path.split(delimiter)
+    # Check if the path is a tuple
+    if isinstance(path, tuple):
+        # Check if the value to set is not a tuple or list
+        if not isinstance(value, (tuple, list)):
+            # Convert value to set to a list
+            value = [value] * len(path)
 
-    # Iterate over keys
-    for key in keys[:-1]:
-        # Check if key exists
-        if key not in dictionary:
-            # Set key to empty dictionary
-            dictionary[key] = {}
+        # Iterate over zip of path and value to set
+        for path_i, value_i in zip(path, value):
+            # Remap data
+            dset(dictionary, path_i, value_i)
 
-        # Get value by key
-        dictionary = dictionary[key]
+    # Otherwise, handle case of string path
+    elif isinstance(path, str):
+        # Split the path into keys
+        keys = path.split(delimiter)
 
-    # Set value by last key
-    dictionary[keys[-1]] = value
+        # Iterate over keys
+        for key in keys[:-1]:
+            # Check if key exists
+            if key not in dictionary:
+                # Set key to empty dictionary
+                dictionary[key] = {}
+
+            # Get value by key
+            dictionary = dictionary[key]
+
+        # Set value by last key
+        dictionary[keys[-1]] = value
+
+    # Otherwise, handle general case
+    else:
+        # Set value by path
+        dictionary[path] = value
