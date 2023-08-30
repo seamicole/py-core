@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-from abc import ABCMeta
 from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -23,7 +22,7 @@ if TYPE_CHECKING:
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class ItemMetaclass(ABCMeta):
+class ItemMetaclass(type):
     """A metaclass for the Item class"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
