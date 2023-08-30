@@ -120,61 +120,6 @@ class DictCollection(Collection):
         return item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ _INTERNALIZE ITEM
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def _internalize_item(self, item: Item) -> Item:
-        """Internalizes an item for the collection"""
-
-        # Iterate over attributes in item
-        for attr in dir(item):
-            # Continue if attribute is private
-            if attr.startswith("__"):
-                continue
-
-            # Continue if attribute is a method
-            if callable(getattr(item, attr)):
-                continue
-
-            # Continue if attribute is a property
-            if hasattr(item.__class__, attr) and isinstance(
-                getattr(item.__class__, attr), property
-            ):
-                continue
-
-            # Internalize value
-            setattr(item, attr, self._internalize_value(getattr(item, attr)))
-
-        # Return item
-        return item
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ _INTERNALIZE VALUE
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def _internalize_value(self, value: Any) -> Any:
-        """Internalizes a value for the collection"""
-        from core.collections.classes.item import Item
-
-        # Check if value is an item
-        if isinstance(value, Item) and value._imeta.id is not None:
-            # Check if item has the same collection type
-            if isinstance(value._cmeta.items._collection, type(self)):
-                # Return exposed item
-                return value._cmeta.items._collection._expose_item(value)
-
-            # Otherwise handle case of different collection type
-            else:
-                # Get class ID
-                class_id = id(value.__class__)
-
-                # Return internalized value
-                return (class_id, value._imeta.id)
-
-        # Return value
-        return value
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COLLECT
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -397,28 +342,17 @@ class DictCollection(Collection):
 
         # Iterate over key attriubutes
         for attr in item._cmeta.KEYS:
-            # Check if attr is a tuple
-            if isinstance(attr, tuple):
-                # Get value
-                value = tuple([getattr(item, a, None) for a in attr])
-
-                # Get key
-                key = tuple([self._internalize_value(item) for item in value])
-
-            # Otherwise handle case of single attribute
-            else:
-                # Get value
-                value = getattr(item, attr, None)
-
-                # Get key
-                key = self._internalize_value(value)
+            # Get key
+            key = (
+                tuple([getattr(item, a, None) for a in attr])
+                if isinstance(attr, tuple)
+                else getattr(item, attr, None)
+            )
 
             # Check if key is in item IDs by key
             if key in self._item_ids_by_key:
                 # Raise a duplicate key error
-                raise DuplicateKeyError(
-                    f"An item with the key '{value}' already exists."
-                )
+                raise DuplicateKeyError(f"An item with the key '{key}' already exists.")
 
             # Append key to keys
             keys.append(key)
@@ -449,9 +383,6 @@ class DictCollection(Collection):
 
             # Update item dict
             item.__dict__.update(deepcopy(item_dict))
-
-        # Internalize item
-        item = self._internalize_item(item)
 
         # Add item to items by ID
         self._items_by_id[item_id] = item

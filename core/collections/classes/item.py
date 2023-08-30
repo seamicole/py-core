@@ -63,7 +63,22 @@ class Item(metaclass=ItemMetaclass):
                 return True
 
         # Call super method
-        return super().__eq__(other)
+        return False
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __HASH__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __hash__(self) -> int:
+        """Hash Method"""
+
+        # Check if item has an ID
+        if self._imeta.id is not None:
+            # Return hash of ID
+            return hash(self.__class__) ^ hash(self._imeta.id)
+
+        # Otherwise return hash of item ID in memory
+        return hash(id(self))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
@@ -138,14 +153,11 @@ class Item(metaclass=ItemMetaclass):
         data: Any,
         path: str | None = None,
         schema: JSONSchema | None = None,
-        overrides: dict[Any, Any] | None = None,
     ) -> Generator[T, None, None]:
         """Yields items from a list of dictionaries"""
 
         # Yield from JSON object
-        yield from ofrom_json(
-            Class=cls, data=data, path=path, schema=schema, overrides=overrides
-        )
+        yield from ofrom_json(Class=cls, data=data, path=path, schema=schema)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH

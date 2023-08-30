@@ -21,9 +21,7 @@ if TYPE_CHECKING:
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def dfrom_schema(
-    data: dict[Any, Any], schema: JSONSchema, overrides: dict[Any, Any] | None = None
-) -> dict[Any, Any]:
+def dfrom_schema(data: dict[Any, Any], schema: JSONSchema) -> dict[Any, Any]:
     """Remaps a dictionary using a schema"""
 
     # Initialize root data
@@ -48,11 +46,6 @@ def dfrom_schema(
 
             # Set value to set to mapped data
             dset(mapped_data, setter, value_to_set)
-
-    # Iterate over overrides
-    for setter, getter in (overrides or {}).items():
-        # Set value to set to mapped data
-        dset(mapped_data, setter, getter)
 
     # Return mapped data
     return mapped_data
