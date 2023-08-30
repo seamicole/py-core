@@ -308,7 +308,7 @@ class Items:
         """Returns items in the collection by key lookup"""
 
         # Clean keys
-        keys = self._clean_keys(*keys)
+        keys = self._clean_keys(keys)
 
         # Get items
         items = self._collection.keys(keys=keys, operations=self._operations)
