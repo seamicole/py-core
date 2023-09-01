@@ -45,9 +45,6 @@ class APIMixin:
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Init Method"""
 
-        # Call super init method
-        super().__init__(*args, **kwargs)
-
         # Initialize and set API
         self.api = API(base_url=self.API_BASE_URL)
 
@@ -62,3 +59,7 @@ class APIMixin:
 
             # Push API endpoint
             api_endpoint.push()
+
+        # Call super init method
+        # NOTE: After to ensure other classes have access to api attribute
+        super().__init__(*args, **kwargs)
