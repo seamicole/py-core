@@ -189,20 +189,20 @@ class Item(metaclass=ItemMetaclass):
         # │ CLASS ATTRIBUTES
         # └─────────────────────────────────────────────────────────────────────────────
 
-        # Initializeabstract
-        ABSTRACT: bool = False
+        # Declare type of abstract
+        ABSTRACT: bool
 
-        # Initialize concrete attributes
-        CONCRETE_ATTRIBUTES: tuple[str, ...] = ()
+        # Declare type of concrete attributes
+        CONCRETE_ATTRIBUTES: tuple[str, ...]
 
-        # Initialize items
-        ITEMS: Collection[Any] | Items[Any] | None = None
+        # Declare type of items
+        ITEMS: Collection[Any] | Items[Any] | None
 
-        # Initialize keys
-        KEYS: tuple[str | tuple[str, ...], ...] = ()
+        # Declare type of keys
+        KEYS: tuple[str | tuple[str, ...], ...]
 
-        # Initialize indexes
-        INDEXES: tuple[str | tuple[str, ...], ...] = ()
+        # Declare type of indexes
+        INDEXES: tuple[str | tuple[str, ...], ...]
 
         # ┌─────────────────────────────────────────────────────────────────────────────
         # │ CLEAN KEYS

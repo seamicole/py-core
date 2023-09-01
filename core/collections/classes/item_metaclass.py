@@ -71,8 +71,19 @@ class ItemMetaclass(type):
         # Call super method
         super().__init__(name, bases, attrs)
 
-        # Check if Meta is not a subclass of ClassMeta
-        if not issubclass(cls.Meta, ClassMeta):
+        # Check if Meta was not explicitly defined (i.e. inherited)
+        if "Meta" not in attrs:
+            # Explicitly define Meta
+            # This will ensure that attributes like ABSTRACT are not inherited
+            # (see ClassMetaMetaclass)
+            class Meta(cls.Meta):
+                """Meta Class"""
+
+            # Set Meta
+            cls.Meta = Meta
+
+        # Otherwise, check if Meta is not a subclass of ClassMeta
+        elif not issubclass(cls.Meta, ClassMeta):
             # Define a new Meta class
             class Meta(ClassMeta):
                 """Meta Class"""
