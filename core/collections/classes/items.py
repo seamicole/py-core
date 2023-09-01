@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Iterator, TYPE_CHECKING
+from typing import Any, Generic, Iterator, TYPE_CHECKING, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -18,13 +18,19 @@ if TYPE_CHECKING:
     from core.collections.classes.collection import Collection
     from core.collections.classes.item import Item
 
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ TYPE VARIABLES
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+T = TypeVar("T", bound=Item)
+
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ ITEMS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class Items:
+class Items(Generic[T]):
     """A utility class that represents a collection of Item instances"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -32,10 +38,10 @@ class Items:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     # Declare type of children
-    _children: tuple[Items, ...]
+    _children: tuple[Items[T], ...]
 
     # Declare type of collection
-    _collection: Collection
+    _collection: Collection[T]
 
     # Declare type of operations
     _operations: tuple[Any, ...]
@@ -44,7 +50,7 @@ class Items:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, collection: Collection):
+    def __init__(self, collection: Collection[T]):
         """Init Method"""
 
         # Initialize children
@@ -156,7 +162,7 @@ class Items:
     # │ APPLY
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def apply(self, *operations: Any) -> Items:
+    def apply(self, *operations: Any) -> Items[T]:
         """Applies a series of operations to a collection of items"""
 
         # Apply operations
@@ -187,7 +193,7 @@ class Items:
     # │ FILTER
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def filter(self, **kwargs: Any) -> Items:
+    def filter(self, **kwargs: Any) -> Items[T]:
         """Returns a filtered collection of items"""
 
         # Define operators
@@ -239,7 +245,7 @@ class Items:
     # │ HEAD
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def head(self, n: int = 10) -> Items:
+    def head(self, n: int = 10) -> Items[T]:
         """Returns the first n items in the collection"""
 
         # Get head
@@ -304,7 +310,7 @@ class Items:
     # │ KEYS
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def keys(self, *keys: Any) -> Items:
+    def keys(self, *keys: Any) -> Items[T]:
         """Returns items in the collection by key lookup"""
 
         # Clean keys

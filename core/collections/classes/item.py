@@ -190,7 +190,7 @@ class Item(metaclass=ItemMetaclass):
         # └─────────────────────────────────────────────────────────────────────────────
 
         # Initialize items
-        ITEMS: Collection | Items | None = None
+        ITEMS: Collection[Any] | Items[Any] | None = None
 
         # Initialize keys
         KEYS: tuple[str | tuple[str, ...], ...] = ()

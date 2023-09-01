@@ -128,7 +128,7 @@ class ItemMetaclass(type):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @property
-    def items(cls) -> Items:
+    def items(cls) -> Items[Any]:
         """Returns the items of the item's meta instance"""
 
         # Return meta items

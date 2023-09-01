@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Generator, TYPE_CHECKING
+from typing import Any, Generator, Generic, TYPE_CHECKING, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -16,20 +16,26 @@ from core.collections.classes.items import Items
 if TYPE_CHECKING:
     from core.collections.classes.item import Item
 
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ TYPE VARIABLES
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+T = TypeVar("T", bound=Item)
+
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ COLLECTION
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class Collection(ABC):
+class Collection(Generic[T], ABC):
     """An abstract class that represents a collection of items"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ALL
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def all(self) -> Items:
+    def all(self) -> Items[T]:
         """Returns all items in the collection"""
 
         # Return all items
@@ -39,7 +45,7 @@ class Collection(ABC):
     # │ APPLY
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def apply(self, *operations: Any) -> Items:
+    def apply(self, *operations: Any) -> Items[T]:
         """Applies operations to the collection"""
 
         # Return items
@@ -71,8 +77,8 @@ class Collection(ABC):
     def filter(
         self,
         conditions: tuple[tuple[str, str, Any], ...],
-        items: Items | None = None,
-    ) -> Items:
+        items: Items[T] | None = None,
+    ) -> Items[T]:
         """Filters items in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -80,7 +86,7 @@ class Collection(ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def head(self, n: int, operations: tuple[Any, ...] = ()) -> Items:
+    def head(self, n: int, operations: tuple[Any, ...] = ()) -> Items[T]:
         """Returns the first n items in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -88,7 +94,7 @@ class Collection(ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def keys(self, keys: tuple[Any, ...], operations: tuple[Any, ...] = ()) -> Items:
+    def keys(self, keys: tuple[Any, ...], operations: tuple[Any, ...] = ()) -> Items[T]:
         """Returns items in the collection by key lookup"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────

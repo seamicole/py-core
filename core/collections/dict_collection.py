@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Generator, Iterable, TYPE_CHECKING
+from typing import Any, Generator, Iterable, TYPE_CHECKING, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -19,13 +19,19 @@ if TYPE_CHECKING:
     from core.collections.classes.item import Item
     from core.collections.classes.items import Items
 
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ TYPE VARIABLES
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+T = TypeVar("T", bound=Item)
+
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ DICT COLLECTION
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class DictCollection(Collection):
+class DictCollection(Collection[T]):
     """A utility class that represents a dictionary collection of items"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -160,8 +166,8 @@ class DictCollection(Collection):
     def filter(
         self,
         conditions: tuple[tuple[str, str, Any], ...],
-        items: Items | None = None,
-    ) -> Items:
+        items: Items[T] | None = None,
+    ) -> Items[T]:
         """Returns a filtered collection of items"""
 
         def operation(
@@ -273,7 +279,7 @@ class DictCollection(Collection):
             # Yield item
             yield item
 
-    def head(self, n: int, operations: tuple[Any, ...] = ()) -> Items:
+    def head(self, n: int, operations: tuple[Any, ...] = ()) -> Items[T]:
         """Returns the first n items in the collection"""
 
         # Apply head operation to items
@@ -300,7 +306,7 @@ class DictCollection(Collection):
             # Yield item
             yield self._items_by_id[item_id]
 
-    def keys(self, keys: tuple[Any, ...], operations: tuple[Any, ...] = ()) -> Items:
+    def keys(self, keys: tuple[Any, ...], operations: tuple[Any, ...] = ()) -> Items[T]:
         """Returns items in the collection by key lookup"""
 
         # Apply keys operation to items

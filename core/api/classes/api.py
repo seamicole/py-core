@@ -89,7 +89,7 @@ class API(Item):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @property
-    def endpoints(self) -> Items:
+    def endpoints(self) -> Items[APIEndpoint]:
         """Returns a list of endpoints of the API instance"""
         return APIEndpoint.items.filter(api=self)
 

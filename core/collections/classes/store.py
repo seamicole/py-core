@@ -3,6 +3,7 @@
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from abc import ABC
+from typing import Any, TYPE_CHECKING, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -11,6 +12,15 @@ from abc import ABC
 from core.collections.classes.collection import Collection
 from core.collections.dict_collection import DictCollection
 from core.collections.exceptions import DoesNotExistError
+
+if TYPE_CHECKING:
+    from core.collections.classes.item import Item
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ TYPE VARIABLES
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+T = TypeVar("T", bound=Item)
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -26,10 +36,10 @@ class Store(ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     # Initialize collection class
-    CollectionClass: type[Collection] = DictCollection
+    CollectionClass: type[Collection[Any]] = DictCollection
 
     # Declare type of collections by key
-    _collections_by_key: dict[str, Collection]
+    _collections_by_key: dict[str, Collection[Any]]
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -46,8 +56,10 @@ class Store(ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def create(
-        self, key: str, CollectionClass: type[Collection] | Collection | None = None
-    ) -> Collection:
+        self,
+        key: str,
+        CollectionClass: type[Collection[T]] | Collection[T] | None = None,
+    ) -> Collection[T]:
         """Creates a collection by key"""
 
         # Initialize collection class
@@ -80,7 +92,7 @@ class Store(ABC):
     # │ GET
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def get(self, key: str) -> Collection:
+    def get(self, key: str) -> Collection[Any]:
         """Returns a collection by key"""
 
         # Check if collection exists
@@ -96,8 +108,10 @@ class Store(ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def get_or_create(
-        self, key: str, CollectionClass: type[Collection] | Collection | None = None
-    ) -> Collection:
+        self,
+        key: str,
+        CollectionClass: type[Collection[T]] | Collection[T] | None = None,
+    ) -> Collection[T]:
         """Returns a collection by key, creating it if it doesn't exist"""
 
         # Initialize try-except block

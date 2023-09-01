@@ -32,7 +32,7 @@ class ClassMeta:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     # Initialize items
-    ITEMS: Collection | Items | None = None
+    ITEMS: Collection[Any] | Items[Any] | None = None
 
     # Initialize keys
     KEYS: tuple[str | tuple[str, ...], ...] = ()
@@ -49,7 +49,7 @@ class ClassMeta:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     # Declare type of items
-    items: Items
+    items: Items[Any]
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
