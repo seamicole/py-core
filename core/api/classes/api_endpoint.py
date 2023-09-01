@@ -39,6 +39,9 @@ class APIEndpoint(Item):
     # Declare type of resource
     resource: str
 
+    # Declare type of resource class
+    resource_class: type | None = None
+
     # Declare type of method
     method: HTTPMethod
 
@@ -72,6 +75,7 @@ class APIEndpoint(Item):
         json_path: str | None = None,
         json_schema: JSONSchema | None = None,
         json_defaults: dict[Any, Any] | None = None,
+        resource_class: type | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -125,6 +129,9 @@ class APIEndpoint(Item):
 
         # Set JSON defaults
         self.json_defaults = json_defaults
+
+        # Set resource class
+        self.resource_class = resource_class
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __STR__

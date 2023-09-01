@@ -103,6 +103,14 @@ class Item(metaclass=ItemMetaclass):
     def __str__(self) -> str:
         """String Method"""
 
+        # Check if string attribute is defined
+        if self._cmeta.STR is not None and hasattr(self, self._cmeta.STR):
+            # Get value
+            value = getattr(self, self._cmeta.STR)
+
+            # Return the string of the value
+            return str(value)
+
         # Iterate over keys
         for key in self._cmeta.KEYS:
             # Check if key is a string
@@ -198,14 +206,17 @@ class Item(metaclass=ItemMetaclass):
         # Declare type of concrete attributes
         CONCRETE_ATTRIBUTES: tuple[str, ...]
 
-        # Declare type of items
-        ITEMS: Collection[Any] | Items[Any] | None
+        # Declare type of string
+        STR: str | None
 
         # Declare type of keys
         KEYS: tuple[str | tuple[str, ...], ...]
 
         # Declare type of indexes
         INDEXES: tuple[str | tuple[str, ...], ...]
+
+        # Declare type of items
+        ITEMS: Collection[Any] | Items[Any] | None
 
         # ┌─────────────────────────────────────────────────────────────────────────────
         # │ CLEAN KEYS

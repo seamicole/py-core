@@ -59,14 +59,17 @@ class ClassMeta(metaclass=ClassMetaMetaclass):
     # Initialize concrete attributes
     CONCRETE_ATTRIBUTES: tuple[str, ...] = ()
 
-    # Initialize items
-    ITEMS: Collection[Any] | Items[Any] | None = None
+    # Initialize string attribute
+    STR: str | None = None
 
     # Initialize keys
     KEYS: tuple[str | tuple[str, ...], ...] = ()
 
     # Initialize indexes
     INDEXES: tuple[str | tuple[str, ...], ...] = ()
+
+    # Initialize items
+    ITEMS: Collection[Any] | Items[Any] | None = None
 
     # Initialize parents and children
     PARENTS: tuple[ItemMetaclass, ...] = ()
