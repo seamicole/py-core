@@ -67,8 +67,8 @@ class API(Item):
 
         # Check if the name ends with endpoints suffix
         if name.endswith(endpoints_suffix):
-            # Return endpoints filtered by kind
-            return self.endpoints.filter(kind=name[: -len(endpoints_suffix)])
+            # Return endpoints filtered by resource
+            return self.endpoints.filter(resource=name[: -len(endpoints_suffix)])
 
         # Rasie an AttributeError
         raise AttributeError(

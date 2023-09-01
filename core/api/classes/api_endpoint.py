@@ -36,8 +36,8 @@ class APIEndpoint(Item):
     # Declare type of API
     api: API
 
-    # Declare type of kind
-    kind: str
+    # Declare type of resource
+    resource: str
 
     # Declare type of method
     method: HTTPMethod
@@ -64,7 +64,7 @@ class APIEndpoint(Item):
     def __init__(
         self,
         api: API,
-        kind: str,
+        resource: str,
         method: HTTPMethod | str,
         url: str | None = None,
         route: str | None = None,
@@ -91,8 +91,8 @@ class APIEndpoint(Item):
         # Set API
         self.api = api
 
-        # Set kind
-        self.kind = kind.lower().strip()
+        # Set resource
+        self.resource = resource.lower().strip()
 
         # Set method
         self.method = HTTPMethod(method.upper()) if isinstance(method, str) else method
