@@ -31,6 +31,12 @@ class ClassMeta:
     # │ CLASS ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
 
+    # Initialize abstract
+    ABSTRACT: bool = False
+
+    # Initialize concrete attributes
+    CONCRETE_ATTRIBUTES: tuple[str, ...] = ()
+
     # Initialize items
     ITEMS: Collection[Any] | Items[Any] | None = None
 

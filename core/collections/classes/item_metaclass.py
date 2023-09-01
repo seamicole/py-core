@@ -12,6 +12,7 @@ from typing import Any, TYPE_CHECKING
 
 from core.collections.classes.item_meta import ClassMeta, InstanceMeta
 from core.collections.classes.items import Items
+from core.exceptions import NullAttributeError
 
 if TYPE_CHECKING:
     from core.collections.classes.item import Item
@@ -88,11 +89,26 @@ class ItemMetaclass(type):
             # Set Meta
             cls.Meta = Meta
 
+        # Ensure that concrete attributes is a tuple
+        cls.Meta.CONCRETE_ATTRIBUTES = tuple(cls.Meta.CONCRETE_ATTRIBUTES)
+
+        # Check if class is not abstract
+        if not cls.Meta.ABSTRACT:
+            # Iterate over concrete attributes
+            for attr in cls.Meta.CONCRETE_ATTRIBUTES:
+                # Check if attribute is null
+                if not getattr(cls, attr, None):
+                    # Raise NullAttributeError
+                    raise NullAttributeError(Class=cls, attr=attr)
+
         # Ensure that keys is a tuple
         cls.Meta.KEYS = tuple(cls.Meta.KEYS)
 
         # Ensure that indexes is a tuple
         cls.Meta.INDEXES = tuple(cls.Meta.INDEXES)
+
+        # Ensure that children is a tuple
+        cls.Meta.CHILDREN = tuple(cls.Meta.CHILDREN)
 
         # Initialize meta
         cls._cmeta = cls.Meta()

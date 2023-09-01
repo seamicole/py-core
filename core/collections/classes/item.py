@@ -189,6 +189,12 @@ class Item(metaclass=ItemMetaclass):
         # │ CLASS ATTRIBUTES
         # └─────────────────────────────────────────────────────────────────────────────
 
+        # Initializeabstract
+        ABSTRACT: bool = False
+
+        # Initialize concrete attributes
+        CONCRETE_ATTRIBUTES: tuple[str, ...] = ()
+
         # Initialize items
         ITEMS: Collection[Any] | Items[Any] | None = None
 

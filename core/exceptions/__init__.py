@@ -36,7 +36,7 @@ class NullAttributeError(Error):
         """Init Method"""
 
         # Set message
-        self.message = f"Attribute {Class.__name__}.{attr} should not be null."
+        self.message = f"Attribute {Class.__name__}.{attr} cannot be null."
 
         # Call super init
         super().__init__(self.message)
