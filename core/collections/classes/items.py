@@ -66,7 +66,7 @@ class Items(Generic[T]):
     # │ __ITER__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __iter__(self) -> Iterator[Item]:
+    def __iter__(self) -> Iterator[T]:
         """Iter Method"""
 
         # Yield from collection
@@ -127,7 +127,7 @@ class Items(Generic[T]):
 
     def _collect(
         self, pulled_at: datetime | None = None, expose: bool = False
-    ) -> Iterator[Item]:
+    ) -> Iterator[T]:
         """Returns an iterator of items"""
 
         # Get pulled at
@@ -152,7 +152,7 @@ class Items(Generic[T]):
     # │ _EXPOSE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def _expose(self) -> Iterator[Item]:
+    def _expose(self) -> Iterator[T]:
         """Returns an iterator of items"""
 
         # Yield from collection
@@ -282,7 +282,7 @@ class Items(Generic[T]):
     # │ KEY
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def key(self, key: Any) -> Item:
+    def key(self, key: Any) -> T:
         """Returns an item int the collection by key lookup"""
 
         # Initialize item to None

@@ -58,7 +58,7 @@ class Collection(Generic[T], ABC):
     @abstractmethod
     def collect(
         self, operations: tuple[Any, ...] = (), expose: bool = False
-    ) -> Generator[Item, None, None]:
+    ) -> Generator[T, None, None]:
         """Yields items in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
