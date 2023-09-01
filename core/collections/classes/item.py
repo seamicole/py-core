@@ -153,11 +153,14 @@ class Item(metaclass=ItemMetaclass):
         data: Any,
         path: str | None = None,
         schema: JSONSchema | None = None,
+        defaults: dict[Any, Any] | None = None,
     ) -> Generator[T, None, None]:
         """Yields items from a list of dictionaries"""
 
         # Yield from JSON object
-        yield from ofrom_json(Class=cls, data=data, path=path, schema=schema)
+        yield from ofrom_json(
+            Class=cls, data=data, path=path, schema=schema, defaults=defaults
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH

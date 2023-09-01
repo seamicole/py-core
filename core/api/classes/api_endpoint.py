@@ -51,8 +51,11 @@ class APIEndpoint(Item):
     # Declare type of JSON path
     json_path: str | None = None
 
-    # Declare type of JSON schema
+    # Declare type of JSONschema
     json_schema: JSONSchema | None
+
+    # Declare type of JSON defaults
+    json_defaults: dict[Any, Any] | None = None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -68,6 +71,7 @@ class APIEndpoint(Item):
         base_url: str | None = None,
         json_path: str | None = None,
         json_schema: JSONSchema | None = None,
+        json_defaults: dict[Any, Any] | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -118,6 +122,9 @@ class APIEndpoint(Item):
 
         # Set JSON schema
         self.json_schema = json_schema
+
+        # Set JSON defaults
+        self.json_defaults = json_defaults
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __STR__

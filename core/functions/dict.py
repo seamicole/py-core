@@ -21,14 +21,16 @@ if TYPE_CHECKING:
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def dfrom_schema(data: dict[Any, Any], schema: JSONSchema) -> dict[Any, Any]:
+def dfrom_schema(
+    data: dict[Any, Any], schema: JSONSchema, defaults: dict[Any, Any]
+) -> dict[Any, Any]:
     """Remaps a dictionary using a schema"""
 
     # Initialize root data
     root_data = data
 
     # Initialize mapped data
-    mapped_data: dict[Any, Any] = {}
+    mapped_data: dict[Any, Any] = defaults or {}
 
     # Check if schema is not None
     if schema is not None:
