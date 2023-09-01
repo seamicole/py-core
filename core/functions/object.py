@@ -8,7 +8,7 @@ from typing import Any, Generator, TypeVar
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.functions.dict import dfrom_schema, dget
+from core.functions.dict import dfrom_json
 from core.placeholders import Nothing
 from core.types import JSONSchema
 
@@ -48,27 +48,10 @@ def ofrom_json(
 ) -> Generator[T, None, None]:
     """Initializes an item from a JSON object"""
 
-    # Check if should get data from path
-    if isinstance(data, dict) and path is not None:
-        # Get data from path
-        data = dget(data, path, delimiter=".")
-
-    # Check if data is a dictionary
-    if isinstance(data, dict):
-        # Convert to list
-        data = [data]
-
-    # Check if data is a list
-    if isinstance(data, list):
-        # Iterate over data
-        for item in data:
-            # Check if schema is not None
-            if schema is not None:
-                # Get item from schema
-                item = dfrom_schema(item, schema=schema, defaults=defaults)
-
-            # Yield item from dictionary
-            yield ofrom_dict(Class=Class, data=item)
+    # Iterate over data
+    for data in dfrom_json(data=data, path=path, schema=schema, defaults=defaults):
+        # Yield item from data
+        yield ofrom_dict(Class=Class, data=data)
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

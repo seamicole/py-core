@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, Generator, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -13,7 +13,43 @@ from typing import Any, TYPE_CHECKING
 from core.placeholders import Nothing
 
 if TYPE_CHECKING:
-    from core.types import JSONSchema
+    from core.types import JSONDict, JSONSchema
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ DFROM JSON
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+def dfrom_json(
+    data: Any,
+    path: str | None = None,
+    schema: JSONSchema | None = None,
+    defaults: dict[Any, Any] | None = None,
+) -> Generator[JSONDict, None, None]:
+    """Initializes an item from a JSON object"""
+
+    # Check if should get data from path
+    if isinstance(data, dict) and path is not None:
+        # Get data from path
+        data = dget(data, path, delimiter=".")
+
+    # Check if data is a dictionary
+    if isinstance(data, dict):
+        # Convert to list
+        data = [data]
+
+    # Check if data is a list
+    if isinstance(data, list):
+        # Iterate over data
+        for item in data:
+            # Check if schema is not None
+            if schema is not None:
+                # Get item from schema
+                item = dfrom_schema(item, schema=schema, defaults=defaults)
+
+            # Yield item
+            yield item
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -22,7 +58,7 @@ if TYPE_CHECKING:
 
 
 def dfrom_schema(
-    data: dict[Any, Any], schema: JSONSchema, defaults: dict[Any, Any]
+    data: dict[Any, Any], schema: JSONSchema, defaults: dict[Any, Any] | None = None
 ) -> dict[Any, Any]:
     """Remaps a dictionary using a schema"""
 

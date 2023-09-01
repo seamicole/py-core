@@ -76,7 +76,7 @@ class ItemMetaclass(type):
             # Explicitly define Meta
             # This will ensure that attributes like ABSTRACT are not inherited
             # (see ClassMetaMetaclass)
-            class Meta(cls.Meta):
+            class Meta(cls.Meta):  # type: ignore
                 """Meta Class"""
 
             # Set Meta
@@ -85,7 +85,7 @@ class ItemMetaclass(type):
         # Otherwise, check if Meta is not a subclass of ClassMeta
         elif not issubclass(cls.Meta, ClassMeta):
             # Define a new Meta class
-            class Meta(ClassMeta):
+            class Meta(ClassMeta):  # type: ignore
                 """Meta Class"""
 
             # Iterate over attributes of Meta

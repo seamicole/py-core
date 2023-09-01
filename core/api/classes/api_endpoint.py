@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, Generator, TYPE_CHECKING
 from urllib.parse import urlparse
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -14,11 +14,14 @@ from urllib.parse import urlparse
 from core.api.classes.api_store import api_store
 from core.collections.classes.item import Item
 from core.enums import HTTPMethod
+from core.functions.dict import dfrom_json
+from core.functions.object import ofrom_json
+from core.placeholders import Nothing
 
 if TYPE_CHECKING:
     from core.api.classes.api import API
     from core.api.classes.api_response import APIResponse
-    from core.types import JSONSchema
+    from core.types import JSONDict, JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -36,11 +39,11 @@ class APIEndpoint(Item):
     # Declare type of API
     api: API
 
-    # Declare type of resource
-    resource: str
+    # Declare type of item
+    item: str
 
-    # Declare type of resource class
-    resource_class: type | None = None
+    # Declare type of item class
+    item_class: type | None = None
 
     # Declare type of method
     method: HTTPMethod
@@ -67,7 +70,7 @@ class APIEndpoint(Item):
     def __init__(
         self,
         api: API,
-        resource: str,
+        item: str,
         method: HTTPMethod | str,
         url: str | None = None,
         route: str | None = None,
@@ -75,7 +78,7 @@ class APIEndpoint(Item):
         json_path: str | None = None,
         json_schema: JSONSchema | None = None,
         json_defaults: dict[Any, Any] | None = None,
-        resource_class: type | None = None,
+        item_class: type | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -95,8 +98,8 @@ class APIEndpoint(Item):
         # Set API
         self.api = api
 
-        # Set resource
-        self.resource = resource.lower().strip()
+        # Set item
+        self.item = item.lower().strip()
 
         # Set method
         self.method = HTTPMethod(method.upper()) if isinstance(method, str) else method
@@ -130,8 +133,8 @@ class APIEndpoint(Item):
         # Set JSON defaults
         self.json_defaults = json_defaults
 
-        # Set resource class
-        self.resource_class = resource_class
+        # Set item class
+        self.item_class = item_class
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __STR__
@@ -164,6 +167,67 @@ class APIEndpoint(Item):
 
         # Return the base URL
         return self._base_url if self._base_url is not None else self.api.base_url
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FETCH ITEM DICTS
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def fetch_item_dicts(
+        self, path: Any = 0, schema: Any = 0, defaults: Any = 0
+    ) -> Generator[JSONDict, None, None]:
+        """Fetches item dicts from the endpoint"""
+
+        # Get data
+        data = self.request().json
+
+        # Yield from request JSON
+        yield from dfrom_json(
+            data=data,
+            path=path if path is None or isinstance(path, str) else self.json_path,
+            schema=schema
+            if schema is None or isinstance(schema, dict)
+            else self.json_schema,
+            defaults=defaults
+            if defaults is None or isinstance(defaults, dict)
+            else self.json_defaults,
+        )
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FETCH ITEMS
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def fetch_items(
+        self,
+        Class: Any = None,
+        path: Any = 0,
+        schema: Any = 0,
+        defaults: Any = 0,
+    ) -> Generator[Item, None, None]:
+        """Fetches items from the endpoint"""
+
+        # Get item class
+        Class = Class if Class is not None else self.item_class
+
+        # Check if item class is null
+        if Class is None:
+            # Raise TypeError
+            raise TypeError("APIEndpoint.item_class is not defined.")
+
+        # Get data
+        data = self.request().json
+
+        # Yield from request JSON
+        yield from ofrom_json(
+            Class=Class,
+            data=data,
+            path=path if path is None or isinstance(path, str) else self.json_path,
+            schema=schema
+            if schema is None or isinstance(schema, dict)
+            else self.json_schema,
+            defaults=defaults
+            if defaults is None or isinstance(defaults, dict)
+            else self.json_defaults,
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST
