@@ -20,11 +20,33 @@ if TYPE_CHECKING:
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ CLASS META METACLASS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+class ClassMetaMetaclass(type):
+    """A metaclass for the ClassMeta class"""
+
+    def __init__(
+        cls, name: str, bases: tuple[type, ...], attrs: dict[str, Any]
+    ) -> None:
+        """Init Method"""
+
+        # Call super init
+        super().__init__(name, bases, attrs)
+
+        # Check if abstract not in attrs
+        if "ABSTRACT" not in attrs:
+            # Set abstract
+            cls.ABSTRACT = False
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ CLASS META
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class ClassMeta:
+class ClassMeta(metaclass=ClassMetaMetaclass):
     """A meta class for an Item class definition"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
