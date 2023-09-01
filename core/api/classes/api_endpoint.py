@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, AsyncGenerator, Generator, TYPE_CHECKING
+from typing import Any, AsyncGenerator, Generator, TYPE_CHECKING, TypeVar
 from urllib.parse import urlparse
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -21,6 +21,12 @@ if TYPE_CHECKING:
     from core.api.classes.api import API
     from core.api.classes.api_response import APIResponse
     from core.types import JSON, JSONDict, JSONSchema
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ TYPE VARIABLES
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+T = TypeVar("T")
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -223,11 +229,11 @@ class APIEndpoint(Item):
 
     def fetch_items(
         self,
-        Class: Any = None,
+        Class: type[T] | None = None,
         path: Any = 0,
         schema: Any = 0,
         defaults: Any = 0,
-    ) -> Generator[Item, None, None]:
+    ) -> Generator[T, None, None]:
         """Fetches items from the endpoint"""
 
         # Get item class
@@ -260,7 +266,7 @@ class APIEndpoint(Item):
 
     async def fetch_items_ascync(
         self,
-        Class: Any = None,
+        Class: type[T] | None = None,
         path: Any = 0,
         schema: Any = 0,
         defaults: Any = 0,
