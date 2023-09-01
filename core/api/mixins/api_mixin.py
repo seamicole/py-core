@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -14,7 +14,7 @@ from core.api.classes.api import API
 from core.api.classes.api_endpoint import APIEndpoint
 
 if TYPE_CHECKING:
-    from core.types import Args, JSONSchema, Kwargs
+    from core.types import JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -42,7 +42,7 @@ class APIMixin:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, *args: Args, **kwargs: Kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Init Method"""
 
         # Call super init method
