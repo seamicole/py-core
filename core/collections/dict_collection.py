@@ -42,7 +42,7 @@ class DictCollection(Collection[T]):
     _item_id: int
 
     # Declare type of items by ID
-    _items_by_id: dict[int, Item]
+    _items_by_id: dict[int, T]
 
     # Declare type of item IDs by key
     _item_ids_by_key: dict[Any, int]
@@ -109,7 +109,7 @@ class DictCollection(Collection[T]):
     # │ _EXPOSE ITEM
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def _expose_item(self, item: Item) -> Item:
+    def _expose_item(self, item: T) -> T:
         """Exposes an item from the collection"""
 
         # Check if item has an ID
@@ -131,7 +131,7 @@ class DictCollection(Collection[T]):
 
     def collect(
         self, operations: tuple[Any, ...] = (), expose: bool = False
-    ) -> Generator[Item, None, None]:
+    ) -> Generator[T, None, None]:
         """Yields items in the collection"""
 
         # Initialize collected items
@@ -170,9 +170,7 @@ class DictCollection(Collection[T]):
     ) -> Items[T]:
         """Returns a filtered collection of items"""
 
-        def operation(
-            items: Generator[Item, None, None]
-        ) -> Generator[Item, None, None]:
+        def operation(items: Generator[T, None, None]) -> Generator[T, None, None]:
             """Yields items filtered from the collection"""
 
             # Iterate over items
@@ -266,8 +264,8 @@ class DictCollection(Collection[T]):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def _head(
-        self, n: int, items: Generator[Item, None, None]
-    ) -> Generator[Item, None, None]:
+        self, n: int, items: Generator[T, None, None]
+    ) -> Generator[T, None, None]:
         """Yields the first n items in the collection"""
 
         # Iterate over items
@@ -290,8 +288,8 @@ class DictCollection(Collection[T]):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def _keys(
-        self, keys: tuple[Any, ...], items: Generator[Item, None, None]
-    ) -> Generator[Item, None, None]:
+        self, keys: tuple[Any, ...], items: Generator[T, None, None]
+    ) -> Generator[T, None, None]:
         """Yields items in the collection by key lookup"""
 
         # Iterate over keys
@@ -316,7 +314,7 @@ class DictCollection(Collection[T]):
     # │ PUSH
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def push(self, item: Item) -> None:
+    def push(self, item: T) -> None:
         """Pushes an item to the collection"""
 
         # Check if item already has an ID

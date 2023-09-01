@@ -340,7 +340,7 @@ class Items(Generic[T]):
     # │ PUSH
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def push(self, item: Item) -> None:
+    def push(self, item: T) -> None:
         """Pushes an item to the collection"""
 
         # Push item to collection

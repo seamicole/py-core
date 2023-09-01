@@ -102,5 +102,5 @@ class Collection(Generic[T], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def push(self, item: Item) -> None:
+    def push(self, item: T) -> None:
         """Pushes an item to the collection"""
