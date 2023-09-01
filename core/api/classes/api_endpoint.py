@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Generator, TYPE_CHECKING
+from typing import Any, AsyncGenerator, Generator, TYPE_CHECKING
 from urllib.parse import urlparse
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -16,12 +16,11 @@ from core.collections.classes.item import Item
 from core.enums import HTTPMethod
 from core.functions.dict import dfrom_json
 from core.functions.object import ofrom_json
-from core.placeholders import Nothing
 
 if TYPE_CHECKING:
     from core.api.classes.api import API
     from core.api.classes.api_response import APIResponse
-    from core.types import JSONDict, JSONSchema
+    from core.types import JSON, JSONDict, JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -193,6 +192,32 @@ class APIEndpoint(Item):
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FETCH ITEM DICTS ASYNC
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    async def fetch_item_dicts_async(
+        self, path: Any = 0, schema: Any = 0, defaults: Any = 0
+    ) -> AsyncGenerator[JSONDict, None]:
+        """Fetches item dicts from the endpoint"""
+
+        # Get data
+        data = await self.request_json_async()
+
+        # Iterate over data
+        for item in dfrom_json(
+            data=data,
+            path=path if path is None or isinstance(path, str) else self.json_path,
+            schema=schema
+            if schema is None or isinstance(schema, dict)
+            else self.json_schema,
+            defaults=defaults
+            if defaults is None or isinstance(defaults, dict)
+            else self.json_defaults,
+        ):
+            # Yield item
+            yield item
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ FETCH ITEMS
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -214,7 +239,7 @@ class APIEndpoint(Item):
             raise TypeError("APIEndpoint.item_class is not defined.")
 
         # Get data
-        data = self.request().json
+        data = self.request_json()
 
         # Yield from request JSON
         yield from ofrom_json(
@@ -228,6 +253,45 @@ class APIEndpoint(Item):
             if defaults is None or isinstance(defaults, dict)
             else self.json_defaults,
         )
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FETCH ITEMS ASYNC
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    async def fetch_items_ascync(
+        self,
+        Class: Any = None,
+        path: Any = 0,
+        schema: Any = 0,
+        defaults: Any = 0,
+    ) -> AsyncGenerator[Item, None]:
+        """Fetches items from the endpoint"""
+
+        # Get item class
+        Class = Class if Class is not None else self.item_class
+
+        # Check if item class is null
+        if Class is None:
+            # Raise TypeError
+            raise TypeError("APIEndpoint.item_class is not defined.")
+
+        # Get data
+        data = await self.request_json_async()
+
+        # Iterate over data
+        for item in ofrom_json(
+            Class=Class,
+            data=data,
+            path=path if path is None or isinstance(path, str) else self.json_path,
+            schema=schema
+            if schema is None or isinstance(schema, dict)
+            else self.json_schema,
+            defaults=defaults
+            if defaults is None or isinstance(defaults, dict)
+            else self.json_defaults,
+        ):
+            # Yield item
+            yield item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST
@@ -250,6 +314,26 @@ class APIEndpoint(Item):
         return await self.api.request_async(
             self.method, self.route, base_url=self.base_url
         )
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ REQUEST JSON
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def request_json(self) -> JSON:
+        """Make a synchronous HTTP request to the endpoint and return JSON"""
+
+        # Return request JSON
+        return self.request().json
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ REQUEST JSON ASYNC
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    async def request_json_async(self) -> JSON:
+        """Make an asynchronous HTTP request to the endpoint and return JSON"""
+
+        # Return request JSON
+        return (await self.request_async()).json
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ META
