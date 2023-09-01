@@ -264,13 +264,13 @@ class APIEndpoint(Item):
     # │ FETCH ITEMS ASYNC
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    async def fetch_items_ascync(
+    async def fetch_items_async(
         self,
         Class: type[T] | None = None,
         path: Any = 0,
         schema: Any = 0,
         defaults: Any = 0,
-    ) -> AsyncGenerator[Item, None]:
+    ) -> AsyncGenerator[T, None]:
         """Fetches items from the endpoint"""
 
         # Get item class
