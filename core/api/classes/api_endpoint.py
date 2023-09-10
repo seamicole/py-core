@@ -124,7 +124,7 @@ class APIEndpoint(Item):
             route = url_parsed.path[1:]
 
         # Set route
-        self.route = route.lower().strip() if route else ""
+        self.route = route.strip() if route else ""
 
         # Set base URL
         self._base_url = base_url
