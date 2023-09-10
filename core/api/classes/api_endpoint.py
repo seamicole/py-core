@@ -112,7 +112,7 @@ class APIEndpoint(Item):
         # Check if URL is not null
         if url:
             # Lowercase and strip URL
-            url = url.lower().strip()
+            url = url.strip()
 
             # Parse the URL
             url_parsed = urlparse(url)
