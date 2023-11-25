@@ -1,2 +1,2 @@
 # python-core-utilities
-A repository for core Python utilities
+A core utility suite written in Python
