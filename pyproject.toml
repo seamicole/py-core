@@ -8,16 +8,18 @@ readme = "README.md"
 packages = [{include = "core"}]
 
 [tool.poetry.dependencies]
-httpx = "^0.25.2"
 python = "^3.10"
-pytz = "^2023.3"
 
 [tool.poetry.group.dev.dependencies]
 aiohttp = "^3.8.5"
 black = "^23.7.0"
+httpx = "^0.25.2"
 mypy = "^1.5.1"
 notebook = "^7.0.2"
+pytz = "^2023.3"
 types-pytz = "^2023.3.0.1"
+requests = "^2.31.0"
+types-requests = "^2.31.0.10"
 
 [build-system]
 requires = ["poetry-core"]
