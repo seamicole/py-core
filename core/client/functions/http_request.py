@@ -16,7 +16,7 @@ from core.client.enums.http_method import HTTPMethod
 
 if TYPE_CHECKING:
     from core.client.classes.http_response import HTTPResponse
-    from core.client.literals.http_method_literal import HTTPMethodLiteral
+    from core.client.types import HTTPMethodLiteral
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

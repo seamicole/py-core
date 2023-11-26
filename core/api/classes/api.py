@@ -17,7 +17,7 @@ from core.client.functions.http_request import http_request, http_request_async
 if TYPE_CHECKING:
     from core.client.classes.http_response import HTTPResponse
     from core.client.enums.http_method import HTTPMethod
-    from core.client.literals.http_method_literal import HTTPMethodLiteral
+    from core.client.types import HTTPMethodLiteral
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
