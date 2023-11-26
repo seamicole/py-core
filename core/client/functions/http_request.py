@@ -16,6 +16,7 @@ from core.client.enums.http_method import HTTPMethod
 
 if TYPE_CHECKING:
     from core.client.classes.http_response import HTTPResponse
+    from core.client.literals.http_method_literal import HTTPMethodLiteral
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
 
 
 def http_request(
-    method: HTTPMethod | str,
+    method: HTTPMethod | HTTPMethodLiteral,
     url: str,
     params: dict[str, Any] | None = None,
     headers: dict[str, Any] | None = None,
@@ -64,7 +65,7 @@ def http_request(
 
 
 async def http_request_async(
-    method: HTTPMethod | str,
+    method: HTTPMethod | HTTPMethodLiteral,
     url: str,
     params: dict[str, Any] | None = None,
     headers: dict[str, Any] | None = None,
