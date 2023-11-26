@@ -1,4 +1,11 @@
 # ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ PROJECT IMPORTS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+from core.api.classes.api import API
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ API MIXIN
 # └─────────────────────────────────────────────────────────────────────────────────────
 
@@ -12,3 +19,26 @@ class APIMixin:
 
     # Declare type of API base URL
     API_BASE_URL: str
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ INSTANCE ATTRIBUTES
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    # Initialize API cache
+    _api: API | None = None
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ API
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def api(self) -> API:
+        """Returns a cached or initialized API instance"""
+
+        # Check if cached API instance is None
+        if self._api is None:
+            # Initialize and set API instance
+            self._api = API(base_url=self.API_BASE_URL)
+
+        # Return cached API instance
+        return self._api
