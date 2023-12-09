@@ -2,6 +2,7 @@
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.client.classes.http_response import HTTPResponse as HTTPResponse  # noqa: F401
 from core.client.functions.http_get import http_get as http_get  # noqa: F401
 from core.client.functions.http_get import (  # noqa: F401
     http_get_async as http_get_async,
