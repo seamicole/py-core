@@ -2,30 +2,38 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Literal, Union
+from typing import Any
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ PROJECT IMPORTS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+from core.placeholders import Nothing
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ HTTP METHOD LITERAL
+# │ DGET
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-HTTPMethodLiteral = Literal["GET", "POST"]
 
-# ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ JSON
-# └─────────────────────────────────────────────────────────────────────────────────────
+def dget(
+    dictionary: dict[Any, Any], path: str, default: Any = Nothing, delimiter: str = "."
+) -> Any:
+    """Gets a value from a nested dictionary using a path string"""
 
-# Define a generic JSON value type
-JSONValue = str | int | float | bool | None
+    # Initialize value
+    value = default
 
-# Define a generic JSON dict type
-JSONDict = dict[str, Union[JSONValue, "JSON", list["JSON"]]]
+    # Iterate over keys
+    for key in path.split(delimiter):
+        # Check if key exists or no default is given
+        if key in dictionary or default is Nothing:
+            # Get value by key and set dictionary
+            value = dictionary = dictionary[key]
 
-# Define a generic JSON list type
-JSONList = list[Union[JSONValue, "JSON", JSONDict]]
+        # Otherwise return default
+        else:
+            return default
 
-# Define a generic JSON type
-JSON = JSONValue | JSONDict | JSONList
-
-# Define a generic JSON schema type
-JSONSchema = dict[str, str]
+    # Return value
+    return value

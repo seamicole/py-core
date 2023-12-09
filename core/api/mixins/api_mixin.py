@@ -1,8 +1,16 @@
 # ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ GENERAL IMPORTS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+from typing_extensions import NotRequired, TypedDict
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.api.classes.api import API
+from core.client.enums.http_method import HTTPMethod
+from core.client.types import HTTPMethodLiteral, JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -17,8 +25,16 @@ class APIMixin:
     # │ TYPE ALIASES
     # └─────────────────────────────────────────────────────────────────────────────────
 
+    # Define an endpoint type alias
+    class Endpoint(TypedDict):
+        method: HTTPMethod | HTTPMethodLiteral
+        path: str
+        base_url: NotRequired[str]
+        json_body: NotRequired[str]
+        json_schema: NotRequired[JSONSchema]
+
     # Define an endpoint list type alias
-    Endpoints = list[dict[str, str | dict[str, str]]] | None
+    Endpoints = list[Endpoint] | None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CLASS ATTRIBUTES

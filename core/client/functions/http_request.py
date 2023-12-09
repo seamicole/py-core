@@ -13,6 +13,7 @@ from typing import Any, TYPE_CHECKING
 from core.client.functions.http_get import http_get, http_get_async
 from core.client.functions.http_post import http_post, http_post_async
 from core.client.enums.http_method import HTTPMethod
+from core.exceptions import InvalidHTTPMethodError
 
 if TYPE_CHECKING:
     from core.client.classes.http_response import HTTPResponse
@@ -36,7 +37,16 @@ def http_request(
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
-    # Check if
+    # Check if GET
+    if method == HTTPMethod.GET or (
+        isinstance(method, str) and method.lower() == "get"
+    ):
+        # Make a GET request
+        return http_get(
+            url=url, params=params, headers=headers, cookies=cookies, timeout=timeout
+        )
+
+    # Otherwise, check if POST
     if method == HTTPMethod.POST or (
         isinstance(method, str) and method.lower() == "post"
     ):
@@ -51,12 +61,10 @@ def http_request(
             json=json,
         )
 
-    # Otherwise handle default case
+    # Otherwise, raise an exception
     else:
-        # Make a GET request
-        return http_get(
-            url=url, params=params, headers=headers, cookies=cookies, timeout=timeout
-        )
+        # Raise an InvalidHTTPMethodError exception
+        raise InvalidHTTPMethodError(method=method)
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -76,6 +84,15 @@ async def http_request_async(
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
+    # Check if GET
+    if method == HTTPMethod.GET or (
+        isinstance(method, str) and method.lower() == "get"
+    ):
+        # Make a GET request
+        return await http_get_async(
+            url=url, params=params, headers=headers, cookies=cookies, timeout=timeout
+        )
+
     # Check if
     if method == HTTPMethod.POST or (
         isinstance(method, str) and method.lower() == "post"
@@ -91,9 +108,7 @@ async def http_request_async(
             json=json,
         )
 
-    # Otherwise handle default case
+    # Otherwise, raise an exception
     else:
-        # Make a GET request
-        return await http_get_async(
-            url=url, params=params, headers=headers, cookies=cookies, timeout=timeout
-        )
+        # Raise an InvalidHTTPMethodError exception
+        raise InvalidHTTPMethodError(method=method)

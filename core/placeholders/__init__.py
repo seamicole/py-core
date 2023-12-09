@@ -1,5 +1,7 @@
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ PROJECT IMPORTS
+# │ NOTHING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.api.classes.api import API as API  # noqa: F401
+
+class Nothing:
+    """A utility class that represents nothing where None is ambiguous"""

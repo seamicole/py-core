@@ -2,30 +2,36 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Literal, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ PROJECT IMPORTS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+if TYPE_CHECKING:
+    from core.client.enums.http_method import HTTPMethod
+    from core.client.types import HTTPMethodLiteral
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ HTTP METHOD LITERAL
+# │ INVALID HTTP METHOD ERROR
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-HTTPMethodLiteral = Literal["GET", "POST"]
 
-# ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ JSON
-# └─────────────────────────────────────────────────────────────────────────────────────
+class InvalidHTTPMethodError(Exception):
+    """Raised when an invalid HTTP method is detected"""
 
-# Define a generic JSON value type
-JSONValue = str | int | float | bool | None
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __INIT__
+    # └─────────────────────────────────────────────────────────────────────────────────
 
-# Define a generic JSON dict type
-JSONDict = dict[str, Union[JSONValue, "JSON", list["JSON"]]]
+    def __init__(self, method: HTTPMethod | HTTPMethodLiteral) -> None:
+        """Init Method"""
 
-# Define a generic JSON list type
-JSONList = list[Union[JSONValue, "JSON", JSONDict]]
+        # Initialize the exception
+        super().__init__(f"Invalid HTTP method: {method}")
 
-# Define a generic JSON type
-JSON = JSONValue | JSONDict | JSONList
-
-# Define a generic JSON schema type
-JSONSchema = dict[str, str]
+        # Set the method
+        self.method = method

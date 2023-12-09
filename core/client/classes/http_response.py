@@ -11,6 +11,13 @@ if TYPE_CHECKING:
     from httpx import Response as HTTPXResponse
     from requests import Response as RequestsResponse
 
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ PROJECT IMPORTS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+if TYPE_CHECKING:
+    from core.client.types import JSONDict, JSONList, JSONValue
+
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ HTTP RESPONSE
@@ -46,6 +53,39 @@ class HTTPResponse:
 
         # Set JSON
         self.json = json
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ JSON DICT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def json_dict(self) -> JSONDict:
+        """Return the JSON response as a dictionary"""
+
+        # Return JSON as dict
+        return self.json if isinstance(self.json, dict) else {}
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ JSON LIST
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def json_list(self) -> JSONList:
+        """Return the JSON response as a list"""
+
+        # Return JSON as list
+        return self.json if isinstance(self.json, list) else []
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ JSON VALUE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def json_value(self) -> JSONValue:
+        """Return the JSON response as a value"""
+
+        # Return JSON as value
+        return self.json if not isinstance(self.json, (dict, list)) else None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ STATUS CODE
