@@ -13,7 +13,7 @@ from typing import Any, TYPE_CHECKING
 from core.client.functions.http_get import http_get, http_get_async
 from core.client.functions.http_post import http_post, http_post_async
 from core.client.enums.http_method import HTTPMethod
-from core.exceptions import InvalidHTTPMethodError
+from core.client.exceptions import InvalidHTTPMethodError
 
 if TYPE_CHECKING:
     from core.client.classes.http_response import HTTPResponse
