@@ -181,11 +181,15 @@ class Collection(Generic[AnyBound]):
 
         # Iterate over items
         for item in items:
+            # Continue if item is None
+            if item is None:
+                continue
+
             # Get item ID
             item_id = id(item)
 
             # Continue if item is not in collection
-            if item is None or item_id not in self._items_by_id:
+            if item_id not in self._items_by_id:
                 continue
 
             # Iterate over keys
