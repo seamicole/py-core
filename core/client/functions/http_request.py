@@ -37,19 +37,20 @@ def http_request(
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
+    # Check if method is a string
+    if isinstance(method, str):
+        # Convert method to HTTPMethod
+        method = HTTPMethod(method.upper())
+
     # Check if GET
-    if method == HTTPMethod.GET or (
-        isinstance(method, str) and method.lower() == "get"
-    ):
+    if method == HTTPMethod.GET:
         # Make a GET request
         return http_get(
             url=url, params=params, headers=headers, cookies=cookies, timeout=timeout
         )
 
     # Otherwise, check if POST
-    if method == HTTPMethod.POST or (
-        isinstance(method, str) and method.lower() == "post"
-    ):
+    elif method == HTTPMethod.POST:
         # Make a POST request
         return http_post(
             url=url,
@@ -84,19 +85,20 @@ async def http_request_async(
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
+    # Check if method is a string
+    if isinstance(method, str):
+        # Convert method to HTTPMethod
+        method = HTTPMethod(method.upper())
+
     # Check if GET
-    if method == HTTPMethod.GET or (
-        isinstance(method, str) and method.lower() == "get"
-    ):
+    if method == HTTPMethod.GET:
         # Make a GET request
         return await http_get_async(
             url=url, params=params, headers=headers, cookies=cookies, timeout=timeout
         )
 
     # Check if
-    if method == HTTPMethod.POST or (
-        isinstance(method, str) and method.lower() == "post"
-    ):
+    elif method == HTTPMethod.POST:
         # Make a POST request
         return await http_post_async(
             url=url,

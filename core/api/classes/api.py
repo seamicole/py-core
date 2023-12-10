@@ -13,8 +13,10 @@ from typing import Any, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.client.functions.http_request import http_request, http_request_async
+from core.collection.classes.collection import Collection
 
 if TYPE_CHECKING:
+    from core.api.classes.api_endpoint import APIEndpoint
     from core.client.classes.http_response import HTTPResponse
     from core.client.enums.http_method import HTTPMethod
     from core.client.types import HTTPMethodLiteral
@@ -26,7 +28,7 @@ if TYPE_CHECKING:
 
 
 class API:
-    """An API response utility class"""
+    """An API utility class"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -37,6 +39,9 @@ class API:
 
         # Set base url
         self.base_url = base_url
+
+        # Initialize endpoints
+        self.endpoints: Collection[APIEndpoint] = Collection()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CONSTRUCT URL
