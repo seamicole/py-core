@@ -41,7 +41,7 @@ class API:
         self.base_url = base_url
 
         # Initialize endpoints
-        self.endpoints: Collection[APIEndpoint] = Collection()
+        self.endpoints: Collection[APIEndpoint] = Collection(keys=("url",))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CONSTRUCT URL
