@@ -10,6 +10,7 @@ from typing import Any, TYPE_CHECKING
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.client.functions.http_delete import http_delete, http_delete_async
 from core.client.functions.http_get import http_get, http_get_async
 from core.client.functions.http_post import http_post, http_post_async
 from core.client.enums.http_method import HTTPMethod
@@ -62,6 +63,17 @@ def http_request(
             json=json,
         )
 
+    # Otherwise, check if DELETE
+    elif method == HTTPMethod.DELETE:
+        # Make a DELETE request
+        return http_delete(
+            url=url,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            timeout=timeout,
+        )
+
     # Otherwise, raise an exception
     else:
         # Raise an InvalidHTTPMethodError exception
@@ -97,7 +109,7 @@ async def http_request_async(
             url=url, params=params, headers=headers, cookies=cookies, timeout=timeout
         )
 
-    # Check if
+    # Otherwise, check if POST
     elif method == HTTPMethod.POST:
         # Make a POST request
         return await http_post_async(
@@ -108,6 +120,17 @@ async def http_request_async(
             timeout=timeout,
             data=data,
             json=json,
+        )
+
+    # Otherwise, check if DELETE
+    elif method == HTTPMethod.DELETE:
+        # Make a DELETE request
+        return await http_delete_async(
+            url=url,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            timeout=timeout,
         )
 
     # Otherwise, raise an exception

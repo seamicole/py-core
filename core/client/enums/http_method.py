@@ -13,6 +13,9 @@ from enum import Enum
 class HTTPMethod(Enum):
     """An HTTP method enum class"""
 
+    # Set DELETE
+    DELETE = "DELETE"
+
     # Set GET
     GET = "GET"
 
