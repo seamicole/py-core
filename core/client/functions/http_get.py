@@ -61,7 +61,7 @@ def http_get(
     try:
         # Get the response JSON
         response_json = response.json()
-    except ValueError:
+    except Exception:
         # Set the response JSON to None
         response_json = None
 
@@ -98,7 +98,7 @@ async def http_get_async(
                     # Get the response JSON
                     response_json = await response_aiohttp.json()
 
-                except ValueError:
+                except Exception:
                     # Set the response JSON to None
                     response_json = None
 
@@ -122,7 +122,7 @@ async def http_get_async(
         # Get the response JSON
         response_json = response_httpx.json()
 
-    except ValueError:
+    except Exception:
         # Set the response JSON to None
         response_json = None
 
