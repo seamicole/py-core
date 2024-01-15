@@ -44,11 +44,7 @@ class Collection(Generic[AnyBound]):
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(
-        self,
-        items: AnyBound | Iterable[AnyBound] | None = None,
-        keys: Iterable[str] | None = None,
-    ) -> None:
+    def __init__(self, keys: Iterable[str] | None = None) -> None:
         """Init Method"""
 
         # Set keys
@@ -59,9 +55,6 @@ class Collection(Generic[AnyBound]):
 
         # Initialize item IDs by key
         self._item_ids_by_key = {}
-
-        # Add items
-        self.add(items)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __GETITEM__
@@ -91,15 +84,8 @@ class Collection(Generic[AnyBound]):
     # │ ADD
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def add(self, items: AnyBound | Iterable[AnyBound] | None) -> int:
+    def add(self, *items: AnyBound) -> int:
         """Adds an item to the collection"""
-
-        # Return 0 if items is None
-        if items is None:
-            return 0
-
-        # Get items
-        items = items if isinstance(items, Iterable) else [items]
 
         # Initialize count
         count = 0
@@ -166,7 +152,7 @@ class Collection(Generic[AnyBound]):
     # │ REMOVE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def remove(self, items: AnyBound | Iterable[AnyBound] | None) -> int:
+    def remove(self, *items: AnyBound) -> int:
         """Removes an item from the collection"""
 
         # Return 0 if items is None
