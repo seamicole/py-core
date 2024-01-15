@@ -2,4 +2,4 @@
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.api.classes.api import API as API  # noqa: F401
+from core.api.classes.api import API as API  # noqa

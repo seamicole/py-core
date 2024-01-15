@@ -2,15 +2,19 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.client.types import HTTPMethod
+
 if TYPE_CHECKING:
     from core.api.classes.api import API
-    from core.client.types import HTTPMethod, HTTPMethodLiteral, JSONSchema
+    from core.client.types import HTTPMethodLiteral, JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

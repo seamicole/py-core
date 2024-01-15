@@ -10,6 +10,7 @@ from typing_extensions import NotRequired, TypedDict
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.api.classes.api import API
+from core.api.classes.api_endpoint import APIEndpoint
 from core.client.enums.http_method import HTTPMethod
 from core.client.types import HTTPMethodLiteral, JSONSchema
 
@@ -82,8 +83,14 @@ class APIMixin:
 
                 # Iterate over endpoints
                 for endpoint in endpoints:
+                    # Get endpoint kwargs
+                    endpoint_kwargs = {**endpoint}
+
+                    # Add API to kwargs
+                    endpoint_kwargs["api"] = self._api
+
                     # Add endpoint to API endpoints
-                    self._api.endpoints.add(APIEndpoint(**endpoint))
+                    self._api.endpoints.add(APIEndpoint(**endpoint_kwargs))
 
         # Return cached API instance
         return self._api

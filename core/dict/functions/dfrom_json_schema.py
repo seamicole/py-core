@@ -14,17 +14,17 @@ from core.dict.functions.dset import dset
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ DFROM SCHEMA
+# │ DFROM JSON SCHEMA
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def dfrom_schema(
+def dfrom_json_schema(
     data: dict[Any, Any],
-    schema: JSONSchema,
+    json_schema: JSONSchema,
     defaults: dict[Any, Any] | None = None,
     delimiter: str = ".",
 ) -> dict[Any, Any]:
-    """Remaps a dictionary using a schema"""
+    """Remaps a dictionary using a JSON schema"""
 
     # Initialize root data
     root_data = data
@@ -32,10 +32,10 @@ def dfrom_schema(
     # Initialize mapped data
     mapped_data: dict[Any, Any] = defaults or {}
 
-    # Check if schema is not None
-    if schema is not None:
+    # Check if JSON schema is not None
+    if json_schema is not None:
         # Iterate over schema
-        for setter, getter in (schema or {}).items():
+        for setter, getter in (json_schema or {}).items():
             # Check if getter is callable
             if callable(getter):
                 # Get value to set
