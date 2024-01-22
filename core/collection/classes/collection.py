@@ -10,7 +10,13 @@ from typing import Any, Generic, Hashable, Iterable, Iterator, TypeVar
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.collection.exceptions import DuplicateKeyError, NonExistentKeyError
+from core.collection.exceptions import (
+    DuplicateKeyError,
+    MultipleItemsError,
+    NoItemsError,
+    NonExistentKeyError,
+)
+from core.object.functions.oget import oget
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -81,6 +87,16 @@ class Collection(Generic[AnyBound]):
         return iter(self._items_by_id.values())
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __LEN__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __len__(self) -> int:
+        """Length Method"""
+
+        # Return length
+        return len(self._items_by_id)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ADD
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -135,6 +151,64 @@ class Collection(Generic[AnyBound]):
         return count
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FILTER
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def filter(self, **kwargs: Any) -> Collection[AnyBound]:
+        """Filters the collection by keyword args"""
+
+        # Initialize collection
+        collection: Collection[AnyBound] = Collection(keys=self._keys)
+
+        # Get key values
+        key_values = kwargs.items()
+
+        # Iterate over items
+        for item in self:
+            # Iterate over keyword arguments
+            for key, value in key_values:
+                # Initialize try-except block
+                try:
+                    # Get value
+                    value_actual = oget(item, key, delimiter="__")
+
+                # Break on KeyError
+                except KeyError:
+                    break
+
+                # Break if value is not equal to actual value
+                if value != value_actual:
+                    break
+
+            # Otherwise, add item to collection
+            else:
+                # Add item to collection
+                collection.add(item)
+
+        # Return collection
+        return collection
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FILTER ONLY
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def filter_only(self, **kwargs: Any) -> AnyBound:
+        """Filters the collection by keyword args and returns the only item"""
+
+        # Return item
+        return self.filter(**kwargs).only()
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FILTER ONLY OR NONE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def filter_only_or_none(self, **kwargs: Any) -> AnyBound | None:
+        """Filters the collection by keyword args and returns the only item or None"""
+
+        # Return item
+        return self.filter(**kwargs).only_or_none()
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ GET
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -147,6 +221,44 @@ class Collection(Generic[AnyBound]):
 
         # Return default
         return default
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ ONLY
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def only(self) -> AnyBound:
+        """Returns the only item in the collection"""
+
+        # Get item
+        item = self.only_or_none()
+
+        # Raise exception if item is None
+        if item is None:
+            raise NoItemsError()
+
+        # Return item
+        return item
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ ONLY OR NONE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def only_or_none(self) -> AnyBound | None:
+        """Returns the only item in the collection or None"""
+
+        # Get item count
+        item_count = len(self)
+
+        # Check if collection has more than one item
+        if item_count > 1:
+            raise MultipleItemsError(item_count)
+
+        # Return item if collection has only one item
+        if item_count == 1:
+            return next(iter(self))
+
+        # Return None
+        return None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REMOVE

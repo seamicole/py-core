@@ -12,17 +12,20 @@ from core.placeholders import Nothing
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ DGET
+# │ OGET
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def dget(
-    dictionary: dict[Any, Any], path: str, default: Any = Nothing, delimiter: str = "."
+def oget(
+    instance: object, path: str, default: Any = Nothing, delimiter: str = "."
 ) -> Any:
-    """Gets a value from a nested dictionary using a path string"""
+    """Gets a value from a nested object instance using a path string"""
 
     # Initialize value
     value = default
+
+    # Get dictionary
+    dictionary = instance.__dict__
 
     # Iterate over keys
     for key in path.split(delimiter):
