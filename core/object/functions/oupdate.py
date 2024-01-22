@@ -28,7 +28,9 @@ def oupdate(
 
     # Get source dictionary
     src_dict = {
-        k: v for k, v in instance_src.__dict__.items() if schema is None or k in schema
+        k: v
+        for k, v in instance_src.__dict__.items()
+        if k in instance_dst.__dict__ and (schema is None or k in schema)
     }
 
     # Update destination instance
