@@ -2,103 +2,118 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from __future__ import annotations
+import asyncio
 
-from typing import TYPE_CHECKING
+from typing import Any, AsyncGenerator, Generator
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.client.types import HTTPMethod
-
-if TYPE_CHECKING:
-    from core.api.classes.api import API
-    from core.client.classes.http_response import HTTPResponse
-    from core.client.types import HTTPMethodLiteral, JSONSchema
+from core.api.classes.api_endpoint import APIEndpoint
+from core.client.types import JSONDict, JSONSchema
+from core.collection.classes.dict_collection import DictCollection
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ API ENDPOINT
+# │ API ENDPOINT COLLECTION
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class APIEndpoint:
-    """An API endpoint utility class"""
+class APIEndpointCollection(DictCollection[APIEndpoint]):
+    """A dict-based collection utility class for APIEndpoint instances"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ __INIT__
+    # │ REQUEST DICTS
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(
+    def request_dicts(self) -> Generator[tuple[JSONDict, JSONSchema], None, None]:
+        """Yields a series of object dicts for all APIEndpoints in the collection"""
+
+        # Iterate over endpoints
+        for endpoint in self:
+            # Get JSON path and schema
+            json_path = endpoint.json_path
+            json_schema = endpoint.json_schema
+
+            # Continue if path or JSON schema is None
+            if json_schema is None:
+                continue
+
+            # Make request
+            response = endpoint.request()
+
+            # Iterate over items
+            for item in response.yield_dicts(
+                json_path=json_path, json_schema=json_schema
+            ):
+                yield (item, json_schema)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ REQUEST DICTS ASYNC
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    async def request_dicts_async(
         self,
-        api: API,
-        path: str,
-        method: HTTPMethod | HTTPMethodLiteral | None = None,
-        base_url: str | None = None,
-        json_path: str | None = None,
-        json_schema: JSONSchema | None = None,
-    ) -> None:
-        """Init Method"""
+    ) -> AsyncGenerator[tuple[JSONDict, JSONSchema], None]:
+        """Yields a series of object dicts for all APIEndpoints in the collection"""
 
-        # Set API
-        self.api = api
+        # Initialize requests
+        requests = []
 
-        # Set path
-        self.path = path
+        # Initialize JSON arguments
+        json_arguments = []
 
-        # Check if method is a string
-        if isinstance(method, str):
-            # Convert to HTTPMethod
-            method = HTTPMethod[method.upper()]
+        # Iterate over endpoints
+        for endpoint in self:
+            # Get JSON path and schema
+            json_path = endpoint.json_path
+            json_schema = endpoint.json_schema
 
-        # Set method
-        self.method = method
+            # Continue if path or JSON schema is None
+            if json_schema is None:
+                continue
 
-        # Set base URL
-        self.base_url = base_url
+            # Append to requests
+            requests.append(endpoint.request_async())
 
-        # Set JSON path
-        self.json_path = json_path
+            # Append to JSON arguments
+            json_arguments.append((json_path, json_schema))
 
-        # Set JSON schema
-        self.json_schema = json_schema
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ URL
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    @property
-    def url(self) -> str:
-        """Constructs and returns the API endpoint URL"""
-
-        # Construct and return URL
-        return self.api.construct_url(self.path, base_url=self.base_url)
+        # Iterate over requests
+        for response, (json_path, json_schema) in zip(
+            await asyncio.gather(*requests), json_arguments
+        ):
+            # Iterate over items
+            for item in response.yield_dicts(
+                json_path=json_path, json_schema=json_schema
+            ):
+                yield (item, json_schema)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ REQUEST
+    # │ REQUEST INSTANCES
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def request(self) -> HTTPResponse:
-        """Makes a synchronous request to the API endpoint"""
+    def request_instances(
+        self, InstanceClass: type
+    ) -> Generator[tuple[Any, JSONSchema], None, None]:
+        """Yields a series of object instances for all APIEndpoints in the collection"""
 
-        # Make request and return response
-        return self.api.request(
-            self.method or HTTPMethod.GET,
-            self.path,
-            base_url=self.base_url,
-        )
+        # Iterate over items
+        for item, json_schema in self.request_dicts():
+            # Initialize and yield instance
+            yield (InstanceClass(**item), json_schema)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ REQUEST ASYNC
+    # │ REQUEST INSTANCES ASYNC
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    async def request_async(self) -> HTTPResponse:
-        """Makes an asynchronous request to the API endpoint"""
+    async def request_instances_async(
+        self, InstanceClass: type
+    ) -> AsyncGenerator[tuple[Any, JSONSchema], None]:
+        """Yields a series of object instances for all APIEndpoints in the collection"""
 
-        # Make request and return response
-        return await self.api.request_async(
-            self.method or HTTPMethod.GET,
-            self.path,
-            base_url=self.base_url,
-        )
+        # Iterate over items
+        async for item, json_schema in self.request_dicts_async():
+            # Initialize and yield instance
+            yield (InstanceClass(**item), json_schema)

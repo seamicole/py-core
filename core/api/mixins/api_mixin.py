@@ -11,6 +11,7 @@ from typing_extensions import NotRequired, TypedDict
 
 from core.api.classes.api import API
 from core.api.classes.api_endpoint import APIEndpoint
+from core.api.classes.api_endpoint_collection import APIEndpointCollection
 from core.client.enums.http_method import HTTPMethod
 from core.client.types import HTTPMethodLiteral, JSONSchema
 
@@ -74,6 +75,16 @@ class APIMixin:
 
             # Iterate over endpoint attributes
             for endpoint_attr in endpoint_attrs:
+                # Initialize endpoint collection
+                endpoint_collection = APIEndpointCollection()
+
+                # Create endpoint collection
+                setattr(
+                    self._api,
+                    endpoint_attr.lower()[4:],
+                    endpoint_collection,
+                )
+
                 # Get endpoints
                 endpoints = getattr(self, endpoint_attr)
 
@@ -89,8 +100,14 @@ class APIMixin:
                     # Add API to kwargs
                     endpoint_kwargs["api"] = self._api
 
+                    # Initialize endpoint
+                    endpoint = APIEndpoint(**endpoint_kwargs)
+
                     # Add endpoint to API endpoints
-                    self._api.endpoints.add(APIEndpoint(**endpoint_kwargs))
+                    self._api.endpoints.find_or_add(endpoint)
+
+                    # Add endpoint to endpoint collection
+                    endpoint_collection.add(endpoint)
 
         # Return cached API instance
         return self._api

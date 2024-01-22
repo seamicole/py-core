@@ -12,6 +12,7 @@ from typing import Any, Hashable, Iterable, Iterator, TypeVar
 
 from core.collection.classes.collection import Collection
 from core.collection.exceptions import DuplicateKeyError, NonExistentKeyError
+from core.placeholders import Nothing
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ TYPE VARIABLES
@@ -33,7 +34,7 @@ class DictCollection(Collection[AnyBound]):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     # Declare type of keys
-    _keys: tuple[str, ...]
+    _keys: tuple[str | tuple[str, ...], ...]
 
     # Declare type of items by ID
     _items_by_id: dict[int, AnyBound]
@@ -42,14 +43,52 @@ class DictCollection(Collection[AnyBound]):
     _item_ids_by_key: dict[Hashable, int]
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ CREATE KEY
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @classmethod
+    def create_key(
+        cls, item: AnyBound, key: str | tuple[str, ...]
+    ) -> Any | tuple[Any, ...] | Nothing:
+        """Creates a key or tuple of keys"""
+
+        # Return item if key is a tuple
+        if not isinstance(key, tuple):
+            # Initialize value
+            value = []
+
+            # Iterate over keys
+            for k in key:
+                # Check if key is not in item
+                if k not in item.__dict__:
+                    # Return Nothing
+                    return Nothing
+
+                # Append value
+                value.append(item.__dict__[k])
+
+            # Return value
+            return tuple(value)
+
+        # Check if key is not in item
+        if key not in item.__dict__:
+            # Return Nothing
+            return Nothing
+
+        # Return key
+        return item.__dict__[key]
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, keys: Iterable[str] | None = None) -> None:
+    def __init__(self, keys: Iterable[str | Iterable[str]] | None = None) -> None:
         """Init Method"""
 
         # Set keys
-        self._keys = tuple(keys or ())
+        self._keys = tuple(
+            tuple(k) if isinstance(k, Iterable) else k for k in keys or []
+        )
 
         # Initialize items by ID
         self._items_by_id = {}
@@ -129,12 +168,12 @@ class DictCollection(Collection[AnyBound]):
 
             # Iterate over keys
             for key in self._keys:
-                # Check if key is not in item
-                if key not in item.__dict__:
-                    continue
-
                 # Get key value
-                key_value = item.__dict__[key]
+                key_value = self.create_key(item, key)
+
+                # Continue if key value is Nothing
+                if key_value is Nothing:
+                    continue
 
                 # Raise DuplicateKeyError if key value is already in collection
                 if key_value in self._item_ids_by_key:
@@ -154,6 +193,40 @@ class DictCollection(Collection[AnyBound]):
 
         # Return count
         return count
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FIND
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def find(self, item: AnyBound) -> AnyBound | Hashable | None:
+        """Finds an item in the collection"""
+
+        # Return if item is in items by ID
+        if id(item) in self._items_by_id:
+            return item
+
+        # Return if item is in item IDs by key
+        if isinstance(item, Hashable) and item in self._item_ids_by_key:
+            return self._items_by_id[self._item_ids_by_key[item]]
+
+        # Check if item has a __dict__ attribute
+        if hasattr(item, "__dict__"):
+            # Iterate over keys
+            for key in self._keys:
+                # Get value
+                value = self.create_key(item, key)
+
+                # Continue if value is Nothing
+                if value is Nothing:
+                    continue
+
+                # Check if value is in item IDs by key
+                if value in self._item_ids_by_key:
+                    # Return item
+                    return self._items_by_id[self._item_ids_by_key[value]]
+
+        # Return None
+        return None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ GET
@@ -201,12 +274,12 @@ class DictCollection(Collection[AnyBound]):
 
             # Iterate over keys
             for key in self._keys:
-                # Check if key is not in item
-                if key not in item.__dict__:
-                    continue
-
                 # Get key value
-                key_value = item.__dict__[key]
+                key_value = self.create_key(item, key)
+
+                # Continue if key value is Nothing
+                if key_value is Nothing:
+                    continue
 
                 # Check if key value is not in item IDs by key
                 if key_value not in self._item_ids_by_key:

@@ -12,11 +12,10 @@ from typing import Any, TYPE_CHECKING
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.api.classes.api_endpoint_collection import APIEndpointCollection
 from core.client.functions.http_request import http_request, http_request_async
-from core.collection.classes.dict_collection import DictCollection
 
 if TYPE_CHECKING:
-    from core.api.classes.api_endpoint import APIEndpoint
     from core.client.classes.http_response import HTTPResponse
     from core.client.enums.http_method import HTTPMethod
     from core.client.types import HTTPMethodLiteral
@@ -41,7 +40,9 @@ class API:
         self.base_url = base_url
 
         # Initialize endpoints
-        self.endpoints: DictCollection[APIEndpoint] = DictCollection(keys=("url",))
+        self.endpoints: APIEndpointCollection = APIEndpointCollection(
+            keys=("url", "method")
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CONSTRUCT URL

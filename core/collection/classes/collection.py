@@ -12,8 +12,9 @@ from typing import Any, Generic, Hashable, Iterator, TypeVar
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collection.exceptions import MultipleItemsError, NoItemsError
+from core.dict.types import DictSchema
 from core.object.functions.oget import oget
-
+from core.object.functions.oupdate import oupdate
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ TYPE VARIABLES
@@ -70,6 +71,14 @@ class Collection(Generic[AnyBound], ABC):
         """Adds an item to the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FIND
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def find(self, item: AnyBound) -> AnyBound | Hashable | None:
+        """Finds an item in the collection"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ GET
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -84,6 +93,16 @@ class Collection(Generic[AnyBound], ABC):
     @abstractmethod
     def remove(self, *items: AnyBound) -> int:
         """Removes an item from the collection"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __CONTAINS__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __contains__(self, item: AnyBound) -> bool:
+        """Contains Method"""
+
+        # Return whether item is in collection
+        return self.find(item) is not None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COUNT
@@ -152,6 +171,67 @@ class Collection(Generic[AnyBound], ABC):
 
         # Return item
         return self.filter(**kwargs).only_or_none()
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FIND AND UPDATE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def find_and_update(self, item: AnyBound, schema: DictSchema | None = None) -> int:
+        """Finds an item in the collection and updates it"""
+
+        # Get item
+        item_found = self.find(item)
+
+        # Check if item was found
+        if item_found is None:
+            return 0
+
+        # Check if item is the same
+        if id(item_found) == id(item):
+            return 1
+
+        # Update item
+        oupdate(item_found, item, schema=schema)
+
+        # Return 1
+        return 1
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FIND AND UPDATE OR ADD
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def find_and_update_or_add(
+        self, item: AnyBound, schema: DictSchema | None = None
+    ) -> int:
+        """Finds an item in the collection and updates it or adds it"""
+
+        # Find and update
+        result = self.find_and_update(item, schema=schema)
+
+        # Check if no item was updated
+        if result == 0:
+            # Add item
+            result = self.add(item)
+
+        # Return result
+        return result
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FIND OR ADD
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def find_or_add(self, item: AnyBound) -> int:
+        """Finds an item in the collection or adds it"""
+
+        # Find item
+        result = self.find(item)
+
+        # Check if item was found
+        if result is not None:
+            return 0
+
+        # Add item
+        return self.add(item)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ FIRST
