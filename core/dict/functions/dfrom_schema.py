@@ -2,37 +2,56 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Literal, Union
+from __future__ import annotations
+
+from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.client.enums.http_method import HTTPMethod as HTTPMethod  # noqa: F401
-from core.dict.types import DictSchema
+from core.dict.functions.dget import dget
+from core.dict.functions.dset import dset
+
+if TYPE_CHECKING:
+    from core.dict.types import DictSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ HTTP METHOD
+# │ DFROM SCHEMA
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-HTTPMethodLiteral = Literal["GET", "POST"]
 
-# ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ JSON
-# └─────────────────────────────────────────────────────────────────────────────────────
+def dfrom_schema(
+    data: dict[Any, Any],
+    schema: DictSchema,
+    defaults: dict[Any, Any] | None = None,
+    delimiter: str = ".",
+) -> dict[Any, Any]:
+    """Remaps a dictionary using a JSON schema"""
 
-# Define a generic JSON value type
-JSONValue = str | int | float | bool | None
+    # Initialize root data
+    root_data = data
 
-# Define a generic JSON dict type
-JSONDict = dict[str, Union[JSONValue, "JSON", list["JSON"]]]
+    # Initialize mapped data
+    mapped_data: dict[Any, Any] = defaults or {}
 
-# Define a generic JSON list type
-JSONList = list[Union[JSONValue, "JSON", JSONDict]]
+    # Check if JSON schema is not None
+    if schema is not None:
+        # Iterate over schema
+        for setter, getter in (schema or {}).items():
+            # Check if getter is callable
+            if callable(getter):
+                # Get value to set
+                value_to_set = getter(root_data, data)
 
-# Define a generic JSON type
-JSON = JSONValue | JSONDict | JSONList
+            # Otherwise handle case of string path
+            else:
+                # Get value to set
+                value_to_set = dget(data, getter, delimiter=delimiter)
 
-# Define a generic JSON schema type
-JSONSchema = DictSchema
+            # Set value to set to mapped data
+            dset(mapped_data, setter, value_to_set, delimiter=delimiter)
+
+    # Return mapped data
+    return mapped_data

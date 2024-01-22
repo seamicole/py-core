@@ -2,52 +2,34 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.client.types import JSONSchema
-from core.dict.functions.dget import dget
-from core.dict.functions.dset import dset
+if TYPE_CHECKING:
+    from core.dict.types import DictSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ DFROM JSON SCHEMA
+# │ OUPDATE
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def dfrom_json_schema(
-    data: dict[Any, Any],
-    json_schema: JSONSchema,
-    defaults: dict[Any, Any] | None = None,
-    delimiter: str = ".",
-) -> dict[Any, Any]:
-    """Remaps a dictionary using a JSON schema"""
+def oupdate(
+    instance_dst: object,
+    instance_src: object,
+    schema: DictSchema | None = None,
+) -> None:
+    """Updates an instance with the values from another instance"""
 
-    # Initialize root data
-    root_data = data
+    # Get source dictionary
+    src_dict = {
+        k: v for k, v in instance_src.__dict__.items() if schema is None or k in schema
+    }
 
-    # Initialize mapped data
-    mapped_data: dict[Any, Any] = defaults or {}
-
-    # Check if JSON schema is not None
-    if json_schema is not None:
-        # Iterate over schema
-        for setter, getter in (json_schema or {}).items():
-            # Check if getter is callable
-            if callable(getter):
-                # Get value to set
-                value_to_set = getter(root_data, data)
-
-            # Otherwise handle case of string path
-            else:
-                # Get value to set
-                value_to_set = dget(data, getter, delimiter=delimiter)
-
-            # Set value to set to mapped data
-            dset(mapped_data, setter, value_to_set, delimiter=delimiter)
-
-    # Return mapped data
-    return mapped_data
+    # Update destination instance
+    instance_dst.__dict__.update(src_dict)
