@@ -2,4 +2,6 @@
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.collection.classes.collection import Collection as Collection  # noqa: F401
+from core.collection.classes.dict_collection import (  # noqa: F401
+    DictCollection as DictCollection,
+)

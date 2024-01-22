@@ -13,7 +13,7 @@ from typing import Any, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.client.functions.http_request import http_request, http_request_async
-from core.collection.classes.collection import Collection
+from core.collection.classes.dict_collection import DictCollection
 
 if TYPE_CHECKING:
     from core.api.classes.api_endpoint import APIEndpoint
@@ -41,7 +41,7 @@ class API:
         self.base_url = base_url
 
         # Initialize endpoints
-        self.endpoints: Collection[APIEndpoint] = Collection(keys=("url",))
+        self.endpoints: DictCollection[APIEndpoint] = DictCollection(keys=("url",))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CONSTRUCT URL
