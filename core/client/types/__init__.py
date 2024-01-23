@@ -9,6 +9,7 @@ from typing import Literal, Union
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.client.enums.http_method import HTTPMethod as HTTPMethod  # noqa: F401
+from core.dict.types import DictSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -34,4 +35,4 @@ JSONList = list[Union[JSONValue, "JSON", JSONDict]]
 JSON = JSONValue | JSONDict | JSONList
 
 # Define a generic JSON schema type
-JSONSchema = DictSchema = dict[str, str]
+JSONSchema = DictSchema
