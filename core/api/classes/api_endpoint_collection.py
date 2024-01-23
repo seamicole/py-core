@@ -13,6 +13,8 @@ from typing import Any, AsyncGenerator, Generator
 from core.api.classes.api_endpoint import APIEndpoint
 from core.client.types import JSONDict, JSONSchema
 from core.collection.classes.dict_collection import DictCollection
+from core.placeholders import nothing
+from core.placeholders.types import Nothing
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -27,27 +29,31 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
     # │ REQUEST DICTS
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def request_dicts(self) -> Generator[tuple[JSONDict, JSONSchema], None, None]:
+    def request_dicts(
+        self,
+        json_path: str | None | Nothing = nothing,
+        json_schema: JSONSchema | None | Nothing = nothing,
+        with_schema: bool = False,
+    ) -> Generator[JSONDict | tuple[JSONDict, JSONSchema | None], None, None]:
         """Yields a series of object dicts for all APIEndpoints in the collection"""
 
         # Iterate over endpoints
         for endpoint in self:
             # Get JSON path and schema
-            json_path = endpoint.json_path
-            json_schema = endpoint.json_schema
-
-            # Continue if path or JSON schema is None
-            if json_schema is None:
-                continue
-
-            # Make request
-            response = endpoint.request()
+            json_path = (
+                endpoint.json_path if isinstance(json_path, Nothing) else json_path
+            )
+            json_schema = (
+                endpoint.json_schema
+                if isinstance(json_schema, Nothing)
+                else json_schema
+            )
 
             # Iterate over items
-            for item in response.yield_dicts(
+            for item in endpoint.request_dicts(
                 json_path=json_path, json_schema=json_schema
             ):
-                yield (item, json_schema)
+                yield (item, json_schema) if with_schema else item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST DICTS ASYNC
@@ -55,7 +61,10 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
 
     async def request_dicts_async(
         self,
-    ) -> AsyncGenerator[tuple[JSONDict, JSONSchema], None]:
+        json_path: str | None | Nothing = nothing,
+        json_schema: JSONSchema | None | Nothing = nothing,
+        with_schema: bool = False,
+    ) -> AsyncGenerator[JSONDict | tuple[JSONDict, JSONSchema | None], None]:
         """Yields a series of object dicts for all APIEndpoints in the collection"""
 
         # Initialize requests
@@ -67,12 +76,14 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
         # Iterate over endpoints
         for endpoint in self:
             # Get JSON path and schema
-            json_path = endpoint.json_path
-            json_schema = endpoint.json_schema
-
-            # Continue if path or JSON schema is None
-            if json_schema is None:
-                continue
+            json_path = (
+                endpoint.json_path if isinstance(json_path, Nothing) else json_path
+            )
+            json_schema = (
+                endpoint.json_schema
+                if isinstance(json_schema, Nothing)
+                else json_schema
+            )
 
             # Append to requests
             requests.append(endpoint.request_async())
@@ -88,32 +99,65 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
             for item in response.yield_dicts(
                 json_path=json_path, json_schema=json_schema
             ):
-                yield (item, json_schema)
+                yield (item, json_schema) if with_schema else item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST INSTANCES
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def request_instances(
-        self, InstanceClass: type
-    ) -> Generator[tuple[Any, JSONSchema], None, None]:
+        self,
+        InstanceClass: type,
+        json_path: str | None | Nothing = nothing,
+        json_schema: JSONSchema | None | Nothing = nothing,
+        with_schema: bool = False,
+    ) -> Generator[Any, None, None]:
         """Yields a series of object instances for all APIEndpoints in the collection"""
 
-        # Iterate over items
-        for item, json_schema in self.request_dicts():
-            # Initialize and yield instance
-            yield (InstanceClass(**item), json_schema)
+        # Iterate over endpoints
+        for endpoint in self:
+            # Get JSON path and schema
+            json_path = (
+                endpoint.json_path if isinstance(json_path, Nothing) else json_path
+            )
+            json_schema = (
+                endpoint.json_schema
+                if isinstance(json_schema, Nothing)
+                else json_schema
+            )
+
+            # Iterate over instances
+            for instance in endpoint.request_instances(
+                InstanceClass=InstanceClass,
+                json_path=json_path,
+                json_schema=json_schema,
+            ):
+                # Yield instance
+                yield (instance, json_schema) if with_schema else instance
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST INSTANCES ASYNC
     # └─────────────────────────────────────────────────────────────────────────────────
 
     async def request_instances_async(
-        self, InstanceClass: type
-    ) -> AsyncGenerator[tuple[Any, JSONSchema], None]:
+        self,
+        InstanceClass: type,
+        json_path: str | None | Nothing = nothing,
+        json_schema: JSONSchema | None | Nothing = nothing,
+        with_schema: bool = False,
+    ) -> AsyncGenerator[Any | tuple[Any, JSONSchema], None]:
         """Yields a series of object instances for all APIEndpoints in the collection"""
 
         # Iterate over items
-        async for item, json_schema in self.request_dicts_async():
-            # Initialize and yield instance
-            yield (InstanceClass(**item), json_schema)
+        async for item in self.request_dicts_async(
+            json_path=json_path, json_schema=json_schema, with_schema=with_schema
+        ):
+            # Check if with schema
+            if isinstance(item, tuple):
+                # Yield instance
+                yield (InstanceClass(**item[0]), item[1])
+
+            # Otherwise, yield instance
+            else:
+                # Initialize and yield instance
+                yield InstanceClass(**item)

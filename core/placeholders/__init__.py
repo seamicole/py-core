@@ -1,7 +1,12 @@
 # ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ PROJECT IMPORTS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+from core.placeholders.classes.nothing import Nothing
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ NOTHING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-
-class Nothing:
-    """A utility class that represents nothing where None is ambiguous"""
+# Initialize an instance of Nothing
+nothing = Nothing()

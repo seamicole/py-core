@@ -12,7 +12,7 @@ from typing import Any, Hashable, Iterable, Iterator, TypeVar
 
 from core.collection.classes.collection import Collection
 from core.collection.exceptions import DuplicateKeyError, NonExistentKeyError
-from core.placeholders import Nothing
+from core.placeholders import nothing
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ TYPE VARIABLES
@@ -49,11 +49,11 @@ class DictCollection(Collection[AnyBound]):
     @classmethod
     def create_key(
         cls, item: AnyBound, key: str | tuple[str, ...]
-    ) -> Any | tuple[Any, ...] | Nothing:
+    ) -> Any | tuple[Any, ...]:
         """Creates a key or tuple of keys"""
 
         # Return item if key is a tuple
-        if not isinstance(key, tuple):
+        if isinstance(key, tuple):
             # Initialize value
             value = []
 
@@ -61,8 +61,8 @@ class DictCollection(Collection[AnyBound]):
             for k in key:
                 # Check if key is not in item
                 if k not in item.__dict__:
-                    # Return Nothing
-                    return Nothing
+                    # Return nothing
+                    return nothing
 
                 # Append value
                 value.append(item.__dict__[k])
@@ -72,8 +72,8 @@ class DictCollection(Collection[AnyBound]):
 
         # Check if key is not in item
         if key not in item.__dict__:
-            # Return Nothing
-            return Nothing
+            # Return nothing
+            return nothing
 
         # Return key
         return item.__dict__[key]
@@ -171,8 +171,8 @@ class DictCollection(Collection[AnyBound]):
                 # Get key value
                 key_value = self.create_key(item, key)
 
-                # Continue if key value is Nothing
-                if key_value is Nothing:
+                # Continue if key value is nothing
+                if key_value == nothing:
                     continue
 
                 # Raise DuplicateKeyError if key value is already in collection
@@ -216,8 +216,8 @@ class DictCollection(Collection[AnyBound]):
                 # Get value
                 value = self.create_key(item, key)
 
-                # Continue if value is Nothing
-                if value is Nothing:
+                # Continue if value is nothing
+                if value == nothing:
                     continue
 
                 # Check if value is in item IDs by key
@@ -277,8 +277,8 @@ class DictCollection(Collection[AnyBound]):
                 # Get key value
                 key_value = self.create_key(item, key)
 
-                # Continue if key value is Nothing
-                if key_value is Nothing:
+                # Continue if key value is nothing
+                if key_value == nothing:
                     continue
 
                 # Check if key value is not in item IDs by key

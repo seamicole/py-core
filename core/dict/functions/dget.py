@@ -8,7 +8,7 @@ from typing import Any
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.placeholders import Nothing
+from core.placeholders import nothing
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ from core.placeholders import Nothing
 
 
 def dget(
-    dictionary: dict[Any, Any], path: str, default: Any = Nothing, delimiter: str = "."
+    dictionary: dict[Any, Any], path: str, default: Any = nothing, delimiter: str = "."
 ) -> Any:
     """Gets a value from a nested dictionary using a path string"""
 
@@ -27,7 +27,7 @@ def dget(
     # Iterate over keys
     for key in path.split(delimiter):
         # Check if key exists or no default is given
-        if key in dictionary or default is Nothing:
+        if key in dictionary or default == nothing:
             # Get value by key and set dictionary
             value = dictionary = dictionary[key]
 
