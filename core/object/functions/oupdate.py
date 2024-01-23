@@ -36,19 +36,34 @@ def oupdate(
 
     # Iterate over the schema
     for key in schema or instance_src.__dict__:
-        # Get new value
-        new_value = oget(instance_src, path=key, default=unfound, delimiter=delimiter)
+        # Get keys
+        keys = key if isinstance(key, (tuple, list)) else (key,)
 
-        # Continue if new value is not found
-        if new_value is unfound:
-            continue
+        # Iterate over keys
+        for key in keys:
+            # Get new value
+            new_value = oget(
+                instance_src, path=key, default=unfound, delimiter=delimiter
+            )
 
-        # Get old value
-        old_value = oget(instance_dst, path=key, default=unfound, delimiter=delimiter)
+            # Continue if new value is not found
+            if new_value is unfound:
+                continue
 
-        # Continue if old value is not found
-        if old_value is unfound:
-            continue
+            # Get old value
+            old_value = oget(
+                instance_dst, path=key, default=unfound, delimiter=delimiter
+            )
 
-        # Set value
-        oset(instance_dst, path=key, value=new_value, delimiter=delimiter, insert=False)
+            # Continue if old value is not found
+            if old_value is unfound:
+                continue
+
+            # Set value
+            oset(
+                instance_dst,
+                path=key,
+                value=new_value,
+                delimiter=delimiter,
+                insert=False,
+            )

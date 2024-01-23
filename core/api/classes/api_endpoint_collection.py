@@ -40,10 +40,10 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
         # Iterate over endpoints
         for endpoint in self:
             # Get JSON path and schema
-            json_path = (
+            json_path_endpoint = (
                 endpoint.json_path if isinstance(json_path, Nothing) else json_path
             )
-            json_schema = (
+            json_schema_endpoint = (
                 endpoint.json_schema
                 if isinstance(json_schema, Nothing)
                 else json_schema
@@ -51,9 +51,9 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
 
             # Iterate over items
             for item in endpoint.request_dicts(
-                json_path=json_path, json_schema=json_schema
+                json_path=json_path_endpoint, json_schema=json_schema_endpoint
             ):
-                yield (item, json_schema) if with_schema else item
+                yield (item, json_schema_endpoint) if with_schema else item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST DICTS ASYNC
@@ -76,10 +76,10 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
         # Iterate over endpoints
         for endpoint in self:
             # Get JSON path and schema
-            json_path = (
+            json_path_endpoint = (
                 endpoint.json_path if isinstance(json_path, Nothing) else json_path
             )
-            json_schema = (
+            json_schema_endpoint = (
                 endpoint.json_schema
                 if isinstance(json_schema, Nothing)
                 else json_schema
@@ -89,17 +89,17 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
             requests.append(endpoint.request_async())
 
             # Append to JSON arguments
-            json_arguments.append((json_path, json_schema))
+            json_arguments.append((json_path_endpoint, json_schema_endpoint))
 
         # Iterate over requests
-        for response, (json_path, json_schema) in zip(
+        for response, (json_path_endpoint, json_schema_endpoint) in zip(
             await asyncio.gather(*requests), json_arguments
         ):
             # Iterate over items
             for item in response.yield_dicts(
-                json_path=json_path, json_schema=json_schema
+                json_path=json_path_endpoint, json_schema=json_schema_endpoint
             ):
-                yield (item, json_schema) if with_schema else item
+                yield (item, json_schema_endpoint) if with_schema else item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST INSTANCES
@@ -117,10 +117,10 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
         # Iterate over endpoints
         for endpoint in self:
             # Get JSON path and schema
-            json_path = (
+            json_path_endpoint = (
                 endpoint.json_path if isinstance(json_path, Nothing) else json_path
             )
-            json_schema = (
+            json_schema_endpoint = (
                 endpoint.json_schema
                 if isinstance(json_schema, Nothing)
                 else json_schema
@@ -129,11 +129,11 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
             # Iterate over instances
             for instance in endpoint.request_instances(
                 InstanceClass=InstanceClass,
-                json_path=json_path,
-                json_schema=json_schema,
+                json_path=json_path_endpoint,
+                json_schema=json_schema_endpoint,
             ):
                 # Yield instance
-                yield (instance, json_schema) if with_schema else instance
+                yield (instance, json_schema_endpoint) if with_schema else instance
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST INSTANCES ASYNC

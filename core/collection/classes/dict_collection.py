@@ -60,23 +60,23 @@ class DictCollection(Collection[AnyBound]):
             # Iterate over keys
             for k in key:
                 # Check if key is not in item
-                if k not in item.__dict__:
+                if not hasattr(item, k):
                     # Return nothing
                     return nothing
 
                 # Append value
-                value.append(item.__dict__[k])
+                value.append(getattr(item, k))
 
             # Return value
             return tuple(value)
 
         # Check if key is not in item
-        if key not in item.__dict__:
+        if not hasattr(item, key):
             # Return nothing
             return nothing
 
         # Return key
-        return item.__dict__[key]
+        return getattr(item, key)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__

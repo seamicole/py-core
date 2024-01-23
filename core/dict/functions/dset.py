@@ -29,7 +29,7 @@ def dset(
         # Iterate over zip of path and value to set
         for path_i, value_i in zip(path, value):
             # Remap data
-            dset(dictionary, path_i, value_i)
+            dset(dictionary, path_i, value_i, insert=insert)
 
     # Otherwise, handle case of string path
     elif isinstance(path, str):

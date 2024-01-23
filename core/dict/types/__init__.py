@@ -10,4 +10,4 @@ from typing import Any, Callable
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 # Define a dict schema type
-DictSchema = dict[str, str | Callable[[Any, Any], Any]]
+DictSchema = dict[str | tuple[str, ...], str | Callable[[Any, Any], Any]]
