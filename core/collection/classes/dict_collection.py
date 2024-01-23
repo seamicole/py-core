@@ -87,7 +87,8 @@ class DictCollection(Collection[AnyBound]):
 
         # Set keys
         self._keys = tuple(
-            tuple(k) if isinstance(k, Iterable) else k for k in keys or []
+            tuple(k) if isinstance(k, Iterable) and not isinstance(k, str) else k
+            for k in keys or []
         )
 
         # Initialize items by ID
@@ -198,7 +199,7 @@ class DictCollection(Collection[AnyBound]):
     # │ FIND
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def find(self, item: AnyBound) -> AnyBound | Hashable | None:
+    def find(self, item: AnyBound) -> AnyBound | None:
         """Finds an item in the collection"""
 
         # Return if item is in items by ID

@@ -75,7 +75,7 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def find(self, item: AnyBound) -> AnyBound | Hashable | None:
+    def find(self, item: AnyBound) -> AnyBound | None:
         """Finds an item in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
