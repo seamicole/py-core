@@ -172,7 +172,7 @@ class DictCollection(Collection[AnyBound]):
                 key_value = self.create_key(item, key)
 
                 # Continue if key value is nothing
-                if key_value == nothing:
+                if key_value is nothing:
                     continue
 
                 # Raise DuplicateKeyError if key value is already in collection
@@ -217,7 +217,7 @@ class DictCollection(Collection[AnyBound]):
                 value = self.create_key(item, key)
 
                 # Continue if value is nothing
-                if value == nothing:
+                if value is nothing:
                     continue
 
                 # Check if value is in item IDs by key
@@ -278,7 +278,7 @@ class DictCollection(Collection[AnyBound]):
                 key_value = self.create_key(item, key)
 
                 # Continue if key value is nothing
-                if key_value == nothing:
+                if key_value is nothing:
                     continue
 
                 # Check if key value is not in item IDs by key

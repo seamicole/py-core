@@ -10,6 +10,10 @@ from typing import TYPE_CHECKING
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.placeholders.classes.nothing import Nothing
+from core.object.functions.oget import oget
+from core.object.functions.oset import oset
+
 if TYPE_CHECKING:
     from core.dict.types import DictSchema
 
@@ -23,15 +27,28 @@ def oupdate(
     instance_dst: object,
     instance_src: object,
     schema: DictSchema | None = None,
+    delimiter: str = ".",
 ) -> None:
     """Updates an instance with the values from another instance"""
 
-    # Get source dictionary
-    src_dict = {
-        k: v
-        for k, v in instance_src.__dict__.items()
-        if k in instance_dst.__dict__ and (schema is None or k in schema)
-    }
+    # Initialize an unfound instance
+    unfound = Nothing()
 
-    # Update destination instance
-    instance_dst.__dict__.update(src_dict)
+    # Iterate over the schema
+    for key in schema or instance_src.__dict__:
+        # Get new value
+        new_value = oget(instance_src, path=key, default=unfound, delimiter=delimiter)
+
+        # Continue if new value is not found
+        if new_value is unfound:
+            continue
+
+        # Get old value
+        old_value = oget(instance_dst, path=key, default=unfound, delimiter=delimiter)
+
+        # Continue if old value is not found
+        if old_value is unfound:
+            continue
+
+        # Set value
+        oset(instance_dst, path=key, value=new_value, delimiter=delimiter, insert=False)

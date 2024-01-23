@@ -9,6 +9,7 @@ from typing import Any
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.placeholders import nothing
+from core.dict.functions.dget import dget
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -21,27 +22,5 @@ def oget(
 ) -> Any:
     """Gets a value from a nested object instance using a path string"""
 
-    # Initialize value
-    value = default
-
-    # Get dictionary
-    dictionary = instance.__dict__
-
-    # Iterate over keys
-    for key in path.split(delimiter):
-        # Check if key exists or no default is given
-        if key in dictionary or default == nothing:
-            # Get value by key and set dictionary
-            value = dictionary = dictionary[key]
-
-            # Check if not a dictionary
-            if not isinstance(dictionary, dict) and hasattr(dictionary, "__dict__"):
-                # Set dictionary
-                dictionary = dictionary.__dict__
-
-        # Otherwise return default
-        else:
-            return default
-
     # Return value
-    return value
+    return dget(instance.__dict__, path=path, default=default, delimiter=delimiter)

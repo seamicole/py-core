@@ -11,7 +11,11 @@ from typing import Any
 
 
 def dset(
-    dictionary: dict[Any, Any], path: Any, value: Any, delimiter: str = "."
+    dictionary: dict[Any, Any],
+    path: Any,
+    value: Any,
+    delimiter: str = ".",
+    insert: bool = False,
 ) -> None:
     """Sets a value in a nested dictionary using a path string"""
 
@@ -35,12 +39,21 @@ def dset(
         # Iterate over keys
         for key in keys[:-1]:
             # Check if key exists
-            if key not in dictionary:
+            if insert and key not in dictionary:
                 # Set key to empty dictionary
                 dictionary[key] = {}
 
             # Get value by key
             dictionary = dictionary[key]
+
+            # Check if not a dictionary
+            if not isinstance(dictionary, dict) and hasattr(dictionary, "__dict__"):
+                # Set dictionary
+                dictionary = dictionary.__dict__
+
+        # Check if insert is False
+        if not insert:
+            dictionary[keys[-1]]
 
         # Set value by last key
         dictionary[keys[-1]] = value

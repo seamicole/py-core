@@ -27,7 +27,7 @@ def dget(
     # Iterate over keys
     for key in path.split(delimiter):
         # Check if key exists or no default is given
-        if key in dictionary or default == nothing:
+        if key in dictionary or default is nothing:
             # Get value by key and set dictionary
             value = dictionary = dictionary[key]
 
