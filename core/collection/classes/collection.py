@@ -168,13 +168,40 @@ class Collection(Generic[AnyBound], ABC):
         # Initialize collection
         collection: Collection[AnyBound] = self.New()
 
-        # Get key values
-        key_values = kwargs.items()
+        # Initialize conditions
+        conditions = []
+
+        # Iterate over keyword arguments
+        for key, value in kwargs.items():
+            # Check if greater than or equal to
+            if key.endswith("__gte"):
+                # Add condition
+                conditions.append((key[:-5], value, "__gte"))
+
+            # Otherwise, check if greater than
+            elif key.endswith("__gt"):
+                # Add condition
+                conditions.append((key[:-4], value, "__gt"))
+
+            # Otherwise, check if less than or equal to
+            elif key.endswith("__lte"):
+                # Add condition
+                conditions.append((key[:-5], value, "__lte"))
+
+            # Otherwise, check if less than
+            elif key.endswith("__lt"):
+                # Add condition
+                conditions.append((key[:-4], value, "__lt"))
+
+            # Otherwise, handle general equality
+            else:
+                # Add condition
+                conditions.append((key, value, "__eq"))
 
         # Iterate over items
         for item in self:
             # Iterate over keyword arguments
-            for key, value in key_values:
+            for key, value, operator in conditions:
                 # Initialize try-except block
                 try:
                     # Get value
@@ -184,9 +211,35 @@ class Collection(Generic[AnyBound], ABC):
                 except KeyError:
                     break
 
-                # Break if value is not equal to actual value
-                if value != value_actual:
-                    break
+                # Check if operator is greater than or equal to
+                if operator == "__gte":
+                    # Break if value is less than actual value
+                    if value_actual < value:
+                        break
+
+                # Otherwise, check if operator is greater than
+                elif operator == "__gt":
+                    # Break if value is less than or equal to actual value
+                    if value_actual <= value:
+                        break
+
+                # Otherwise, check if operator is less than or equal to
+                elif operator == "__lte":
+                    # Break if value is greater than actual value
+                    if value_actual > value:
+                        break
+
+                # Otherwise, check if operator is less than
+                elif operator == "__lt":
+                    # Break if value is greater than or equal to actual value
+                    if value_actual >= value:
+                        break
+
+                # Otherwise, handle general equality
+                else:
+                    # Break if value is not equal to actual value
+                    if value != value_actual:
+                        break
 
             # Otherwise, add item to collection
             else:
