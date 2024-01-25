@@ -55,6 +55,14 @@ class Collection(Generic[AnyBound], ABC):
         """Length Method"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __REVERSED__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def __reversed__(self) -> Iterator[AnyBound]:
+        """Reversed Method"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ NEW
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -103,6 +111,42 @@ class Collection(Generic[AnyBound], ABC):
 
         # Return whether item is in collection
         return self.find(item) is not None
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __REPR__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __repr__(self) -> str:
+        """Representation Method"""
+
+        # Get item count
+        item_count = len(self)
+
+        # Initialize representation
+        representation = f"{self.__class__.__name__}: {item_count} ["
+
+        # Iterate over items
+        for i, item in enumerate(self):
+            # Add item representation to representation
+            representation += repr(item)
+
+            # Check if should truncate
+            if i > 19:
+                representation += " ...(remaining elements truncated)... "
+                break
+
+            # Check if should add a comma
+            if i < item_count - 1:
+                representation += ", "
+
+        # Close square brackets
+        representation += "]"
+
+        # Add angle brackets to the representation
+        representation = f"<{representation}>"
+
+        # Return representation
+        return representation
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COUNT
@@ -246,6 +290,20 @@ class Collection(Generic[AnyBound], ABC):
 
         # Return first item
         return next(iter(self))
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ LAST
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def last(self) -> AnyBound | None:
+        """Returns the last item in the collection"""
+
+        # Check if collection is empty
+        if self.count() == 0:
+            return None
+
+        # Return last item
+        return next(reversed(self))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ONLY

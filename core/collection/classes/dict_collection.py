@@ -132,6 +132,18 @@ class DictCollection(Collection[AnyBound]):
         return len(self._items_by_id)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __REVERSED__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __reversed__(self) -> Iterator[AnyBound]:
+        """Reversed Method"""
+
+        # Iterate over reversed keys
+        for key in reversed(self._items_by_id):
+            # Yield item
+            yield self._items_by_id[key]
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ NEW
     # └─────────────────────────────────────────────────────────────────────────────────
 
