@@ -12,6 +12,7 @@ from typing import Any, Generic, Hashable, Iterator, TypeVar
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collection.exceptions import MultipleItemsError, NoItemsError
+from core.collection.functions.filter_conditions import get_filter_conditions
 from core.dict.types import DictSchema
 from core.object.functions.oget import oget
 from core.object.functions.oupdate import oupdate
@@ -169,39 +170,12 @@ class Collection(Generic[AnyBound], ABC):
         collection: Collection[AnyBound] = self.New()
 
         # Initialize conditions
-        conditions = []
-
-        # Iterate over keyword arguments
-        for key, value in kwargs.items():
-            # Check if greater than or equal to
-            if key.endswith("__gte"):
-                # Add condition
-                conditions.append((key[:-5], value, "__gte"))
-
-            # Otherwise, check if greater than
-            elif key.endswith("__gt"):
-                # Add condition
-                conditions.append((key[:-4], value, "__gt"))
-
-            # Otherwise, check if less than or equal to
-            elif key.endswith("__lte"):
-                # Add condition
-                conditions.append((key[:-5], value, "__lte"))
-
-            # Otherwise, check if less than
-            elif key.endswith("__lt"):
-                # Add condition
-                conditions.append((key[:-4], value, "__lt"))
-
-            # Otherwise, handle general equality
-            else:
-                # Add condition
-                conditions.append((key, value, "__eq"))
+        conditions = list(get_filter_conditions(kwargs))
 
         # Iterate over items
         for item in self:
             # Iterate over keyword arguments
-            for key, value, operator in conditions:
+            for key, value, operator, checker in conditions:
                 # Initialize try-except block
                 try:
                     # Get value
@@ -211,35 +185,9 @@ class Collection(Generic[AnyBound], ABC):
                 except KeyError:
                     break
 
-                # Check if operator is greater than or equal to
-                if operator == "__gte":
-                    # Break if value is less than actual value
-                    if value_actual < value:
-                        break
-
-                # Otherwise, check if operator is greater than
-                elif operator == "__gt":
-                    # Break if value is less than or equal to actual value
-                    if value_actual <= value:
-                        break
-
-                # Otherwise, check if operator is less than or equal to
-                elif operator == "__lte":
-                    # Break if value is greater than actual value
-                    if value_actual > value:
-                        break
-
-                # Otherwise, check if operator is less than
-                elif operator == "__lt":
-                    # Break if value is greater than or equal to actual value
-                    if value_actual >= value:
-                        break
-
-                # Otherwise, handle general equality
-                else:
-                    # Break if value is not equal to actual value
-                    if value != value_actual:
-                        break
+                # Break if condition not met
+                if checker(value_actual, value) is False:
+                    break
 
             # Otherwise, add item to collection
             else:
