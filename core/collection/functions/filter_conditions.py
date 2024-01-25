@@ -14,6 +14,7 @@ from core.collection.functions.filter_checkers import (
     check_gte,
     check_lt,
     check_lte,
+    check_ieq,
     check_iin,
     check_in,
 )
@@ -25,10 +26,12 @@ from core.collection.functions.filter_checkers import (
 
 # Define operators
 OPERATORS = (
+    ("__eq", 4, check_eq),
     ("__gt", 4, check_gt),
     ("__gte", 5, check_gte),
     ("__lt", 4, check_lt),
     ("__lte", 5, check_lte),
+    ("__ieq", 5, check_ieq),
     ("__in", 4, check_in),
     ("__iin", 5, check_iin),
 )

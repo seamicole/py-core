@@ -4,6 +4,7 @@
 
 import asyncio
 
+from copy import deepcopy
 from typing import Any, AsyncGenerator, Generator
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -53,7 +54,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
             for item in endpoint.request_dicts(
                 json_path=json_path_endpoint, json_schema=json_schema_endpoint
             ):
-                yield (item, json_schema_endpoint) if with_schema else item
+                yield (item, deepcopy(json_schema_endpoint)) if with_schema else item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST DICTS ASYNC
@@ -99,7 +100,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
             for item in response.yield_dicts(
                 json_path=json_path_endpoint, json_schema=json_schema_endpoint
             ):
-                yield (item, json_schema_endpoint) if with_schema else item
+                yield (item, deepcopy(json_schema_endpoint)) if with_schema else item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST INSTANCES
@@ -133,7 +134,10 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
                 json_schema=json_schema_endpoint,
             ):
                 # Yield instance
-                yield (instance, json_schema_endpoint) if with_schema else instance
+                yield (
+                    instance,
+                    deepcopy(json_schema_endpoint),
+                ) if with_schema else instance
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST INSTANCES ASYNC
