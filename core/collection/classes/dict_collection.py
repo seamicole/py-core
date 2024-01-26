@@ -147,11 +147,16 @@ class DictCollection(Collection[AnyBound]):
     # │ NEW
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def New(self) -> DictCollection[AnyBound]:
+    def New(self, *args: Any, **kwargs: Any) -> DictCollection[AnyBound]:
         """Returns a new collection"""
 
+        # Check if keys not in kwargs
+        if "keys" not in kwargs:
+            # Add keys to kwargs
+            kwargs["keys"] = self._keys
+
         # Return new collection
-        return DictCollection(keys=self._keys)
+        return DictCollection(*args, **kwargs)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ADD

@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any, Generic, Hashable, Iterator, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -68,7 +69,7 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def New(self) -> Collection[AnyBound]:
+    def New(self, *args: Any, **kwargs: Any) -> Collection[AnyBound]:
         """Returns a new collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -114,6 +115,33 @@ class Collection(Generic[AnyBound], ABC):
         return self.find(item) is not None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __OR__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __or__(self, other: AnyBound) -> Collection[AnyBound]:
+        """Or Method"""
+
+        # Check if other is not a Collection instance
+        if not isinstance(other, Collection):
+            # Raise TypeError
+            raise TypeError(
+                "Unsupported operand type(s) for |: 'Collection' and '{}'".format(
+                    type(other).__name__
+                )
+            )
+
+        # Make a shallow copy of the collection
+        collection: Collection[AnyBound] = self.copy_shallow()
+
+        # Iterate over other collection
+        for item in other:
+            # Add to collection
+            collection.add(item)
+
+        # Return collection
+        return collection
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -148,6 +176,42 @@ class Collection(Generic[AnyBound], ABC):
 
         # Return representation
         return representation
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ COPY DEEP
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def copy_deep(self) -> Collection[AnyBound]:
+        """Returns a deep copy of the collection"""
+
+        # Initialize collection
+        collection: Collection[AnyBound] = self.New()
+
+        # Iterate over the collection
+        for item in self:
+            # Add item to collection
+            collection.add(deepcopy(item))
+
+        # Return collection
+        return collection
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ COPY SHALLOW
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def copy_shallow(self) -> Collection[AnyBound]:
+        """Returns a shallow copy of the collection"""
+
+        # Initialize collection
+        collection: Collection[AnyBound] = self.New()
+
+        # Iterate over the collection
+        for item in self:
+            # Add item to collection
+            collection.add(item)
+
+        # Return collection
+        return collection
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COUNT
