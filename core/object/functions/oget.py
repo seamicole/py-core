@@ -40,7 +40,7 @@ def oget(
             else:
                 return default
 
-        # Otherwise check if object
+        # Otherwise handle object
         else:
             # Check if attribute exists or no default is given
             if hasattr(instance, key) or default is nothing:
