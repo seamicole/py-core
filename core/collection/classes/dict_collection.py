@@ -82,14 +82,21 @@ class DictCollection(Collection[AnyBound]):
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, keys: Iterable[str | Iterable[str]] | None = None) -> None:
+    def __init__(self, keys: Iterable[str | Iterable[str]] | str | None = None) -> None:
         """Init Method"""
 
-        # Set keys
-        self._keys = tuple(
-            tuple(k) if isinstance(k, Iterable) and not isinstance(k, str) else k
-            for k in keys or []
-        )
+        # Check if keys is a string
+        if isinstance(keys, str):
+            # Convert to tuple
+            self._keys = (keys,)
+
+        # Otherwise handle normal case
+        else:
+            # Set keys
+            self._keys = tuple(
+                tuple(k) if isinstance(k, Iterable) and not isinstance(k, str) else k
+                for k in keys or []
+            )
 
         # Initialize items by ID
         self._items_by_id = {}
