@@ -8,7 +8,7 @@ from typing import Any
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.object.functions.lowercase import lowercase
+from core.object.functions.olower import olower
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ def check_ieq(actual: Any, expected: Any) -> bool:
     """
 
     # Lowercase expected and actual
-    expected, actual = (lowercase(expected), lowercase(actual))
+    expected, actual = (olower(expected), olower(actual))
 
     # Initialize try-except block
     try:
@@ -144,7 +144,7 @@ def check_iin(actual: Any, expected: Any) -> bool:
     """Checks whether an actual value is in an expected value (case-insensitive)"""
 
     # Lowercase expected and actual
-    expected, actual = (lowercase(expected), lowercase(actual))
+    expected, actual = (olower(expected), olower(actual))
 
     # Initialize try-except block
     try:

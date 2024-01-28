@@ -18,7 +18,7 @@ from core.placeholders import nothing
 # │ TYPE VARIABLES
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-AnyBound = TypeVar("AnyBound", bound=Any)
+ItemBound = TypeVar("ItemBound", bound=Any)
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -26,7 +26,7 @@ AnyBound = TypeVar("AnyBound", bound=Any)
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class DictCollection(Collection[AnyBound]):
+class DictCollection(Collection[ItemBound]):
     """A dict-based collection utility class for Python object instances"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ class DictCollection(Collection[AnyBound]):
     _keys: tuple[str | tuple[str, ...], ...]
 
     # Declare type of items by ID
-    _items_by_id: dict[int, AnyBound]
+    _items_by_id: dict[int, ItemBound]
 
     # Declare type of item IDs by key
     _item_ids_by_key: dict[Hashable, int]
@@ -48,7 +48,7 @@ class DictCollection(Collection[AnyBound]):
 
     @classmethod
     def create_key(
-        cls, item: AnyBound, key: str | tuple[str, ...]
+        cls, item: ItemBound, key: str | tuple[str, ...]
     ) -> Any | tuple[Any, ...]:
         """Creates a key or tuple of keys"""
 
@@ -108,7 +108,7 @@ class DictCollection(Collection[AnyBound]):
     # │ __GETITEM__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __getitem__(self, key_value: Hashable) -> AnyBound:
+    def __getitem__(self, key_value: Hashable) -> ItemBound:
         """Get Item Method"""
 
         # Raise NonExistentKeyError if key value is not in collection
@@ -122,7 +122,7 @@ class DictCollection(Collection[AnyBound]):
     # │ __ITER__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __iter__(self) -> Iterator[AnyBound]:
+    def __iter__(self) -> Iterator[ItemBound]:
         """Iterate Method"""
 
         # Return iterator
@@ -142,7 +142,7 @@ class DictCollection(Collection[AnyBound]):
     # │ __REVERSED__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __reversed__(self) -> Iterator[AnyBound]:
+    def __reversed__(self) -> Iterator[ItemBound]:
         """Reversed Method"""
 
         # Iterate over reversed keys
@@ -154,7 +154,7 @@ class DictCollection(Collection[AnyBound]):
     # │ NEW
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def New(self, *args: Any, **kwargs: Any) -> DictCollection[AnyBound]:
+    def New(self, *args: Any, **kwargs: Any) -> DictCollection[ItemBound]:
         """Returns a new collection"""
 
         # Check if keys not in kwargs
@@ -169,7 +169,7 @@ class DictCollection(Collection[AnyBound]):
     # │ ADD
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def add(self, *items: AnyBound) -> int:
+    def add(self, *items: ItemBound) -> int:
         """Adds an item to the collection"""
 
         # Initialize count
@@ -223,7 +223,7 @@ class DictCollection(Collection[AnyBound]):
     # │ FIND
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def find(self, item: AnyBound) -> AnyBound | None:
+    def find(self, item: Any | ItemBound) -> ItemBound | None:
         """Finds an item in the collection"""
 
         # Return if item is in items by ID
@@ -257,7 +257,7 @@ class DictCollection(Collection[AnyBound]):
     # │ GET
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def get(self, key: Hashable, default: AnyBound | None = None) -> AnyBound | None:
+    def get(self, key: Hashable, default: ItemBound | None = None) -> ItemBound | None:
         """Gets an item from the collection by key"""
 
         # Return item if key is in collection
@@ -271,7 +271,7 @@ class DictCollection(Collection[AnyBound]):
     # │ REMOVE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def remove(self, *items: AnyBound) -> int:
+    def remove(self, *items: ItemBound) -> int:
         """Removes an item from the collection"""
 
         # Return 0 if items is None

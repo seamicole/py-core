@@ -22,14 +22,14 @@ from core.object.functions.oupdate import oupdate
 # │ TYPE VARIABLES
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-AnyBound = TypeVar("AnyBound", bound=Any)
+ItemBound = TypeVar("ItemBound", bound=Any)
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ COLLECTION
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class Collection(Generic[AnyBound], ABC):
+class Collection(Generic[ItemBound], ABC):
     """A collection utility class for Python object instances"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def __getitem__(self, key_value: Hashable) -> AnyBound:
+    def __getitem__(self, key_value: Hashable) -> ItemBound:
         """Get Item Method"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def __iter__(self) -> Iterator[AnyBound]:
+    def __iter__(self) -> Iterator[ItemBound]:
         """Iterate Method"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -61,7 +61,7 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def __reversed__(self) -> Iterator[AnyBound]:
+    def __reversed__(self) -> Iterator[ItemBound]:
         """Reversed Method"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def New(self, *args: Any, **kwargs: Any) -> Collection[AnyBound]:
+    def New(self, *args: Any, **kwargs: Any) -> Collection[ItemBound]:
         """Returns a new collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -77,7 +77,7 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def add(self, *items: AnyBound) -> int:
+    def add(self, *items: ItemBound) -> int:
         """Adds an item to the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def find(self, item: AnyBound) -> AnyBound | None:
+    def find(self, item: ItemBound) -> ItemBound | None:
         """Finds an item in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -93,7 +93,7 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def get(self, key: Hashable, default: AnyBound | None = None) -> AnyBound | None:
+    def get(self, key: Hashable, default: ItemBound | None = None) -> ItemBound | None:
         """Gets an item from the collection by key"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -101,14 +101,14 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def remove(self, *items: AnyBound) -> int:
+    def remove(self, *items: ItemBound) -> int:
         """Removes an item from the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __CONTAINS__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __contains__(self, item: AnyBound) -> bool:
+    def __contains__(self, item: ItemBound) -> bool:
         """Contains Method"""
 
         # Return whether item is in collection
@@ -118,7 +118,7 @@ class Collection(Generic[AnyBound], ABC):
     # │ __OR__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __or__(self, other: AnyBound) -> Collection[AnyBound]:
+    def __or__(self, other: ItemBound) -> Collection[ItemBound]:
         """Or Method"""
 
         # Check if other is not a Collection instance
@@ -131,7 +131,7 @@ class Collection(Generic[AnyBound], ABC):
             )
 
         # Make a shallow copy of the collection
-        collection: Collection[AnyBound] = self.copy_shallow()
+        collection: Collection[ItemBound] = self.copy_shallow()
 
         # Iterate over other collection
         for item in other:
@@ -181,11 +181,11 @@ class Collection(Generic[AnyBound], ABC):
     # │ COPY DEEP
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def copy_deep(self) -> Collection[AnyBound]:
+    def copy_deep(self) -> Collection[ItemBound]:
         """Returns a deep copy of the collection"""
 
         # Initialize collection
-        collection: Collection[AnyBound] = self.New()
+        collection: Collection[ItemBound] = self.New()
 
         # Iterate over the collection
         for item in self:
@@ -199,11 +199,11 @@ class Collection(Generic[AnyBound], ABC):
     # │ COPY SHALLOW
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def copy_shallow(self) -> Collection[AnyBound]:
+    def copy_shallow(self) -> Collection[ItemBound]:
         """Returns a shallow copy of the collection"""
 
         # Initialize collection
-        collection: Collection[AnyBound] = self.New()
+        collection: Collection[ItemBound] = self.New()
 
         # Iterate over the collection
         for item in self:
@@ -227,11 +227,11 @@ class Collection(Generic[AnyBound], ABC):
     # │ FILTER
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def filter(self, **kwargs: Any) -> Collection[AnyBound]:
+    def filter(self, **kwargs: Any) -> Collection[ItemBound]:
         """Filters the collection by keyword args"""
 
         # Initialize collection
-        collection: Collection[AnyBound] = self.New()
+        collection: Collection[ItemBound] = self.New()
 
         # Initialize conditions
         conditions = list(get_filter_conditions(kwargs))
@@ -265,7 +265,7 @@ class Collection(Generic[AnyBound], ABC):
     # │ FILTER ONLY
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def filter_only(self, **kwargs: Any) -> AnyBound:
+    def filter_only(self, **kwargs: Any) -> ItemBound:
         """Filters the collection by keyword args and returns the only item"""
 
         # Return item
@@ -275,7 +275,7 @@ class Collection(Generic[AnyBound], ABC):
     # │ FILTER ONLY OR NONE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def filter_only_or_none(self, **kwargs: Any) -> AnyBound | None:
+    def filter_only_or_none(self, **kwargs: Any) -> ItemBound | None:
         """Filters the collection by keyword args and returns the only item or None"""
 
         # Return item
@@ -285,7 +285,7 @@ class Collection(Generic[AnyBound], ABC):
     # │ FIND AND UPDATE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def find_and_update(self, item: AnyBound, schema: DictSchema | None = None) -> int:
+    def find_and_update(self, item: ItemBound, schema: DictSchema | None = None) -> int:
         """Finds an item in the collection and updates it"""
 
         # Get item
@@ -310,7 +310,7 @@ class Collection(Generic[AnyBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def find_and_update_or_add(
-        self, item: AnyBound, schema: DictSchema | None = None
+        self, item: ItemBound, schema: DictSchema | None = None
     ) -> int:
         """Finds an item in the collection and updates it or adds it"""
 
@@ -329,7 +329,7 @@ class Collection(Generic[AnyBound], ABC):
     # │ FIND OR ADD
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def find_or_add(self, item: AnyBound) -> int:
+    def find_or_add(self, item: ItemBound) -> int:
         """Finds an item in the collection or adds it"""
 
         # Find item
@@ -346,7 +346,7 @@ class Collection(Generic[AnyBound], ABC):
     # │ FIRST
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def first(self) -> AnyBound | None:
+    def first(self) -> ItemBound | None:
         """Returns the first item in the collection"""
 
         # Check if collection is empty
@@ -360,7 +360,7 @@ class Collection(Generic[AnyBound], ABC):
     # │ LAST
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def last(self) -> AnyBound | None:
+    def last(self) -> ItemBound | None:
         """Returns the last item in the collection"""
 
         # Check if collection is empty
@@ -374,7 +374,7 @@ class Collection(Generic[AnyBound], ABC):
     # │ ONLY
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def only(self) -> AnyBound:
+    def only(self) -> ItemBound:
         """Returns the only item in the collection"""
 
         # Get item
@@ -391,7 +391,7 @@ class Collection(Generic[AnyBound], ABC):
     # │ ONLY OR NONE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def only_or_none(self) -> AnyBound | None:
+    def only_or_none(self) -> ItemBound | None:
         """Returns the only item in the collection or None"""
 
         # Get item count
