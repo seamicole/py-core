@@ -137,7 +137,7 @@ class Collection(Generic[ItemBound], ABC):
     # │ __CONTAINS__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __contains__(self, item: ItemBound) -> bool:
+    def __contains__(self, item: Any) -> bool:
         """Contains Method"""
 
         # Return whether item is in collection
