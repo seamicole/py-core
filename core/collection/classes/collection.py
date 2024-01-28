@@ -105,6 +105,35 @@ class Collection(Generic[ItemBound], ABC):
         """Removes an item from the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __AND__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __and__(self, other: ItemBound) -> Collection[ItemBound]:
+        """And Method"""
+
+        # Check if other is not a Collection instance
+        if not isinstance(other, Collection):
+            # Raise TypeError
+            raise TypeError(
+                "Unsupported operand type(s) for &: 'Collection' and '{}'".format(
+                    type(other).__name__
+                )
+            )
+
+        # Initialize collection
+        collection = self.New()
+
+        # Iterate over collection
+        for item in self:
+            # Continue if item is in other collection
+            if item in other:
+                # Add item to collection
+                collection.add(item)
+
+        # Return collection
+        return collection
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __CONTAINS__
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -135,6 +164,10 @@ class Collection(Generic[ItemBound], ABC):
 
         # Iterate over other collection
         for item in other:
+            # Continue if item already in collection
+            if item in collection:
+                continue
+
             # Add to collection
             collection.add(item)
 

@@ -79,14 +79,6 @@ def oagg(
             elif key == "all":
                 value = all(values)
 
-            # Otherwise check if concat
-            elif key.startswith("concat-"):
-                # Get separator
-                sep = key.split("concat-")[1]
-
-                # Get unique values
-                value = sep.join(values)
-
             # Otherwise check if concat unique
             elif key.startswith("concat-unique-"):
                 # Get separator
@@ -94,6 +86,14 @@ def oagg(
 
                 # Get unique values
                 value = sep.join(sorted(set(values)))
+
+            # Otherwise check if concat
+            elif key.startswith("concat-"):
+                # Get separator
+                sep = key.split("concat-")[1]
+
+                # Get unique values
+                value = sep.join(values)
 
             # Otherwise raise error
             else:

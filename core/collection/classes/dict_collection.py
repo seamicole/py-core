@@ -12,6 +12,7 @@ from typing import Any, Hashable, Iterable, Iterator, TypeVar
 
 from core.collection.classes.collection import Collection
 from core.collection.exceptions import DuplicateKeyError, NonExistentKeyError
+from core.object.functions.oget import oget
 from core.placeholders import nothing
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -65,7 +66,7 @@ class DictCollection(Collection[ItemBound]):
                     return nothing
 
                 # Append value
-                value.append(getattr(item, k))
+                value.append(oget(item, k))
 
             # Return value
             return tuple(value)
