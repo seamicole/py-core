@@ -113,11 +113,6 @@ class APIEndpoint:
     ) -> HTTPResponse:
         """Makes a synchronous request to the API endpoint"""
 
-        # Get params schema
-        params_schema = (
-            params_schema if params_schema is not None else self.params_schema
-        )
-
         # Check if params and params schema
         if params and params_schema is not None:
             # Apply schema to params
@@ -142,11 +137,6 @@ class APIEndpoint:
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API endpoint"""
 
-        # Get params schema
-        params_schema = (
-            params_schema if params_schema is not None else self.params_schema
-        )
-
         # Check if params and params schema
         if params and params_schema is not None:
             # Apply schema to params
@@ -169,6 +159,7 @@ class APIEndpoint:
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
+        overrides: dict[str, Any] | None = None,
     ) -> JSONDict | None:
         """Yields an object dict from the current API endpoint"""
 
@@ -181,8 +172,16 @@ class APIEndpoint:
             self.json_schema if isinstance(json_schema, Nothing) else json_schema
         )
 
-        # Iterate over items
-        return response.dict(json_path=json_path, json_schema=json_schema)
+        # Get response dict
+        response_dict = response.dict(json_path=json_path, json_schema=json_schema)
+
+        # Check if overrides
+        if response_dict is not None and overrides is not None:
+            # Update response dict
+            response_dict.update(overrides)
+
+        # Return response dict
+        return response_dict
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST DICTS
@@ -193,6 +192,7 @@ class APIEndpoint:
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
+        overrides: dict[str, Any] | None = None,
     ) -> Generator[JSONDict, None, None]:
         """Yields a series of object dicts from the current API endpoint"""
 
@@ -207,6 +207,12 @@ class APIEndpoint:
 
         # Iterate over items
         for item in response.dicts(json_path=json_path, json_schema=json_schema):
+            # Check if overrides
+            if item is not None and overrides is not None:
+                # Update item
+                item.update(overrides)
+
+            # Yield item
             yield item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -218,6 +224,7 @@ class APIEndpoint:
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
+        overrides: dict[str, Any] | None = None,
     ) -> JSONDict | None:
         """Yields an object dict from the current API endpoint"""
 
@@ -230,8 +237,16 @@ class APIEndpoint:
             self.json_schema if isinstance(json_schema, Nothing) else json_schema
         )
 
-        # Iterate over items
-        return response.dict(json_path=json_path, json_schema=json_schema)
+        # Get response dict
+        response_dict = response.dict(json_path=json_path, json_schema=json_schema)
+
+        # Check if overrides
+        if response_dict is not None and overrides is not None:
+            # Update response dict
+            response_dict.update(overrides)
+
+        # Return response dict
+        return response_dict
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST DICTS ASYNC
@@ -242,6 +257,7 @@ class APIEndpoint:
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
+        overrides: dict[str, Any] | None = None,
     ) -> AsyncGenerator[JSONDict, None]:
         """Yields a series of object dicts from the current API endpoint"""
 
@@ -256,6 +272,12 @@ class APIEndpoint:
 
         # Iterate over items
         for item in response.dicts(json_path=json_path, json_schema=json_schema):
+            # Check if overrides
+            if item is not None and overrides is not None:
+                # Update item
+                item.update(overrides)
+
+            # Yield item
             yield item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -268,6 +290,7 @@ class APIEndpoint:
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
+        overrides: dict[str, Any] | None = None,
     ) -> T | None:
         """Yields a series of object instances from the current API endpoint"""
 
@@ -279,7 +302,10 @@ class APIEndpoint:
 
         # Get item
         item = self.request_dict(
-            json_path=json_path, json_schema=json_schema, params=params
+            json_path=json_path,
+            json_schema=json_schema,
+            params=params,
+            overrides=overrides,
         )
 
         # Return if item is None
@@ -299,6 +325,7 @@ class APIEndpoint:
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
+        overrides: dict[str, Any] | None = None,
     ) -> Generator[T, None, None]:
         """Yields a series of object instances from the current API endpoint"""
 
@@ -310,7 +337,10 @@ class APIEndpoint:
 
         # Iterate over items
         for item in self.request_dicts(
-            json_path=json_path, json_schema=json_schema, params=params
+            json_path=json_path,
+            json_schema=json_schema,
+            params=params,
+            overrides=overrides,
         ):
             # Initialize and yield instance
             yield InstanceClass(**item)
@@ -325,6 +355,7 @@ class APIEndpoint:
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
+        overrides: dict[str, Any] | None = None,
     ) -> T | None:
         """Yields a series of object instances from the current API endpoint"""
 
@@ -336,7 +367,10 @@ class APIEndpoint:
 
         # Get item
         item = await self.request_dict_async(
-            json_path=json_path, json_schema=json_schema, params=params
+            json_path=json_path,
+            json_schema=json_schema,
+            params=params,
+            overrides=overrides,
         )
 
         # Return if item is None
@@ -356,6 +390,7 @@ class APIEndpoint:
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
+        overrides: dict[str, Any] | None = None,
     ) -> AsyncGenerator[T, None]:
         """Yields a series of object instances from the current API endpoint"""
 
@@ -367,7 +402,10 @@ class APIEndpoint:
 
         # Iterate over items
         async for item in self.request_dicts_async(
-            json_path=json_path, json_schema=json_schema, params=params
+            json_path=json_path,
+            json_schema=json_schema,
+            params=params,
+            overrides=overrides,
         ):
             # Initialize and yield instance
             yield InstanceClass(**item)

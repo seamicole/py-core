@@ -192,7 +192,6 @@ class API:
 
         # Get URL
         url = self.construct_url(*path, base_url=base_url)
-        print(params)
 
         # Make request and return response
         return http_request(

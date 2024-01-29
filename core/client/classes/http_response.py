@@ -140,8 +140,6 @@ class HTTPResponse:
         if not isinstance(item, dict):
             return
 
-        print(item)
-
         # Return item
         return (
             dfrom_schema(item, schema=json_schema, delimiter=".")
