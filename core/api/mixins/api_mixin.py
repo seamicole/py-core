@@ -73,6 +73,33 @@ class APIMixin:
             endpoint_attrs = [
                 attr
                 for attr in dir(self)
+                if attr.startswith("API_") and attr.endswith("_ENDPOINT")
+            ]
+
+            # Iterate over endpoint attributes
+            for endpoint_attr in endpoint_attrs:
+                # Get endpoint
+                endpoint = getattr(self, endpoint_attr)
+
+                # Get endpoint kwargs
+                endpoint_kwargs = {**endpoint}
+
+                # Add API to kwargs
+                endpoint_kwargs["api"] = self._api
+
+                # Initialize endpoint
+                endpoint = APIEndpoint(**endpoint_kwargs)
+
+                # Add endpoint to API endpoints
+                self._api.endpoints.find_or_add(endpoint)
+
+                # Set endpoint
+                setattr(self._api, endpoint_attr.lower()[4:], endpoint)
+
+            # Get endpoint attributes
+            endpoint_attrs = [
+                attr
+                for attr in dir(self)
                 if attr.startswith("API_") and attr.endswith("_ENDPOINTS")
             ]
 
