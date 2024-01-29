@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Generator, TYPE_CHECKING
+from typing import Any, Generator, TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse as AioHTTPResponse
@@ -21,6 +21,12 @@ from core.dict.functions.dfrom_schema import dfrom_schema
 
 if TYPE_CHECKING:
     from core.client.types import JSONDict, JSONList, JSONValue
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ TYPE VARIABLES
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+T = TypeVar("T")
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -107,10 +113,45 @@ class HTTPResponse:
         return self._obj.status_code
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ YIELD DICTS
+    # │ DICT
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def yield_dicts(
+    def dict(
+        self, json_path: str | None = None, json_schema: JSONSchema | None = None
+    ) -> JSONDict | None:
+        """Yields a series of dicts from the response"""
+
+        # Get response JSON
+        response_json = self.json
+
+        # Continue if response JSON is None
+        if response_json is None:
+            return None
+
+        # Set item to response JSON
+        item = response_json
+
+        # Check if JSON path is not None
+        if json_path is not None and isinstance(response_json, dict):
+            # Set item to JSON path
+            item = dget(response_json, json_path)
+
+        # Continue if item is not a list
+        if not isinstance(item, dict):
+            return
+
+        # Return item
+        return (
+            dfrom_schema(item, schema=json_schema, delimiter=".")
+            if json_schema is not None
+            else item
+        )
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ DICTS
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def dicts(
         self, json_path: str | None = None, json_schema: JSONSchema | None = None
     ) -> Generator[JSONDict, None, None]:
         """Yields a series of dicts from the response"""
@@ -142,18 +183,40 @@ class HTTPResponse:
             ) if json_schema is not None else item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ YIELD INSTANCES
+    # │ INSTANCE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def yield_instances(
+    def instance(
         self,
-        InstanceClass: type,
+        InstanceClass: type[T],
         json_path: str | None = None,
         json_schema: JSONSchema | None = None,
-    ) -> Generator[Any, None, None]:
+    ) -> T | None:
+        """Yields a series of instances from the response"""
+
+        # Get item
+        item = self.dict(json_path=json_path, json_schema=json_schema)
+
+        # Return if item is None
+        if item is None:
+            return None
+
+        # Initialize and return instance
+        return InstanceClass(**item)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ INSTANCES
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def instances(
+        self,
+        InstanceClass: type[T],
+        json_path: str | None = None,
+        json_schema: JSONSchema | None = None,
+    ) -> Generator[T, None, None]:
         """Yields a series of instances from the response"""
 
         # Iterate over dicts
-        for item in self.yield_dicts(json_path=json_path, json_schema=json_schema):
+        for item in self.dicts(json_path=json_path, json_schema=json_schema):
             # Initialize and yield instance
             yield InstanceClass(**item)

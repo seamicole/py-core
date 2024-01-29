@@ -3,6 +3,7 @@
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from collections.abc import Iterable
+from typing import Any
 from typing_extensions import NotRequired, TypedDict
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -35,6 +36,8 @@ class APIMixin:
         base_url: NotRequired[str]
         json_path: NotRequired[str]
         json_schema: NotRequired[JSONSchema]
+        params: NotRequired[dict[str, Any]]
+        params_schema: NotRequired[dict[str, str]]
 
     # Define an endpoint list type alias
     Endpoints = list[Endpoint] | None
