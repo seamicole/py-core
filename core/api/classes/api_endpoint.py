@@ -113,6 +113,11 @@ class APIEndpoint:
     ) -> HTTPResponse:
         """Makes a synchronous request to the API endpoint"""
 
+        # Get params schema
+        params_schema = (
+            params_schema if params_schema is not None else self.params_schema
+        )
+
         # Check if params and params schema
         if params and params_schema is not None:
             # Apply schema to params
@@ -136,6 +141,11 @@ class APIEndpoint:
         params_schema: dict[str, str] | None = None,
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API endpoint"""
+
+        # Get params schema
+        params_schema = (
+            params_schema if params_schema is not None else self.params_schema
+        )
 
         # Check if params and params schema
         if params and params_schema is not None:

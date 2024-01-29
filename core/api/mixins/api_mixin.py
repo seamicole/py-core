@@ -81,6 +81,10 @@ class APIMixin:
                 # Get endpoint
                 endpoint = getattr(self, endpoint_attr)
 
+                # Continue if null
+                if not endpoint:
+                    continue
+
                 # Get endpoint kwargs
                 endpoint_kwargs = {**endpoint}
 
@@ -124,6 +128,10 @@ class APIMixin:
 
                 # Iterate over endpoints
                 for endpoint in endpoints:
+                    # Continue if null
+                    if not endpoint:
+                        continue
+
                     # Get endpoint kwargs
                     endpoint_kwargs = {**endpoint}
 
