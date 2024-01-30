@@ -13,6 +13,7 @@ from typing import Any, Hashable, Iterable, Iterator, TypeVar
 from core.collection.classes.collection import Collection
 from core.collection.exceptions import DuplicateKeyError, NonExistentKeyError
 from core.object.functions.oget import oget
+from core.object.functions.ohasattr import ohasattr
 from core.placeholders import nothing
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -61,7 +62,7 @@ class DictCollection(Collection[ItemBound]):
             # Iterate over keys
             for k in key:
                 # Check if key is not in item
-                if not hasattr(item, k):
+                if not ohasattr(item, k):
                     # Return nothing
                     return nothing
 
@@ -72,12 +73,12 @@ class DictCollection(Collection[ItemBound]):
             return tuple(value)
 
         # Check if key is not in item
-        if not hasattr(item, key):
+        if not ohasattr(item, key):
             # Return nothing
             return nothing
 
         # Return key
-        return getattr(item, key)
+        return oget(item, key)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
