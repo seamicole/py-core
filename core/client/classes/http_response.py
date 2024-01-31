@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import re
+
 from typing import Any, Generator, TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
@@ -44,6 +46,9 @@ class HTTPResponse:
     # Declare type of obj
     _obj: AioHTTPResponse | HTTPXResponse | RequestsResponse
 
+    # Declare type of text
+    text: str | None
+
     # Declare type of JSON
     json: dict[str, Any] | None
 
@@ -54,6 +59,7 @@ class HTTPResponse:
     def __init__(
         self,
         obj: AioHTTPResponse | HTTPXResponse | RequestsResponse,
+        text: str | None,
         json: dict[str, Any] | None,
     ) -> None:
         """Init Method"""
@@ -61,8 +67,22 @@ class HTTPResponse:
         # Set obj
         self._obj = obj
 
+        # Set text
+        self.text = text
+
         # Set JSON
         self.json = json
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ IS SUCCESS
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def is_success(self) -> bool:
+        """Returns a boolean of whether the response had a successful status code"""
+
+        # Return is success
+        return 200 <= self.status_code < 300
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ JSON DICT
@@ -85,6 +105,21 @@ class HTTPResponse:
 
         # Return JSON as list
         return self.json if isinstance(self.json, list) else []
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ TEXT STRIPPED
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def text_stripped(self) -> str | None:
+        """Returns the response string stripped of HTML"""
+
+        # Return if text is None
+        if self.text is None:
+            return None
+
+        # Return stripped text
+        return re.sub(r"<[^>]+>", "", self.text)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ JSON VALUE

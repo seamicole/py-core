@@ -71,7 +71,7 @@ def http_post(
         response_json = None
 
     # Return the response
-    return HTTPResponse(obj=response, json=response_json)
+    return HTTPResponse(obj=response, text=response.text(), json=response_json)
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -112,7 +112,11 @@ async def http_post_async(
                     response_json = None
 
                 # Return the response
-                return HTTPResponse(obj=response_aiohttp, json=response_json)
+                return HTTPResponse(
+                    obj=response_aiohttp,
+                    text=await response_aiohttp.text(),
+                    json=response_json,
+                )
 
     # Check if httpx is None
     if httpx is None:
@@ -136,4 +140,6 @@ async def http_post_async(
         response_json = None
 
     # Return the response
-    return HTTPResponse(obj=response_httpx, json=response_json)
+    return HTTPResponse(
+        obj=response_httpx, text=response_httpx.text, json=response_json
+    )

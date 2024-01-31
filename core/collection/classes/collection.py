@@ -390,6 +390,30 @@ class Collection(Generic[ItemBound], ABC):
         return next(iter(self))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ HEAD
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def head(self, n: int = 5) -> Collection[ItemBound]:
+        """Returns a new collection of the first n items of the collection"""
+
+        # Initialize collection
+        collection: Collection[ItemBound] = self.New()
+
+        # Get n
+        n = max(0, min(n, len(self)))
+
+        # Get reverse iterator
+        iterator = reversed(self)
+
+        # Iterate over items
+        for i in range(n):
+            # Add item to collection
+            collection.add(next(iterator))
+
+        # Return collection
+        return collection
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ LAST
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -440,3 +464,27 @@ class Collection(Generic[ItemBound], ABC):
 
         # Return None
         return None
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ TAIL
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def tail(self, n: int = 5) -> Collection[ItemBound]:
+        """Returns a new collection of the last n items of the collection"""
+
+        # Initialize collection
+        collection: Collection[ItemBound] = self.New()
+
+        # Get n
+        n = max(0, min(n, len(self)))
+
+        # Get reverse iterator
+        iterator = reversed(self)
+
+        # Create new iterator
+        for item in reversed([next(iterator) for i in range(n)]):
+            # Add item to collection
+            collection.add(item)
+
+        # Return collection
+        return collection

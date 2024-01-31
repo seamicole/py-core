@@ -4,16 +4,14 @@
 
 from __future__ import annotations
 
-import posixpath
-
 from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.api.classes.api_endpoint_collection import APIEndpointCollection
-from core.client.classes.http_client import HTTPClient
+from core.client.classes.http_client_session import HTTPClientSession
+from core.client.functions.http_request import http_request, http_request_async
 
 if TYPE_CHECKING:
     from core.client.classes.http_response import HTTPResponse
@@ -22,46 +20,22 @@ if TYPE_CHECKING:
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ API
+# │ HTTP CLIENT
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class API:
-    """An API utility class"""
+class HTTPClient:
+    """An HTTP client utility class"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, base_url: str) -> None:
+    def __init__(self) -> None:
         """Init Method"""
 
-        # Initialize HTTP client
-        self.client = HTTPClient()
-
-        # Set base url
-        self.base_url = base_url
-
-        # Initialize endpoints
-        self.endpoints: APIEndpointCollection = APIEndpointCollection(
-            keys=("url", "method")
-        )
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ CONSTRUCT URL
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def construct_url(self, *path: str, base_url: str | None = None) -> str:
-        """Constructs a URL from the base URL and endpoint"""
-
-        # Get base URL
-        base_url = base_url or self.base_url
-
-        # Construct URL
-        url = posixpath.join(base_url, *path)
-
-        # Return URL
-        return url
+        # Initialize HTTP client session
+        self.session = HTTPClientSession()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ GET
@@ -69,8 +43,7 @@ class API:
 
     def get(
         self,
-        *path: str,
-        base_url: str | None = None,
+        url: str,
         params: dict[str, Any] | None = None,
         headers: dict[str, Any] | None = None,
         cookies: dict[str, Any] | None = None,
@@ -80,9 +53,8 @@ class API:
 
         # Make GET request and return response
         return self.request(
-            HTTPMethod.GET,
-            *path,
-            base_url=base_url,
+            url=url,
+            method=HTTPMethod.GET,
             params=params,
             headers=headers,
             cookies=cookies,
@@ -95,8 +67,7 @@ class API:
 
     async def get_async(
         self,
-        *path: str,
-        base_url: str | None = None,
+        url: str,
         params: dict[str, Any] | None = None,
         headers: dict[str, Any] | None = None,
         cookies: dict[str, Any] | None = None,
@@ -106,9 +77,8 @@ class API:
 
         # Make GET request and return response
         return await self.request_async(
-            HTTPMethod.GET,
-            *path,
-            base_url=base_url,
+            url=url,
+            method=HTTPMethod.GET,
             params=params,
             headers=headers,
             cookies=cookies,
@@ -121,8 +91,7 @@ class API:
 
     def post(
         self,
-        *path: str,
-        base_url: str | None = None,
+        url: str,
         params: dict[str, Any] | None = None,
         headers: dict[str, Any] | None = None,
         cookies: dict[str, Any] | None = None,
@@ -134,9 +103,8 @@ class API:
 
         # Make POST request and return response
         return self.request(
-            HTTPMethod.POST,
-            *path,
-            base_url=base_url,
+            url=url,
+            method=HTTPMethod.POST,
             params=params,
             headers=headers,
             cookies=cookies,
@@ -151,8 +119,7 @@ class API:
 
     async def post_async(
         self,
-        *path: str,
-        base_url: str | None = None,
+        url: str,
         params: dict[str, Any] | None = None,
         headers: dict[str, Any] | None = None,
         cookies: dict[str, Any] | None = None,
@@ -164,9 +131,8 @@ class API:
 
         # Make POST request and return response
         return await self.request_async(
-            HTTPMethod.POST,
-            *path,
-            base_url=base_url,
+            url=url,
+            method=HTTPMethod.POST,
             params=params,
             headers=headers,
             cookies=cookies,
@@ -181,9 +147,8 @@ class API:
 
     def request(
         self,
+        url: str,
         method: HTTPMethod | HTTPMethodLiteral,
-        *path: str,
-        base_url: str | None = None,
         params: dict[str, Any] | None = None,
         headers: dict[str, Any] | None = None,
         cookies: dict[str, Any] | None = None,
@@ -193,11 +158,8 @@ class API:
     ) -> HTTPResponse:
         """Makes a request to the API"""
 
-        # Get URL
-        url = self.construct_url(*path, base_url=base_url)
-
-        # Make request and return response
-        return self.client.request(
+        # Get response
+        response = http_request(
             url=url,
             method=method,
             params=params,
@@ -208,15 +170,20 @@ class API:
             json=json,
         )
 
+        # Log response
+        self.session.log_request(url=url, method=method, response=response)
+
+        # Return response
+        return response
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REQUEST ASYNC
     # └─────────────────────────────────────────────────────────────────────────────────
 
     async def request_async(
         self,
+        url: str,
         method: HTTPMethod | HTTPMethodLiteral,
-        *path: str,
-        base_url: str | None = None,
         params: dict[str, Any] | None = None,
         headers: dict[str, Any] | None = None,
         cookies: dict[str, Any] | None = None,
@@ -226,11 +193,8 @@ class API:
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API"""
 
-        # Get URL
-        url = self.construct_url(*path, base_url=base_url)
-
-        # Make request and return response
-        return await self.client.request_async(
+        # Get response
+        response = await http_request_async(
             url=url,
             method=method,
             params=params,
@@ -240,3 +204,9 @@ class API:
             data=data,
             json=json,
         )
+
+        # Log response
+        self.session.log_request(url=url, method=method, response=response)
+
+        # Return response
+        return response
