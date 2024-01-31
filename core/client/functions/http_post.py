@@ -39,6 +39,7 @@ def http_post(
     timeout: int | float | None = None,
     data: Any = None,
     json: dict[str, Any] | None = None,
+    weight: int = 1,
 ) -> HTTPResponse:
     """Makes an HTTP POST request and returns a HTTPResponse instance"""
 
@@ -71,7 +72,9 @@ def http_post(
         response_json = None
 
     # Return the response
-    return HTTPResponse(obj=response, text=response.text(), json=response_json)
+    return HTTPResponse(
+        obj=response, text=response.text(), json=response_json, weight=weight
+    )
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -87,6 +90,7 @@ async def http_post_async(
     timeout: int | float | None = None,
     data: Any = None,
     json: dict[str, Any] | None = None,
+    weight: int = 1,
 ) -> HTTPResponse:
     """Makes an HTTP POST request and returns a HTTPResponse instance"""
 
@@ -116,6 +120,7 @@ async def http_post_async(
                     obj=response_aiohttp,
                     text=await response_aiohttp.text(),
                     json=response_json,
+                    weight=weight,
                 )
 
     # Check if httpx is None
@@ -141,5 +146,5 @@ async def http_post_async(
 
     # Return the response
     return HTTPResponse(
-        obj=response_httpx, text=response_httpx.text, json=response_json
+        obj=response_httpx, text=response_httpx.text, json=response_json, weight=weight
     )

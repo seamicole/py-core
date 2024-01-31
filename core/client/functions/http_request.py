@@ -35,6 +35,7 @@ def http_request(
     timeout: int | float | None = None,
     data: Any = None,
     json: dict[str, Any] | None = None,
+    weight: int = 1,
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
@@ -47,7 +48,12 @@ def http_request(
     if method == HTTPMethod.GET:
         # Make a GET request
         return http_get(
-            url=url, params=params, headers=headers, cookies=cookies, timeout=timeout
+            url=url,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            timeout=timeout,
+            weight=weight,
         )
 
     # Otherwise, check if POST
@@ -61,6 +67,7 @@ def http_request(
             timeout=timeout,
             data=data,
             json=json,
+            weight=weight,
         )
 
     # Otherwise, check if DELETE
@@ -72,6 +79,7 @@ def http_request(
             headers=headers,
             cookies=cookies,
             timeout=timeout,
+            weight=weight,
         )
 
     # Otherwise, raise an exception
@@ -94,6 +102,7 @@ async def http_request_async(
     timeout: int | float | None = None,
     data: Any = None,
     json: dict[str, Any] | None = None,
+    weight: int = 1,
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
@@ -106,7 +115,12 @@ async def http_request_async(
     if method == HTTPMethod.GET:
         # Make a GET request
         return await http_get_async(
-            url=url, params=params, headers=headers, cookies=cookies, timeout=timeout
+            url=url,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            timeout=timeout,
+            weight=weight,
         )
 
     # Otherwise, check if POST
@@ -120,6 +134,7 @@ async def http_request_async(
             timeout=timeout,
             data=data,
             json=json,
+            weight=weight,
         )
 
     # Otherwise, check if DELETE
@@ -131,6 +146,7 @@ async def http_request_async(
             headers=headers,
             cookies=cookies,
             timeout=timeout,
+            weight=weight,
         )
 
     # Otherwise, raise an exception

@@ -52,6 +52,9 @@ class HTTPResponse:
     # Declare type of JSON
     json: dict[str, Any] | None
 
+    # Declare type of weight
+    weight: int
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
@@ -61,6 +64,7 @@ class HTTPResponse:
         obj: AioHTTPResponse | HTTPXResponse | RequestsResponse,
         text: str | None,
         json: dict[str, Any] | None,
+        weight: int = 1,
     ) -> None:
         """Init Method"""
 
@@ -72,6 +76,9 @@ class HTTPResponse:
 
         # Set JSON
         self.json = json
+
+        # Set weight
+        self.weight = weight
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ IS SUCCESS

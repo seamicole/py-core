@@ -31,11 +31,14 @@ class HTTPClient:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self) -> None:
+    def __init__(self, weight_per_second: int | None = None) -> None:
         """Init Method"""
 
         # Initialize HTTP client session
         self.session = HTTPClientSession()
+
+        # Set weight per second
+        self.weight_per_second = weight_per_second
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ GET
@@ -48,6 +51,7 @@ class HTTPClient:
         headers: dict[str, Any] | None = None,
         cookies: dict[str, Any] | None = None,
         timeout: int | float | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes a GET request to the API"""
 
@@ -59,6 +63,7 @@ class HTTPClient:
             headers=headers,
             cookies=cookies,
             timeout=timeout,
+            weight=weight,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -72,6 +77,7 @@ class HTTPClient:
         headers: dict[str, Any] | None = None,
         cookies: dict[str, Any] | None = None,
         timeout: int | float | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes an asynchronous GET request to the API"""
 
@@ -83,6 +89,7 @@ class HTTPClient:
             headers=headers,
             cookies=cookies,
             timeout=timeout,
+            weight=weight,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -98,6 +105,7 @@ class HTTPClient:
         timeout: int | float | None = None,
         data: Any = None,
         json: dict[str, Any] | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes a POST request to the API"""
 
@@ -111,6 +119,7 @@ class HTTPClient:
             timeout=timeout,
             data=data,
             json=json,
+            weight=weight,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -126,6 +135,7 @@ class HTTPClient:
         timeout: int | float | None = None,
         data: Any = None,
         json: dict[str, Any] | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes an asynchronous POST request to the API"""
 
@@ -139,6 +149,7 @@ class HTTPClient:
             timeout=timeout,
             data=data,
             json=json,
+            weight=weight,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -155,6 +166,7 @@ class HTTPClient:
         timeout: int | float | None = None,
         data: Any = None,
         json: dict[str, Any] | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes a request to the API"""
 
@@ -168,6 +180,7 @@ class HTTPClient:
             timeout=timeout,
             data=data,
             json=json,
+            weight=weight,
         )
 
         # Log response
@@ -190,6 +203,7 @@ class HTTPClient:
         timeout: int | float | None = None,
         data: Any = None,
         json: dict[str, Any] | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API"""
 
@@ -203,6 +217,7 @@ class HTTPClient:
             timeout=timeout,
             data=data,
             json=json,
+            weight=weight,
         )
 
         # Log response

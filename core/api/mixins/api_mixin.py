@@ -38,6 +38,7 @@ class APIMixin:
         json_schema: NotRequired[JSONSchema]
         params: NotRequired[dict[str, Any]]
         params_schema: NotRequired[dict[str, str]]
+        weight: NotRequired[int]
 
     # Define an endpoint list type alias
     Endpoints = list[Endpoint] | None

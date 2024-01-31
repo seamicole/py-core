@@ -37,6 +37,7 @@ def http_delete(
     headers: dict[str, Any] | None = None,
     cookies: dict[str, Any] | None = None,
     timeout: int | float | None = None,
+    weight: int = 1,
 ) -> HTTPResponse:
     """Makes an HTTP DELETE request and returns a HTTPResponse instance"""
 
@@ -66,7 +67,9 @@ def http_delete(
         response_json = None
 
     # Return the response
-    return HTTPResponse(obj=response, text=response.text(), json=response_json)
+    return HTTPResponse(
+        obj=response, text=response.text(), json=response_json, weight=weight
+    )
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -80,6 +83,7 @@ async def http_delete_async(
     headers: dict[str, Any] | None = None,
     cookies: dict[str, Any] | None = None,
     timeout: int | float | None = None,
+    weight: int = 1,
 ) -> HTTPResponse:
     """Makes an HTTP DELETE request and returns a HTTPResponse instance"""
 
@@ -107,6 +111,7 @@ async def http_delete_async(
                     obj=response_aiohttp,
                     text=await response_aiohttp.text(),
                     json=response_json,
+                    weight=weight,
                 )
 
     # Check if httpx is None
@@ -132,5 +137,5 @@ async def http_delete_async(
 
     # Return the response
     return HTTPResponse(
-        obj=response_httpx, text=response_httpx.text, json=response_json
+        obj=response_httpx, text=response_httpx.text, json=response_json, weight=weight
     )

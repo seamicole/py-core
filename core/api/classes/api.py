@@ -33,11 +33,11 @@ class API:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, base_url: str) -> None:
+    def __init__(self, base_url: str, weight_per_second: int | None = None) -> None:
         """Init Method"""
 
         # Initialize HTTP client
-        self.client = HTTPClient()
+        self.client = HTTPClient(weight_per_second=weight_per_second)
 
         # Set base url
         self.base_url = base_url
@@ -75,6 +75,7 @@ class API:
         headers: dict[str, Any] | None = None,
         cookies: dict[str, Any] | None = None,
         timeout: int | float | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes a GET request to the API"""
 
@@ -87,6 +88,7 @@ class API:
             headers=headers,
             cookies=cookies,
             timeout=timeout,
+            weight=weight,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -101,6 +103,7 @@ class API:
         headers: dict[str, Any] | None = None,
         cookies: dict[str, Any] | None = None,
         timeout: int | float | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes an asynchronous GET request to the API"""
 
@@ -113,6 +116,7 @@ class API:
             headers=headers,
             cookies=cookies,
             timeout=timeout,
+            weight=weight,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -129,6 +133,7 @@ class API:
         timeout: int | float | None = None,
         data: Any = None,
         json: dict[str, Any] | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes a POST request to the API"""
 
@@ -143,6 +148,7 @@ class API:
             timeout=timeout,
             data=data,
             json=json,
+            weight=weight,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -159,6 +165,7 @@ class API:
         timeout: int | float | None = None,
         data: Any = None,
         json: dict[str, Any] | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes an asynchronous POST request to the API"""
 
@@ -173,6 +180,7 @@ class API:
             timeout=timeout,
             data=data,
             json=json,
+            weight=weight,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -190,6 +198,7 @@ class API:
         timeout: int | float | None = None,
         data: Any = None,
         json: dict[str, Any] | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes a request to the API"""
 
@@ -206,6 +215,7 @@ class API:
             timeout=timeout,
             data=data,
             json=json,
+            weight=weight,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -223,6 +233,7 @@ class API:
         timeout: int | float | None = None,
         data: Any = None,
         json: dict[str, Any] | None = None,
+        weight: int = 1,
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API"""
 
@@ -239,4 +250,5 @@ class API:
             timeout=timeout,
             data=data,
             json=json,
+            weight=weight,
         )
