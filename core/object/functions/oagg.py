@@ -5,6 +5,13 @@
 from typing import Any, Iterable, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ PROJECT IMPORTS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+from core.dict.functions.dset import dset
+from core.object.functions.oget import oget
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ TYPE VARIABLES
 # └─────────────────────────────────────────────────────────────────────────────────────
 
@@ -37,7 +44,7 @@ def oagg(
             # Iterate over instances
             for instance in instances:
                 # Get value
-                value = getattr(instance, attr, None)
+                value = oget(instance, attr, default=None)
 
                 # Append if value is not None
                 if value is not None:
@@ -100,7 +107,7 @@ def oagg(
                 raise ValueError(f"Invalid aggregate key: {key}")
 
             # Add value to instance kwargs
-            instance_kwargs[attr] = value
+            dset(instance_kwargs, attr, value, insert=True)
 
     # Return instance
     return InstanceClass(**instance_kwargs)
