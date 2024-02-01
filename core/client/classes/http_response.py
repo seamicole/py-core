@@ -22,6 +22,7 @@ from core.dict.functions.dget import dget
 from core.dict.functions.dfrom_schema import dfrom_schema
 
 if TYPE_CHECKING:
+    from core.client.classes.http_request import HTTPRequest
     from core.client.types import JSONDict, JSONList, JSONValue
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -61,12 +62,16 @@ class HTTPResponse:
 
     def __init__(
         self,
+        request: HTTPRequest,
         obj: AioHTTPResponse | HTTPXResponse | RequestsResponse,
         text: str | None,
         json: dict[str, Any] | None,
         weight: int = 1,
     ) -> None:
         """Init Method"""
+
+        # Set request
+        self.request = request
 
         # Set obj
         self._obj = obj
@@ -81,14 +86,14 @@ class HTTPResponse:
         self.weight = weight
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ IS SUCCESS
+    # │ DID SUCCEED
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @property
-    def is_success(self) -> bool:
+    def did_succeed(self) -> bool:
         """Returns a boolean of whether the response had a successful status code"""
 
-        # Return is success
+        # Return did succeed
         return 200 <= self.status_code < 300
 
     # ┌─────────────────────────────────────────────────────────────────────────────────

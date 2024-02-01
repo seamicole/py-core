@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import time
+
 from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -11,10 +13,10 @@ from typing import Any, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.client.classes.http_client_session import HTTPClientSession
+from core.client.classes.http_response import HTTPResponse
 from core.client.functions.http_request import http_request, http_request_async
 
 if TYPE_CHECKING:
-    from core.client.classes.http_response import HTTPResponse
     from core.client.enums.http_method import HTTPMethod
     from core.client.types import HTTPMethodLiteral
 
@@ -31,11 +33,23 @@ class HTTPClient:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, weight_per_second: int | None = None) -> None:
+    def __init__(self, weight_per_second: float | int | None = None) -> None:
         """Init Method"""
 
+        # Assert weight per second is greater than 0
+        assert (
+            weight_per_second is None or weight_per_second > 0
+        ), "Weight per second must be greater than zero!"
+
+        # Get interval
+        interval = (
+            (1 / weight_per_second if weight_per_second < 1 else 1)
+            if weight_per_second is not None
+            else None
+        )
+
         # Initialize HTTP client session
-        self.session = HTTPClientSession()
+        self.session = HTTPClientSession(interval=interval)
 
         # Set weight per second
         self.weight_per_second = weight_per_second
@@ -170,6 +184,11 @@ class HTTPClient:
     ) -> HTTPResponse:
         """Makes a request to the API"""
 
+        # Throttle request
+        self.throttle(weight=weight)
+
+        print(f"REQUEST: {url}")
+
         # Get response
         response = http_request(
             url=url,
@@ -184,7 +203,7 @@ class HTTPClient:
         )
 
         # Log response
-        self.session.log_request(url=url, method=method, response=response)
+        self.session.log_response(response)
 
         # Return response
         return response
@@ -207,6 +226,11 @@ class HTTPClient:
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API"""
 
+        # Throttle request
+        self.throttle(weight=weight)
+
+        print(f"REQUEST: {url}")
+
         # Get response
         response = await http_request_async(
             url=url,
@@ -221,7 +245,41 @@ class HTTPClient:
         )
 
         # Log response
-        self.session.log_request(url=url, method=method, response=response)
+        self.session.log_response(response)
 
         # Return response
         return response
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ THROTTLE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def throttle(self, weight: int) -> None:
+        """Throttles the client before making a request"""
+
+        # Initialize while loop
+        while self.weight_per_second is not None and self.session._interval is not None:
+            # Acquire lock
+            with self.session._lock:
+                # Log request
+                self.session.log_request(weight)
+
+                # Get weight used
+                weight_used = self.session._usage["wt"]
+
+                # Break if weight respects limit
+                if weight_used / self.session._interval <= self.weight_per_second:
+                    break
+
+                # Decrement weight
+                self.session._usage["wt"] -= weight
+
+                # Get timestamp
+                ts = self.session._usage["ts"]
+
+            # Get time to sleep
+            time_to_sleep = self.session._interval - (time.time() - ts)
+
+            # Wait for throttler to reset
+            if time_to_sleep > 0:
+                time.sleep(time_to_sleep)

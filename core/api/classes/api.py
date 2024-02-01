@@ -33,7 +33,9 @@ class API:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, base_url: str, weight_per_second: int | None = None) -> None:
+    def __init__(
+        self, base_url: str, weight_per_second: float | int | None = None
+    ) -> None:
         """Init Method"""
 
         # Initialize HTTP client

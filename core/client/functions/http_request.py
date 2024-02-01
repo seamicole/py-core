@@ -39,11 +39,6 @@ def http_request(
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
-    # Check if method is a string
-    if isinstance(method, str):
-        # Convert method to HTTPMethod
-        method = HTTPMethod(method.upper())
-
     # Check if GET
     if method == HTTPMethod.GET:
         # Make a GET request
@@ -105,11 +100,6 @@ async def http_request_async(
     weight: int = 1,
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
-
-    # Check if method is a string
-    if isinstance(method, str):
-        # Convert method to HTTPMethod
-        method = HTTPMethod(method.upper())
 
     # Check if GET
     if method == HTTPMethod.GET:

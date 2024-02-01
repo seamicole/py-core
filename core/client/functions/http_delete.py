@@ -23,7 +23,9 @@ except ImportError:
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.client.classes.http_request import HTTPRequest
 from core.client.classes.http_response import HTTPResponse
+from core.client.enums.http_method import HTTPMethod
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -40,6 +42,17 @@ def http_delete(
     weight: int = 1,
 ) -> HTTPResponse:
     """Makes an HTTP DELETE request and returns a HTTPResponse instance"""
+
+    # Initialize request
+    request = HTTPRequest(
+        url=url,
+        method=HTTPMethod.DELETE,
+        params=params,
+        headers=headers,
+        cookies=cookies,
+        timeout=timeout,
+        weight=weight,
+    )
 
     # Get the requester
     requester = httpx or requests
@@ -66,10 +79,20 @@ def http_delete(
         # Set the response JSON to None
         response_json = None
 
-    # Return the response
-    return HTTPResponse(
-        obj=response, text=response.text(), json=response_json, weight=weight
+    # Initialize response
+    res = HTTPResponse(
+        request=request,
+        obj=response,
+        text=response.text,
+        json=response_json,
+        weight=weight,
     )
+
+    # Set response
+    request.response = res
+
+    # Return response
+    return res
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -86,6 +109,17 @@ async def http_delete_async(
     weight: int = 1,
 ) -> HTTPResponse:
     """Makes an HTTP DELETE request and returns a HTTPResponse instance"""
+
+    # Initialize request
+    request = HTTPRequest(
+        url=url,
+        method=HTTPMethod.DELETE,
+        params=params,
+        headers=headers,
+        cookies=cookies,
+        timeout=timeout,
+        weight=weight,
+    )
 
     # Check if aiohttp is being used
     if aiohttp:
@@ -106,13 +140,20 @@ async def http_delete_async(
                     # Set the response JSON to None
                     response_json = None
 
-                # Return the response
-                return HTTPResponse(
+                # Initialize response
+                res = HTTPResponse(
+                    request=request,
                     obj=response_aiohttp,
                     text=await response_aiohttp.text(),
                     json=response_json,
                     weight=weight,
                 )
+
+                # Set response
+                request.response = res
+
+                # Return response
+                return res
 
     # Check if httpx is None
     if httpx is None:
@@ -135,7 +176,17 @@ async def http_delete_async(
         # Set the response JSON to None
         response_json = None
 
-    # Return the response
-    return HTTPResponse(
-        obj=response_httpx, text=response_httpx.text, json=response_json, weight=weight
+    # Initialize response
+    res = HTTPResponse(
+        request=request,
+        obj=response_httpx,
+        text=response_httpx.text,
+        json=response_json,
+        weight=weight,
     )
+
+    # Set response
+    request.response = res
+
+    # Return response
+    return res
