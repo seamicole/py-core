@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
 
 from typing import Any, TYPE_CHECKING
@@ -33,7 +34,7 @@ class HTTPClient:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, weight_per_second: float | int | None = None) -> None:
+    def __init__(self, weight_per_second: int | float | None = None) -> None:
         """Init Method"""
 
         # Assert weight per second is greater than 0
@@ -184,10 +185,17 @@ class HTTPClient:
     ) -> HTTPResponse:
         """Makes a request to the API"""
 
-        # Throttle request
-        self.throttle(weight=weight)
+        # Get time to sleep
+        time_to_sleep = self.throttle(weight=weight)
 
-        print(f"REQUEST: {url}")
+        # Initialize while loop
+        while time_to_sleep > 0:
+            # Sleep and throttle
+            time.sleep(time_to_sleep)
+            time_to_sleep = self.throttle(weight=weight)
+
+        # Throttle request
+        time.sleep(self.throttle(weight=weight))
 
         # Get response
         response = http_request(
@@ -226,10 +234,14 @@ class HTTPClient:
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API"""
 
-        # Throttle request
-        self.throttle(weight=weight)
+        # Get time to sleep
+        time_to_sleep = self.throttle(weight=weight)
 
-        print(f"REQUEST: {url}")
+        # Initialize while loop
+        while time_to_sleep > 0:
+            # Sleep and throttle
+            await asyncio.sleep(time_to_sleep)
+            time_to_sleep = self.throttle(weight=weight)
 
         # Get response
         response = await http_request_async(
@@ -243,6 +255,8 @@ class HTTPClient:
             json=json,
             weight=weight,
         )
+        if response.status_code != 200:
+            print(response.status_code)
 
         # Log response
         self.session.log_response(response)
@@ -254,32 +268,33 @@ class HTTPClient:
     # │ THROTTLE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def throttle(self, weight: int) -> None:
+    def throttle(self, weight: int) -> float:
         """Throttles the client before making a request"""
 
-        # Initialize while loop
-        while self.weight_per_second is not None and self.session._interval is not None:
-            # Acquire lock
-            with self.session._lock:
-                # Log request
-                self.session.log_request(weight)
+        # Check if no rate limits are applied
+        if self.weight_per_second is None or self.session._interval is None:
+            return 0
 
-                # Get weight used
-                weight_used = self.session._usage["wt"]
+        # Acquire lock
+        with self.session._lock:
+            # Log request
+            self.session.log_request(weight)
 
-                # Break if weight respects limit
-                if weight_used / self.session._interval <= self.weight_per_second:
-                    break
+            # Get weight used
+            weight_used = self.session._usage["wt"]
 
-                # Decrement weight
-                self.session._usage["wt"] -= weight
+            # Break if weight respects limit
+            if weight_used / self.session._interval <= self.weight_per_second:
+                return 0
 
-                # Get timestamp
-                ts = self.session._usage["ts"]
+            # Decrement weight
+            self.session._usage["wt"] -= weight
 
-            # Get time to sleep
-            time_to_sleep = self.session._interval - (time.time() - ts)
+            # Get timestamp
+            ts = self.session._usage["ts"]
 
-            # Wait for throttler to reset
-            if time_to_sleep > 0:
-                time.sleep(time_to_sleep)
+        # Get time to sleep
+        time_to_sleep = self.session._interval - (time.time() - ts)
+
+        # Return time to sleep
+        return max(time_to_sleep, 0)

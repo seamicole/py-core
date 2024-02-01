@@ -50,6 +50,9 @@ class APIMixin:
     # Declare type of API base URL
     API_BASE_URL: str
 
+    # Declare type of API weight per second
+    API_WEIGHT_PER_SECOND: int | float
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INSTANCE ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
@@ -68,7 +71,9 @@ class APIMixin:
         # Check if cached API instance is None
         if self._api is None:
             # Initialize and set API instance
-            self._api = API(base_url=self.API_BASE_URL)
+            self._api = API(
+                base_url=self.API_BASE_URL, weight_per_second=self.API_WEIGHT_PER_SECOND
+            )
 
             # Get endpoint attributes
             endpoint_attrs = [
