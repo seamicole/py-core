@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import posixpath
 
 from multiprocessing import Manager
@@ -66,6 +67,17 @@ class API:
 
         # Initialize channels
         self.channels: APIChannelCollection = APIChannelCollection()
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ WS EVENT LOOP
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def ws_event_loop(self) -> asyncio.AbstractEventLoop:
+        """Returns the websocket event loop"""
+
+        # Return websocket event loop
+        return self.ws.event_loop
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CONSTRUCT URL

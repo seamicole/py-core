@@ -29,6 +29,8 @@ from core.client.types import HTTPMethodLiteral, JSONSchema
 # Define a channel event type alias
 class ChannelEvent(TypedDict):
     data: NotRequired[JSONSchema]
+    json_path: NotRequired[str]
+    json_schema: NotRequired[JSONSchema]
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

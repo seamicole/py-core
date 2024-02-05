@@ -12,6 +12,7 @@ from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core.api.classes.api_channel import APIChannel
+    from core.client.types import JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -31,6 +32,8 @@ class APIChannelEvent:
         channel: APIChannel,
         key: str,
         data: str | dict[Any, Any],
+        json_path: str | None = None,
+        json_schema: JSONSchema | None = None,
     ) -> None:
         """Init Method"""
 
@@ -42,6 +45,12 @@ class APIChannelEvent:
 
         # Set data
         self.data = data
+
+        # Set JSON path
+        self.json_path = json_path
+
+        # Set JSON schema
+        self.json_schema = json_schema
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
