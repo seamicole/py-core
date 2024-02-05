@@ -7,7 +7,7 @@ from __future__ import annotations
 import time
 
 from multiprocessing import Manager
-from multiprocessing.managers import DictProxy
+from multiprocessing.managers import DictProxy, SyncManager
 from typing import Literal, TYPE_CHECKING
 from typing_extensions import TypedDict
 
@@ -51,11 +51,13 @@ class HTTPClientSession:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, interval: float | None) -> None:
+    def __init__(
+        self, interval: float | None = None, manager: SyncManager | None = None
+    ) -> None:
         """Init Method"""
 
         # Initialize a manager
-        self._manager = Manager()
+        self._manager = manager or Manager()
 
         # Initialize lock
         self._lock = self._manager.Lock()

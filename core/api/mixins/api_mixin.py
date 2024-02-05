@@ -2,6 +2,8 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from __future__ import annotations
+
 from collections.abc import Iterable
 from typing import Any
 from typing_extensions import NotRequired, TypedDict
@@ -11,10 +13,22 @@ from typing_extensions import NotRequired, TypedDict
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.api.classes.api import API
+from core.api.classes.api_channel import APIChannel
+from core.api.classes.api_channel_event import APIChannelEvent
 from core.api.classes.api_endpoint import APIEndpoint
 from core.api.classes.api_endpoint_collection import APIEndpointCollection
 from core.client.enums.http_method import HTTPMethod
 from core.client.types import HTTPMethodLiteral, JSONSchema
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ CHANNEL EVENT
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+# Define a channel event type alias
+class ChannelEvent(TypedDict):
+    data: NotRequired[JSONSchema]
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -43,6 +57,11 @@ class APIMixin:
     # Define an endpoint list type alias
     Endpoints = list[Endpoint] | None
 
+    # Define a channel type alias
+    class Channel(TypedDict):
+        subscribe: ChannelEvent
+        unsubscribe: ChannelEvent
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CLASS ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
@@ -52,6 +71,9 @@ class APIMixin:
 
     # Declare type of API weight per second
     API_WEIGHT_PER_SECOND: int | float
+
+    # Declare type of API WS URI
+    API_WS_URI: str | None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INSTANCE ATTRIBUTES
@@ -68,25 +90,80 @@ class APIMixin:
     def api(self) -> API:
         """Returns a cached or initialized API instance"""
 
-        # Check if cached API instance is None
-        if self._api is None:
-            # Initialize and set API instance
-            self._api = API(
-                base_url=self.API_BASE_URL, weight_per_second=self.API_WEIGHT_PER_SECOND
+        # Return if API instance is cached
+        if self._api is not None:
+            return self._api
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ ENDPOINTS
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        # Initialize and set API instance
+        self._api = API(
+            base_url=self.API_BASE_URL,
+            weight_per_second=getattr(self, "API_WEIGHT_PER_SECOND", None),
+            ws_uri=getattr(self, "API_WS_URI", None),
+        )
+
+        # Get endpoint attributes
+        endpoint_attrs = [
+            attr
+            for attr in dir(self)
+            if attr.startswith("API_") and attr.endswith("_ENDPOINT")
+        ]
+
+        # Iterate over endpoint attributes
+        for endpoint_attr in endpoint_attrs:
+            # Get endpoint
+            endpoint = getattr(self, endpoint_attr)
+
+            # Continue if null
+            if not endpoint:
+                continue
+
+            # Get endpoint kwargs
+            endpoint_kwargs = {**endpoint}
+
+            # Add API to kwargs
+            endpoint_kwargs["api"] = self._api
+
+            # Initialize endpoint
+            endpoint = APIEndpoint(**endpoint_kwargs)
+
+            # Add endpoint to API endpoints
+            self._api.endpoints.find_or_add(endpoint)
+
+            # Set endpoint
+            setattr(self._api, endpoint_attr.lower()[4:], endpoint)
+
+        # Get endpoint attributes
+        endpoint_attrs = [
+            attr
+            for attr in dir(self)
+            if attr.startswith("API_") and attr.endswith("_ENDPOINTS")
+        ]
+
+        # Iterate over endpoint attributes
+        for endpoint_attr in endpoint_attrs:
+            # Initialize endpoint collection
+            endpoint_collection = APIEndpointCollection()
+
+            # Create endpoint collection
+            setattr(
+                self._api,
+                endpoint_attr.lower()[4:],
+                endpoint_collection,
             )
 
-            # Get endpoint attributes
-            endpoint_attrs = [
-                attr
-                for attr in dir(self)
-                if attr.startswith("API_") and attr.endswith("_ENDPOINT")
-            ]
+            # Get endpoints
+            endpoints = getattr(self, endpoint_attr)
 
-            # Iterate over endpoint attributes
-            for endpoint_attr in endpoint_attrs:
-                # Get endpoint
-                endpoint = getattr(self, endpoint_attr)
+            # Contine if not an iterable
+            if not isinstance(endpoints, Iterable):
+                continue
 
+            # Iterate over endpoints
+            for endpoint in endpoints:
                 # Continue if null
                 if not endpoint:
                     continue
@@ -103,55 +180,49 @@ class APIMixin:
                 # Add endpoint to API endpoints
                 self._api.endpoints.find_or_add(endpoint)
 
-                # Set endpoint
-                setattr(self._api, endpoint_attr.lower()[4:], endpoint)
+                # Add endpoint to endpoint collection
+                endpoint_collection.add(endpoint)
 
-            # Get endpoint attributes
-            endpoint_attrs = [
-                attr
-                for attr in dir(self)
-                if attr.startswith("API_") and attr.endswith("_ENDPOINTS")
-            ]
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ CHANNELS
+        # └─────────────────────────────────────────────────────────────────────────────
 
-            # Iterate over endpoint attributes
-            for endpoint_attr in endpoint_attrs:
-                # Initialize endpoint collection
-                endpoint_collection = APIEndpointCollection()
+        # Get channel attributes
+        channel_attrs = [
+            attr
+            for attr in dir(self)
+            if attr.startswith("API_") and attr.endswith("_CHANNEL")
+        ]
 
-                # Create endpoint collection
-                setattr(
-                    self._api,
-                    endpoint_attr.lower()[4:],
-                    endpoint_collection,
-                )
+        # Iterate over channel attributes
+        for channel_attr in channel_attrs:
+            # Get events
+            events = getattr(self, channel_attr)
 
-                # Get endpoints
-                endpoints = getattr(self, endpoint_attr)
+            # Continue if null
+            if not events:
+                continue
 
-                # Contine if not an iterable
-                if not isinstance(endpoints, Iterable):
-                    continue
+            # Initialize channel
+            channel = APIChannel(api=self._api)
 
-                # Iterate over endpoints
-                for endpoint in endpoints:
-                    # Continue if null
-                    if not endpoint:
-                        continue
+            # Add channel to API channels
+            self._api.channels.find_or_add(channel)
 
-                    # Get endpoint kwargs
-                    endpoint_kwargs = {**endpoint}
+            # Iterate over events
+            for event_key, event_kwargs in events.items():
+                # Add key and channel to kwargs
+                event_kwargs["key"] = event_key
+                event_kwargs["channel"] = channel
 
-                    # Add API to kwargs
-                    endpoint_kwargs["api"] = self._api
+                # Initialize event
+                event = APIChannelEvent(**event_kwargs)
 
-                    # Initialize endpoint
-                    endpoint = APIEndpoint(**endpoint_kwargs)
+                # Add channel to API channels
+                channel.events.find_or_add(event)
 
-                    # Add endpoint to API endpoints
-                    self._api.endpoints.find_or_add(endpoint)
-
-                    # Add endpoint to endpoint collection
-                    endpoint_collection.add(endpoint)
+            # Set channel
+            setattr(self._api, channel_attr.lower()[4:], channel)
 
         # Return cached API instance
         return self._api

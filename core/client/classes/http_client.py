@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import time
 
+from multiprocessing.managers import SyncManager
 from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -34,7 +35,11 @@ class HTTPClient:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, weight_per_second: int | float | None = None) -> None:
+    def __init__(
+        self,
+        weight_per_second: int | float | None = None,
+        manager: SyncManager | None = None,
+    ) -> None:
         """Init Method"""
 
         # Assert weight per second is greater than 0
@@ -50,7 +55,7 @@ class HTTPClient:
         )
 
         # Initialize HTTP client session
-        self.session = HTTPClientSession(interval=interval)
+        self.session = HTTPClientSession(interval=interval, manager=manager)
 
         # Set weight per second
         self.weight_per_second = weight_per_second
@@ -193,9 +198,6 @@ class HTTPClient:
             # Sleep and throttle
             time.sleep(time_to_sleep)
             time_to_sleep = self.throttle(weight=weight)
-
-        # Throttle request
-        time.sleep(self.throttle(weight=weight))
 
         # Get response
         response = http_request(

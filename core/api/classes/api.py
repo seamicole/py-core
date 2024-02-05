@@ -6,14 +6,17 @@ from __future__ import annotations
 
 import posixpath
 
-from typing import Any, TYPE_CHECKING
+from multiprocessing import Manager
+from typing import Any, Callable, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.api.classes.api_channel_collection import APIChannelCollection
 from core.api.classes.api_endpoint_collection import APIEndpointCollection
 from core.client.classes.http_client import HTTPClient
+from core.client.classes.ws_client import WSClient
 
 if TYPE_CHECKING:
     from core.client.classes.http_response import HTTPResponse
@@ -34,12 +37,18 @@ class API:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def __init__(
-        self, base_url: str, weight_per_second: float | int | None = None
+        self,
+        base_url: str,
+        weight_per_second: float | int | None = None,
+        ws_uri: str | None = None,
     ) -> None:
         """Init Method"""
 
+        # Initialize manager
+        manager = Manager()
+
         # Initialize HTTP client
-        self.client = HTTPClient(weight_per_second=weight_per_second)
+        self.client = HTTPClient(weight_per_second=weight_per_second, manager=manager)
 
         # Set base url
         self.base_url = base_url
@@ -48,6 +57,15 @@ class API:
         self.endpoints: APIEndpointCollection = APIEndpointCollection(
             keys=(("url", "method"),)
         )
+
+        # Initialize websocket client
+        self.ws = WSClient(manager=manager)
+
+        # Set websocket URI
+        self.ws_uri = ws_uri or base_url
+
+        # Initialize channels
+        self.channels: APIChannelCollection = APIChannelCollection()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CONSTRUCT URL
@@ -254,3 +272,18 @@ class API:
             json=json,
             weight=weight,
         )
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ SUBSCRIBE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    async def subscribe(
+        self,
+        data: str | dict[Any, Any],
+        callback: Callable[[str | bytes], None],
+        uri: str | None = None,
+    ) -> None:
+        """Subscribes to a websocket channel"""
+
+        # Subscribe to websocket channel
+        await self.ws.subscribe(uri=uri or self.ws_uri, data=data, callback=callback)
