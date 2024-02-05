@@ -4,17 +4,15 @@
 
 from __future__ import annotations
 
-from typing import Any, Hashable, Iterable, Iterator, TypeVar
+import itertools
+
+from typing import Any, Hashable, Iterator, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collection.classes.collection import Collection
-from core.collection.exceptions import DuplicateKeyError, NonExistentKeyError
-from core.object.functions.oget import oget
-from core.object.functions.ohasattr import ohasattr
-from core.placeholders import nothing
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ TYPE VARIABLES
@@ -24,111 +22,84 @@ ItemBound = TypeVar("ItemBound", bound=Any)
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ DICT COLLECTION
+# │ RING COLLECTION
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class DictCollection(Collection[ItemBound]):
-    """A dict-based collection utility class for Python object instances"""
+class RingCollection(Collection[ItemBound]):
+    """A ring buffer for caching deltas"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INSTANCE ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    # Declare type of keys
-    _keys: tuple[str | tuple[str, ...], ...]
+    # Declare type of cursor
+    _cursor: int
 
-    # Declare type of items by ID
-    _items_by_id: dict[int, ItemBound]
+    # Declare type of length
+    _length: int
 
-    # Declare type of item IDs by key
-    _item_ids_by_key: dict[Hashable, int]
+    # Declare type of size
+    _size: int
 
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ CREATE KEY
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    @classmethod
-    def create_key(
-        cls, item: ItemBound, key: str | tuple[str, ...]
-    ) -> Any | tuple[Any, ...]:
-        """Creates a key or tuple of keys"""
-
-        # Return item if key is a tuple
-        if isinstance(key, tuple):
-            # Initialize value
-            value = []
-
-            # Iterate over keys
-            for k in key:
-                # Check if key is not in item
-                if not ohasattr(item, k):
-                    # Return nothing
-                    return nothing
-
-                # Append value
-                value.append(oget(item, k))
-
-            # Return value
-            return tuple(value)
-
-        # Check if key is not in item
-        if not ohasattr(item, key):
-            # Return nothing
-            return nothing
-
-        # Return key
-        return oget(item, key)
+    # Declare type of ring
+    _ring: list[ItemBound | None]
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, keys: Iterable[str | Iterable[str]] | str | None = None) -> None:
+    def __init__(self, size: int) -> None:
         """Init Method"""
 
-        # Check if keys is a string
-        if isinstance(keys, str):
-            # Convert to tuple
-            self._keys = (keys,)
+        # Initialize cursor
+        self._cursor = 0
 
-        # Otherwise handle normal case
-        else:
-            # Set keys
-            self._keys = tuple(
-                tuple(k) if isinstance(k, Iterable) and not isinstance(k, str) else k
-                for k in keys or []
-            )
+        # Initialize length
+        self._length = 0
 
-        # Initialize items by ID
-        self._items_by_id = {}
+        # Initialize max size
+        self._size = size
 
-        # Initialize item IDs by key
-        self._item_ids_by_key = {}
+        # Initialize ring
+        self._ring = [None] * size
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __GETITEM__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __getitem__(self, key_value: Hashable) -> ItemBound:
+    def __getitem__(self, item: Any) -> Any:
         """Get Item Method"""
 
-        # Raise NonExistentKeyError if key value is not in collection
-        if key_value not in self._item_ids_by_key:
-            raise NonExistentKeyError(key_value)
+        # Check if item is an integer
+        if isinstance(item, int):
+            return self.get(item)
 
-        # Get and return item
-        return self._items_by_id[self._item_ids_by_key[key_value]]
+        # Check if item is a slice
+        return (
+            self._ring[self._cursor :] + self._ring[: self._cursor]  # noqa: E203
+        ).__getitem__(item)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __ITER__
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def __iter__(self) -> Iterator[ItemBound]:
-        """Iterate Method"""
+        """Iter Method"""
 
-        # Return iterator
-        return iter(self._items_by_id.values())
+        # Iterate over data
+        for i in itertools.chain(
+            range(self._cursor, self._length), range(self._cursor)
+        ):
+            # Get item
+            item = self._ring[i]
+
+            # Continue if item is None
+            if item is None:
+                continue
+
+            # Yield data
+            yield item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __LEN__
@@ -138,7 +109,7 @@ class DictCollection(Collection[ItemBound]):
         """Length Method"""
 
         # Return length
-        return len(self._items_by_id)
+        return self._length
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REVERSED__
@@ -147,25 +118,38 @@ class DictCollection(Collection[ItemBound]):
     def __reversed__(self) -> Iterator[ItemBound]:
         """Reversed Method"""
 
-        # Iterate over reversed keys
-        for key in reversed(self._items_by_id):
-            # Yield item
-            yield self._items_by_id[key]
+        # Calculate the starting points for the reversed iteration
+        start1 = (self._cursor - 1) if self._cursor > 0 else (self._length - 1)
+        end1 = -1  # The end index is exclusive in range(), so use -1 to include 0
+        start2 = self._length - 1
+        end2 = self._cursor - 1
+
+        # Iterate over data in reverse
+        for i in itertools.chain(range(start1, end1, -1), range(start2, end2, -1)):
+            # Get item
+            item = self._ring[i]
+
+            # Continue if item is None
+            if item is None:
+                continue
+
+            # Yield data
+            yield item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ NEW
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def New(self, *args: Any, **kwargs: Any) -> DictCollection[ItemBound]:
+    def New(self, *args: Any, **kwargs: Any) -> Collection[ItemBound]:
         """Returns a new collection"""
 
-        # Check if keys not in kwargs
-        if "keys" not in kwargs:
-            # Add keys to kwargs
-            kwargs["keys"] = self._keys
+        # Check if size not in kwargs
+        if "size" not in kwargs:
+            # Add size to kwargs
+            kwargs["size"] = self._size
 
         # Return new collection
-        return DictCollection(*args, **kwargs)
+        return RingCollection(*args, **kwargs)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ADD
@@ -179,41 +163,16 @@ class DictCollection(Collection[ItemBound]):
 
         # Iterate over items
         for item in items:
-            # Continue if item is None
-            if item is None:
-                continue
+            # Add item to buffer
+            self._ring[self._cursor] = item
 
-            # Get item ID
-            item_id = id(item)
+            # Increment cursor
+            self._cursor = (self._cursor + 1) % self._size
 
-            # Continue if item is already in collection
-            if item_id in self._items_by_id:
-                continue
-
-            # Initialize item IDs by key
-            item_ids_by_key = {}
-
-            # Iterate over keys
-            for key in self._keys:
-                # Get key value
-                key_value = self.create_key(item, key)
-
-                # Continue if key value is nothing
-                if key_value is nothing:
-                    continue
-
-                # Raise DuplicateKeyError if key value is already in collection
-                if key_value in self._item_ids_by_key:
-                    raise DuplicateKeyError(key_value)
-
-                # Add key value to item IDs by key
-                item_ids_by_key[key_value] = item_id
-
-            # Update item IDs by key
-            self._item_ids_by_key.update(item_ids_by_key)
-
-            # Add item to collection
-            self._items_by_id[item_id] = item
+            # Check if length is less than size
+            if self._length < self._size:
+                # Increment length
+                self._length += 1
 
             # Increment count
             count += 1
@@ -228,46 +187,44 @@ class DictCollection(Collection[ItemBound]):
     def find(self, item: Any | ItemBound) -> ItemBound | None:
         """Finds an item in the collection"""
 
-        # Return if item is in items by ID
-        if id(item) in self._items_by_id:
-            return item
+        # Get item ID
+        id_item = id(item)
 
-        # Return if item is in item IDs by key
-        if isinstance(item, Hashable) and item in self._item_ids_by_key:
-            return self._items_by_id[self._item_ids_by_key[item]]
+        # Iterate over items
+        for i in range(self._length):
+            # Get index
+            index = (self._cursor + i) % self._size
 
-        # Check if item has a __dict__ attribute
-        if hasattr(item, "__dict__"):
-            # Iterate over keys
-            for key in self._keys:
-                # Get value
-                value = self.create_key(item, key)
+            # Get item
+            current = self._ring[index]
 
-                # Continue if value is nothing
-                if value is nothing:
-                    continue
+            # Return item if current is item
+            if id(current) == id_item or current == item:
+                return current
 
-                # Check if value is in item IDs by key
-                if value in self._item_ids_by_key:
-                    # Return item
-                    return self._items_by_id[self._item_ids_by_key[value]]
-
-        # Return None
-        return None
+        # Return get
+        return self.get(item)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ GET
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def get(self, key: Hashable, default: ItemBound | None = None) -> ItemBound | None:
-        """Gets an item from the collection by key"""
+        """Gets an item from the ring collection"""
 
-        # Return item if key is in collection
-        if key in self._item_ids_by_key:
-            return self._items_by_id[self._item_ids_by_key[key]]
+        # Return default if key not an int
+        if not isinstance(key, int):
+            return default
 
-        # Return default
-        return default
+        # Get item from buffer
+        item = self._ring[(self._cursor + key) % self._size]
+
+        # Raise IndexError if item is None
+        if item is None:
+            raise IndexError("list index out of range")
+
+        # Return item
+        return item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REMOVE
@@ -276,43 +233,5 @@ class DictCollection(Collection[ItemBound]):
     def remove(self, *items: ItemBound) -> int:
         """Removes an item from the collection"""
 
-        # Initialize count
-        count = 0
-
-        # Iterate over items
-        for item in items:
-            # Continue if item is None
-            if item is None:
-                continue
-
-            # Get item ID
-            item_id = id(item)
-
-            # Continue if item is not in collection
-            if item_id not in self._items_by_id:
-                continue
-
-            # Iterate over keys
-            for key in self._keys:
-                # Get key value
-                key_value = self.create_key(item, key)
-
-                # Continue if key value is nothing
-                if key_value is nothing:
-                    continue
-
-                # Check if key value is not in item IDs by key
-                if key_value not in self._item_ids_by_key:
-                    continue
-
-                # Remove key value from item IDs by key
-                del self._item_ids_by_key[key_value]
-
-            # Remove item from collection
-            del self._items_by_id[item_id]
-
-            # Increment count
-            count += 1
-
-        # Return count
-        return count
+        # Raise NotImplementedError
+        raise NotImplementedError("RingCollection does not support remove")
