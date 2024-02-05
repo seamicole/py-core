@@ -89,14 +89,14 @@ class WSClientSession:
                     # Return connection
                     return connection
 
-            # Get context
-            ctx = ssl.create_default_context()
+        # Get context
+        ctx = ssl.create_default_context()
 
-            # Create a new connection
-            connection = await websockets.connect(uri, ssl=ctx, compression=None)
+        # Create a new connection
+        connection = await websockets.connect(uri, ssl=ctx, compression=None)
 
-            # Add connection to connections
-            connections[connection] = 1
+        # Add connection to connections
+        connections[connection] = 1
 
         # Return connection
         return connection
