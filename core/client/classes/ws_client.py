@@ -13,7 +13,7 @@ except ImportError:
     websockets = None  # type: ignore
 
 from multiprocessing.managers import SyncManager
-from typing import Any, Callable
+from typing import Any, Awaitable, Callable
 from websockets.legacy.client import WebSocketClientProtocol
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -49,7 +49,9 @@ class WSClient:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     async def listen(
-        self, conn: WebSocketClientProtocol, callback: Callable[[str | bytes], None]
+        self,
+        conn: WebSocketClientProtocol,
+        callback: Callable[[str | bytes], Awaitable[None]],
     ) -> None:
         """Listens to a websocket connection"""
 
@@ -57,10 +59,9 @@ class WSClient:
         while True:
             # Receive message
             message = await conn.recv()
-            print(message)
 
             # Invoke callback
-            callback(message)
+            await callback(message)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SUBSCRIBE
@@ -70,7 +71,7 @@ class WSClient:
         self,
         uri: str,
         data: str | dict[Any, Any],
-        callback: Callable[[str | bytes], None],
+        callback: Callable[[str | bytes], Awaitable[None]],
     ) -> None:
         """Subscribes to a websocket connection and listens for messages"""
 

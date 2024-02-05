@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, TYPE_CHECKING
+from typing import Any, Awaitable, Callable, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -53,7 +53,7 @@ class APIChannel:
 
     async def subscribe(
         self,
-        callback: Callable[[str | bytes], None],
+        callback: Callable[[str | bytes], Awaitable[None]],
         data: str | dict[Any, Any] | None = None,
     ) -> None:
         """Subscribes to an API channel"""
