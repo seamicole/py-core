@@ -46,7 +46,7 @@ class API:
 
         # Initialize endpoints
         self.endpoints: APIEndpointCollection = APIEndpointCollection(
-            keys=("url", "method")
+            keys=(("url", "method"),)
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
