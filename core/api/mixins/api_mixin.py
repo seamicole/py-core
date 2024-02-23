@@ -61,6 +61,8 @@ class APIMixin:
 
     # Define a channel type alias
     class Channel(TypedDict):
+        params: NotRequired[dict[str, Any]]
+        params_schema: NotRequired[dict[str, str]]
         subscribe: ChannelEvent
         unsubscribe: ChannelEvent
 
