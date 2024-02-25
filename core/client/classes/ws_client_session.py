@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import time
 import ssl
 
 from multiprocessing import Manager
@@ -38,7 +40,9 @@ class WSClientSession:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, manager: SyncManager | None = None) -> None:
+    def __init__(
+        self, manager: SyncManager | None = None, sync_tolerance_ms: int = 2000
+    ) -> None:
         """Init Method"""
 
         # Initialize a manager
@@ -52,10 +56,15 @@ class WSClientSession:
 
         # Initialize is alive
         self._is_alive = self._manager.Value("b", False)
+        self._is_alive_cache = False
+        self._is_alive_updated_at = time.time()
 
         # Initialize connection ID and connection count
         self._connection_id = self._manager.Value("i", 0)  # Not used yet
         self._connection_count = self._manager.Value("i", 0)
+
+        # Set sync tolerance
+        self._sync_tolerance_ms = sync_tolerance_ms
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ IS ALIVE
@@ -65,9 +74,28 @@ class WSClientSession:
     def is_alive(self) -> bool:
         """Get is alive"""
 
+        # Check if cache is still valid
+        if time.time() - self._is_alive_updated_at < self.sync_tolerance_s:
+            return self._is_alive_cache
+
         # Get is alive
         with self._lock:
-            return self._is_alive.value
+            self._is_alive_cache = self._is_alive.value
+            self._is_alive_updated_at = time.time()
+
+        # Return is alive cache
+        return self._is_alive_cache
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ SYNC TOLERANCE S
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def sync_tolerance_s(self) -> float:
+        """Get sync tolerance in seconds"""
+
+        # Return sync tolerance in seconds
+        return self._sync_tolerance_ms / 1000
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _DECREMENT CONNECTION COUNT
@@ -168,8 +196,14 @@ class WSClientSession:
 
         # Check if channel count is 1
         if connections[connection] <= 1:
-            # Close connection
-            await connection.close()
+            # Initialize try-except block
+            try:
+                # Close connection
+                await asyncio.wait_for(connection.close(), timeout=10)
+
+            # Handle any exception
+            except Exception:
+                pass
 
             # Remove connection
             del connections[connection]

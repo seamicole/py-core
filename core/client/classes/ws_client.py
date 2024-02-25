@@ -38,13 +38,14 @@ class WSClient:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def __init__(
-        self,
-        manager: SyncManager | None = None,
+        self, manager: SyncManager | None = None, sync_tolerance_ms: int = 2000
     ) -> None:
         """Init Method"""
 
         # Initialize websocket client session
-        self.session = WSClientSession(manager=manager)
+        self.session = WSClientSession(
+            manager=manager, sync_tolerance_ms=sync_tolerance_ms
+        )
 
         # Initialize websocket event loop
         self.event_loop = asyncio.get_event_loop()
@@ -92,18 +93,35 @@ class WSClient:
     ) -> None:
         """Receives messages from a websocket connection"""
 
+        # Define receive loop
+        async def receive_loop() -> None:
+            # Initialize while loop
+            while self.session.is_alive and not should_unsubscribe():
+                # Receive message
+                message = await conn.recv()
+
+                # Handle case of coroutine function
+                if asyncio.iscoroutinefunction(receive):
+                    await receive(message)
+
+                # Handle case of normal function
+                else:
+                    receive(message)
+
+        # Create receive task
+        receive_task = self.event_loop.create_task(receive_loop())
+
         # Initialize while loop
         while self.session.is_alive and not should_unsubscribe():
-            # Receive message
-            message = await conn.recv()
+            # Check if receive task is done
+            if receive_task.done():
+                break
 
-            # Handle case of coroutine function
-            if asyncio.iscoroutinefunction(receive):
-                await receive(message)
+            # Sleep for 1 second
+            await asyncio.sleep(self.session.sync_tolerance_s)
 
-            # Handle case of normal function
-            else:
-                receive(message)
+        # Cancel receive task
+        receive_task.cancel()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SUBSCRIBE
