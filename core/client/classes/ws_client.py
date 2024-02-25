@@ -97,8 +97,14 @@ class WSClient:
         async def receive_loop() -> None:
             # Initialize while loop
             while self.session.is_alive and not should_unsubscribe():
-                # Receive message
-                message = await conn.recv()
+                # Initialize try-except block
+                try:
+                    # Receive message
+                    message = await conn.recv()
+
+                # Handle case of connection error
+                except websockets.exceptions.ConnectionClosedError:
+                    return
 
                 # Handle case of coroutine function
                 if asyncio.iscoroutinefunction(receive):
@@ -113,9 +119,9 @@ class WSClient:
 
         # Initialize while loop
         while self.session.is_alive and not should_unsubscribe():
-            # Check if receive task is done
+            # Return if receive task is done
             if receive_task.done():
-                break
+                return
 
             # Sleep for 1 second
             await asyncio.sleep(self.session.sync_tolerance_s)

@@ -10,6 +10,7 @@ from typing import Any, AsyncGenerator, Generator, TYPE_CHECKING, TypeVar
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.client.exceptions import HTTPStatusCodeError
 from core.client.types import HTTPMethod
 from core.dict.functions.dfrom_schema import dfrom_schema
 from core.placeholders import nothing
@@ -175,6 +176,11 @@ class APIEndpoint:
         # Make request
         response = self.request(params=params, weight=weight)
 
+        # Check if response status code is not in 200 range
+        if not response.did_succeed:
+            # Raise HTTPStatusCodeError
+            raise HTTPStatusCodeError(response.status_code)
+
         # Get JSON path and schema
         json_path = self.json_path if isinstance(json_path, Nothing) else json_path
         json_schema = (
@@ -209,6 +215,11 @@ class APIEndpoint:
         # Make request
         response = self.request(params=params, weight=weight)
 
+        # Check if response status code is not in 200 range
+        if not response.did_succeed:
+            # Raise HTTPStatusCodeError
+            raise HTTPStatusCodeError(response.status_code)
+
         # Get JSON path and schema
         json_path = self.json_path if isinstance(json_path, Nothing) else json_path
         json_schema = (
@@ -241,6 +252,11 @@ class APIEndpoint:
 
         # Make request
         response = await self.request_async(params=params, weight=weight)
+
+        # Check if response status code is not in 200 range
+        if not response.did_succeed:
+            # Raise HTTPStatusCodeError
+            raise HTTPStatusCodeError(response.status_code)
 
         # Get JSON path and schema
         json_path = self.json_path if isinstance(json_path, Nothing) else json_path
@@ -275,6 +291,11 @@ class APIEndpoint:
 
         # Make request
         response = await self.request_async(params=params, weight=weight)
+
+        # Check if response status code is not in 200 range
+        if not response.did_succeed:
+            # Raise HTTPStatusCodeError
+            raise HTTPStatusCodeError(response.status_code)
 
         # Get JSON path and schema
         json_path = self.json_path if isinstance(json_path, Nothing) else json_path

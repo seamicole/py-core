@@ -5,7 +5,7 @@
 import asyncio
 
 from copy import deepcopy
-from typing import Any, AsyncGenerator, Generator
+from typing import Any, AsyncGenerator, Generator, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -16,6 +16,12 @@ from core.client.types import JSONDict, JSONSchema
 from core.collection.classes.dict_collection import DictCollection
 from core.placeholders import nothing
 from core.placeholders.types import Nothing
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ TYPE VARIABLES
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+T = TypeVar("T")
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -112,7 +118,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
 
     def request_instances(
         self,
-        InstanceClass: type,
+        InstanceClass: type[T],
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
