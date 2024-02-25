@@ -8,7 +8,7 @@ import asyncio
 import posixpath
 
 from multiprocessing import Manager
-from typing import Any, Callable, TYPE_CHECKING
+from typing import Any, Awaitable, Callable, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -291,11 +291,19 @@ class API:
 
     async def subscribe(
         self,
-        data: str | dict[Any, Any],
-        callback: Callable[[str | bytes], None],
+        data_subscribe: str | dict[Any, Any],
+        data_unsubscribe: str | dict[Any, Any],
+        receive: Callable[[str | bytes], Awaitable[None] | None],
+        should_unsubscribe: Callable[[], bool] = lambda: False,
         uri: str | None = None,
     ) -> None:
         """Subscribes to a websocket channel"""
 
         # Subscribe to websocket channel
-        await self.ws.subscribe(uri=uri or self.ws_uri, data=data, callback=callback)
+        await self.ws.subscribe(
+            uri=uri or self.ws_uri,
+            data_subscribe=data_subscribe,
+            data_unsubscribe=data_unsubscribe,
+            receive=receive,
+            should_unsubscribe=should_unsubscribe,
+        )

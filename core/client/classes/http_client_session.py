@@ -51,9 +51,7 @@ class HTTPClientSession:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(
-        self, interval: float | None = None, manager: SyncManager | None = None
-    ) -> None:
+    def __init__(self, manager: SyncManager | None = None) -> None:
         """Init Method"""
 
         # Initialize a manager
@@ -68,25 +66,22 @@ class HTTPClientSession:
         # Initialize requests
         self._requests = self._manager.dict()
 
-        # Set interval
-        self._interval = interval
-
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ LOG REQUEST
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def log_request(self, weight: int) -> None:
+    def log_request(self, weight: int, interval: float | None = None) -> None:
         """Logs an HTTP client request"""
 
         # Return if no interval
-        if self._interval is None:
+        if interval is None:
             return
 
         # Get ts
         ts = time.time()
 
         # Check if one second elapsed
-        if ts - self._usage["ts"] >= self._interval:
+        if ts - self._usage["ts"] >= interval:
             # Reset usage
             self._usage["wt"] = 0
             self._usage["ts"] = ts

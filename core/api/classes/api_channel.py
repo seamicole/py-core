@@ -53,9 +53,10 @@ class APIChannel:
 
     async def subscribe(
         self,
-        callback: Callable[[str | bytes], Awaitable[None] | None],
+        receive: Callable[[str | bytes], Awaitable[None] | None],
         data_subscribe: str | dict[Any, Any] | None = None,
         data_unsubscribe: str | dict[Any, Any] | None = None,
+        should_unsubscribe: Callable[[], bool] = lambda: False,
     ) -> None:
         """Subscribes to an API channel"""
 
@@ -72,5 +73,6 @@ class APIChannel:
                 if data_unsubscribe is not None
                 else self.events["unsubscribe"].data
             ),
-            callback=callback,
+            receive=receive,
+            should_unsubscribe=should_unsubscribe,
         )

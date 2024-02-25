@@ -51,7 +51,11 @@ class WSClientSession:
         self._connections = {}
 
         # Initialize is alive
-        self._is_alive = self._manager.Value("b", True)
+        self._is_alive = self._manager.Value("b", False)
+
+        # Initialize connection ID and connection count
+        self._connection_id = self._manager.Value("i", 0)  # Not used yet
+        self._connection_count = self._manager.Value("i", 0)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ IS ALIVE
@@ -64,6 +68,46 @@ class WSClientSession:
         # Get is alive
         with self._lock:
             return self._is_alive.value
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _DECREMENT CONNECTION COUNT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _decrement_connection_count(self) -> None:
+        """Decrement connection count"""
+
+        # Decrement connection count
+        with self._lock:
+            self._connection_count.value -= 1
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _GET CONNECTION ID
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _get_connection_id(self) -> int:
+        """Get connection ID"""
+
+        # Get connection ID
+        with self._lock:
+            # Get connection ID
+            connection_id = self._connection_id.value
+
+            # Increment connection ID
+            self._connection_id.value += 1
+
+            # Return connection ID
+            return connection_id
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _INCREMENT CONNECTION COUNT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _increment_connection_count(self) -> None:
+        """Increment connection count"""
+
+        # Increment connection count
+        with self._lock:
+            self._connection_count.value += 1
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ACQUIRE CONNECTION
@@ -89,6 +133,9 @@ class WSClientSession:
                     # Return connection
                     return connection
 
+        # Increment connection count
+        self._increment_connection_count()
+
         # Get context
         ctx = ssl.create_default_context()
 
@@ -100,18 +147,6 @@ class WSClientSession:
 
         # Return connection
         return connection
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ KILL
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    async def kill(self) -> None:
-        """Kills the websocket client session"""
-
-        # Acquire lock
-        with self._lock:
-            # Set is alive to false
-            self._is_alive.value = False
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ RELEASE CONNECTION
@@ -131,14 +166,41 @@ class WSClientSession:
             if connections is None or connection not in connections:
                 return
 
-            # Check if channel count is 1
-            if connections[connection] <= 1:
-                # Close connection
-                await connection.close()
+        # Check if channel count is 1
+        if connections[connection] <= 1:
+            # Close connection
+            await connection.close()
 
-                # Remove connection
-                del connections[connection]
+            # Remove connection
+            del connections[connection]
 
-            # Decrement channel count
-            else:
-                connections[connection] -= 1
+            # Decrement connection count
+            self._decrement_connection_count()
+
+        # Decrement channel count
+        else:
+            connections[connection] -= 1
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ START
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def start(self) -> None:
+        """Starts the websocket client session"""
+
+        # Acquire lock
+        with self._lock:
+            # Set is alive to true
+            self._is_alive.value = True
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ STOP
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def stop(self) -> None:
+        """Stops the websocket client session"""
+
+        # Acquire lock
+        with self._lock:
+            # Set is alive to false
+            self._is_alive.value = False

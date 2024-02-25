@@ -47,15 +47,15 @@ class HTTPClient:
             weight_per_second is None or weight_per_second > 0
         ), "Weight per second must be greater than zero!"
 
-        # Get interval
-        interval = (
+        # Initialize HTTP client session
+        self.session = HTTPClientSession(manager=manager)
+
+        # Set weight interval
+        self.weight_interval = (
             (1 / weight_per_second if weight_per_second < 1 else 1)
             if weight_per_second is not None
             else None
         )
-
-        # Initialize HTTP client session
-        self.session = HTTPClientSession(interval=interval, manager=manager)
 
         # Set weight per second
         self.weight_per_second = weight_per_second
@@ -274,19 +274,19 @@ class HTTPClient:
         """Throttles the client before making a request"""
 
         # Check if no rate limits are applied
-        if self.weight_per_second is None or self.session._interval is None:
+        if self.weight_interval is None or self.weight_per_second is None:
             return 0
 
         # Acquire lock
         with self.session._lock:
             # Log request
-            self.session.log_request(weight)
+            self.session.log_request(weight, self.weight_interval)
 
             # Get weight used
             weight_used = self.session._usage["wt"]
 
             # Break if weight respects limit
-            if weight_used / self.session._interval <= self.weight_per_second:
+            if weight_used / self.weight_interval <= self.weight_per_second:
                 return 0
 
             # Decrement weight
@@ -296,7 +296,7 @@ class HTTPClient:
             ts = self.session._usage["ts"]
 
         # Get time to sleep
-        time_to_sleep = self.session._interval - (time.time() - ts)
+        time_to_sleep = self.weight_interval - (time.time() - ts)
 
         # Return time to sleep
         return max(time_to_sleep, 0)

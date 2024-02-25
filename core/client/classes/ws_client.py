@@ -55,23 +55,55 @@ class WSClient:
 
     async def listen(
         self,
-        conn: WebSocketClientProtocol,
-        callback: Callable[[str | bytes], Awaitable[None] | None],
+        uri: str,
+        data_subscribe: str | dict[Any, Any],
+        data_unsubscribe: str | dict[Any, Any],
+        receive: Callable[[str | bytes], Awaitable[None] | None],
+        should_unsubscribe: Callable[[], bool] = lambda: False,
     ) -> None:
         """Listens to a websocket connection"""
 
         # Initialize while loop
-        while self.session.is_alive:
+        while self.session.is_alive and not should_unsubscribe():
+            # Acquire connection
+            conn = await self.session.acquire_connection(uri)
+
+            # Send subscribe data
+            await conn.send(data_subscribe)
+
+            # Receive data
+            await self.receive(conn, receive, should_unsubscribe)
+
+            # Send unsubscribe data
+            await conn.send(data_unsubscribe)
+
+            # Release connection
+            await self.session.release_connection(uri, conn)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ RECEIVE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    async def receive(
+        self,
+        conn: WebSocketClientProtocol,
+        receive: Callable[[str | bytes], Awaitable[None] | None],
+        should_unsubscribe: Callable[[], bool],
+    ) -> None:
+        """Receives messages from a websocket connection"""
+
+        # Initialize while loop
+        while self.session.is_alive and not should_unsubscribe():
             # Receive message
             message = await conn.recv()
 
             # Handle case of coroutine function
-            if asyncio.iscoroutinefunction(callback):
-                await callback(message)
+            if asyncio.iscoroutinefunction(receive):
+                await receive(message)
 
             # Handle case of normal function
             else:
-                callback(message)
+                receive(message)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SUBSCRIBE
@@ -82,7 +114,8 @@ class WSClient:
         uri: str,
         data_subscribe: str | dict[Any, Any],
         data_unsubscribe: str | dict[Any, Any],
-        callback: Callable[[str | bytes], Awaitable[None] | None],
+        receive: Callable[[str | bytes], Awaitable[None] | None],
+        should_unsubscribe: Callable[[], bool] = lambda: False,
     ) -> None:
         """Subscribes to a websocket connection and listens for messages"""
 
@@ -91,25 +124,22 @@ class WSClient:
             # Raise an ImportError
             raise ImportError("websockets is required to use this function")
 
+        # Start session
+        self.session.start()
+
         # Ensure data is a string
         data_subscribe, data_unsubscribe = (
             json.dumps(data) if isinstance(data, dict) else data
             for data in (data_subscribe, data_unsubscribe)
         )
 
-        # Initialize while loop
-        while self.session.is_alive:
-            # Acquire connection
-            conn = await self.session.acquire_connection(uri)
-
-            # Send subscribe data
-            await conn.send(data_subscribe)
-
-            # Listen to connection
-            await self.listen(conn, callback)
-
-            # Send unsubscribe data
-            await conn.send(data_unsubscribe)
-
-            # Release connection
-            await self.session.release_connection(uri, conn)
+        # Create listen task
+        self.event_loop.create_task(
+            self.listen(
+                uri,
+                data_subscribe,
+                data_unsubscribe,
+                receive,
+                should_unsubscribe,
+            )
+        )
