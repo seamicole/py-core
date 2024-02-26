@@ -38,13 +38,18 @@ class WSClient:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def __init__(
-        self, manager: SyncManager | None = None, sync_tolerance_ms: int = 2000
+        self,
+        manager: SyncManager | None = None,
+        ping_interval_ms: int | None = 30000,
+        sync_tolerance_ms: int = 2000,
     ) -> None:
         """Init Method"""
 
         # Initialize websocket client session
         self.session = WSClientSession(
-            manager=manager, sync_tolerance_ms=sync_tolerance_ms
+            manager=manager,
+            ping_interval_ms=ping_interval_ms,
+            sync_tolerance_ms=sync_tolerance_ms,
         )
 
         # Initialize websocket event loop
@@ -75,8 +80,10 @@ class WSClient:
             # Receive data
             await self.receive(conn, receive, should_unsubscribe)
 
-            # Send unsubscribe data
-            await conn.send(data_unsubscribe)
+            # Check if connection is still open
+            if not conn.closed:
+                # Send unsubscribe data
+                await conn.send(data_unsubscribe)
 
             # Release connection
             await self.session.release_connection(uri, conn)
@@ -96,7 +103,9 @@ class WSClient:
         # Define receive loop
         async def receive_loop() -> None:
             # Initialize while loop
-            while self.session.is_alive and not should_unsubscribe():
+            while (
+                not conn.closed and self.session.is_alive and not should_unsubscribe()
+            ):
                 # Initialize try-except block
                 try:
                     # Receive message

@@ -41,7 +41,10 @@ class WSClientSession:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def __init__(
-        self, manager: SyncManager | None = None, sync_tolerance_ms: int = 2000
+        self,
+        manager: SyncManager | None = None,
+        ping_interval_ms: int | None = 30000,
+        sync_tolerance_ms: int = 2000,
     ) -> None:
         """Init Method"""
 
@@ -63,8 +66,11 @@ class WSClientSession:
         self._connection_id = self._manager.Value("i", 0)  # Not used yet
         self._connection_count = self._manager.Value("i", 0)
 
+        # Set ping interval
+        self.ping_interval_ms = ping_interval_ms
+
         # Set sync tolerance
-        self._sync_tolerance_ms = sync_tolerance_ms
+        self.sync_tolerance_ms = sync_tolerance_ms
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ IS ALIVE
@@ -87,6 +93,21 @@ class WSClientSession:
         return self._is_alive_cache
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ PING INTERVAL S
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def ping_interval_s(self) -> float | None:
+        """Get ping interval in seconds"""
+
+        # Return if ping interval is None
+        if self.ping_interval_ms is None:
+            return None
+
+        # Return ping interval in seconds
+        return self.ping_interval_ms / 1000
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SYNC TOLERANCE S
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -95,7 +116,7 @@ class WSClientSession:
         """Get sync tolerance in seconds"""
 
         # Return sync tolerance in seconds
-        return self._sync_tolerance_ms / 1000
+        return self.sync_tolerance_ms / 1000
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _DECREMENT CONNECTION COUNT
@@ -173,6 +194,25 @@ class WSClientSession:
         # Add connection to connections
         connections[connection] = 1
 
+        # Get ping interval
+        ping_interval_s = self.ping_interval_s
+
+        # Check if ping interval is not None
+        if ping_interval_s is not None:
+            # Define ping loop
+            async def ping_loop() -> None:
+                # Initialize while loop
+                while not connection.closed:
+                    # Send ping
+                    # await connection.ping()
+                    print("PING!")
+
+                    # Wait for ping interval
+                    await asyncio.sleep(ping_interval_s)
+
+            # Create ping task
+            asyncio.create_task(ping_loop())
+
         # Return connection
         return connection
 
@@ -196,14 +236,16 @@ class WSClientSession:
 
         # Check if channel count is 1
         if connections[connection] <= 1:
-            # Initialize try-except block
-            try:
-                # Close connection
-                await asyncio.wait_for(connection.close(), timeout=10)
+            # Check if connection is still open
+            if not connection.closed:
+                # Initialize try-except block
+                try:
+                    # Close connection
+                    await asyncio.wait_for(connection.close(), timeout=10)
 
-            # Handle any exception
-            except Exception:
-                pass
+                # Handle any exception
+                except Exception:
+                    pass
 
             # Remove connection
             del connections[connection]

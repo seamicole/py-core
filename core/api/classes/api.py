@@ -42,6 +42,7 @@ class API:
         base_url: str,
         weight_per_second: float | int | None = None,
         ws_uri: str | None = None,
+        ws_ping_interval_ms: int | None = None,
     ) -> None:
         """Init Method"""
 
@@ -49,7 +50,7 @@ class API:
         manager = Manager()
 
         # Initialize HTTP client
-        self.client = HTTPClient(weight_per_second=weight_per_second, manager=manager)
+        self.client = HTTPClient(manager=manager, weight_per_second=weight_per_second)
 
         # Set base url
         self.base_url = base_url
@@ -60,7 +61,7 @@ class API:
         )
 
         # Initialize websocket client
-        self.ws = WSClient(manager=manager)
+        self.ws = WSClient(manager=manager, ping_interval_ms=ws_ping_interval_ms)
 
         # Set websocket URI
         self.ws_uri = ws_uri or base_url
