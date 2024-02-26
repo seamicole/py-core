@@ -5,12 +5,13 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import time
 import ssl
 
 from multiprocessing import Manager
 from multiprocessing.managers import SyncManager
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 try:
     import websockets
@@ -43,6 +44,7 @@ class WSClientSession:
     def __init__(
         self,
         manager: SyncManager | None = None,
+        ping_data: str | dict[str, Any] | None = None,
         ping_interval_ms: int | None = 30000,
         sync_tolerance_ms: int = 2000,
     ) -> None:
@@ -65,6 +67,9 @@ class WSClientSession:
         # Initialize connection ID and connection count
         self._connection_id = self._manager.Value("i", 0)  # Not used yet
         self._connection_count = self._manager.Value("i", 0)
+
+        # Set ping data
+        self.ping_data = ping_data
 
         # Set ping interval
         self.ping_interval_ms = ping_interval_ms
@@ -194,24 +199,40 @@ class WSClientSession:
         # Add connection to connections
         connections[connection] = 1
 
-        # Get ping interval
-        ping_interval_s = self.ping_interval_s
+        # Get ping data
+        ping_data = self.ping_data
 
-        # Check if ping interval is not None
-        if ping_interval_s is not None:
-            # Define ping loop
-            async def ping_loop() -> None:
-                # Initialize while loop
-                while not connection.closed:
-                    # Send ping
-                    # await connection.ping()
-                    print("PING!")
+        # Check if ping data is not None
+        if ping_data is not None:
+            # Get ping interval
+            ping_interval_s = self.ping_interval_s
 
-                    # Wait for ping interval
-                    await asyncio.sleep(ping_interval_s)
+            # Check if ping interval is not None
+            if ping_interval_s is not None:
+                # Evaluate ping data if dictionary
+                ping_data = (
+                    {k: v({}, {}) if callable(v) else v for k, v in ping_data.items()}
+                    if isinstance(ping_data, dict)
+                    else ping_data
+                )
 
-            # Create ping task
-            asyncio.create_task(ping_loop())
+                # Ensure ping data is a string
+                ping_data = (
+                    json.dumps(ping_data) if isinstance(ping_data, dict) else ping_data
+                )
+
+                # Define ping loop
+                async def ping_loop() -> None:
+                    # Initialize while loop
+                    while not connection.closed:
+                        # Send ping
+                        await connection.send(ping_data)
+
+                        # Wait for ping interval
+                        await asyncio.sleep(ping_interval_s)
+
+                # Create ping task
+                asyncio.create_task(ping_loop())
 
         # Return connection
         return connection

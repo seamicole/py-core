@@ -79,6 +79,9 @@ class APIMixin:
     # Declare type of API WS URI
     API_WS_URI: str | None
 
+    # Declare type of API WS ping data
+    API_WS_PING_DATA: str | dict[str, Any] | None
+
     # Declare type of API WS ping interval ms
     API_WS_PING_INTERVAL_MS: int | None
 
@@ -110,6 +113,7 @@ class APIMixin:
             base_url=self.API_BASE_URL,
             weight_per_second=getattr(self, "API_WEIGHT_PER_SECOND", None),
             ws_uri=getattr(self, "API_WS_URI", None),
+            ws_ping_data=getattr(self, "API_WS_PING_DATA", None),
             ws_ping_interval_ms=getattr(self, "API_WS_PING_INTERVAL_MS", 30000),
         )
 

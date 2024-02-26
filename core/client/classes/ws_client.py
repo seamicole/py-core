@@ -40,6 +40,7 @@ class WSClient:
     def __init__(
         self,
         manager: SyncManager | None = None,
+        ping_data: str | dict[str, Any] | None = None,
         ping_interval_ms: int | None = 30000,
         sync_tolerance_ms: int = 2000,
     ) -> None:
@@ -48,6 +49,7 @@ class WSClient:
         # Initialize websocket client session
         self.session = WSClientSession(
             manager=manager,
+            ping_data=ping_data,
             ping_interval_ms=ping_interval_ms,
             sync_tolerance_ms=sync_tolerance_ms,
         )
@@ -159,6 +161,16 @@ class WSClient:
 
         # Start session
         self.session.start()
+
+        # Evaluate data if dictionary
+        data_subscribe, data_unsubscribe = (
+            json.dumps(
+                {k: v({}, {}) if callable(v) else v for k, v in (data or {}).items()}
+            )
+            if isinstance(data, dict)
+            else data
+            for data in (data_subscribe, data_unsubscribe)
+        )
 
         # Ensure data is a string
         data_subscribe, data_unsubscribe = (
