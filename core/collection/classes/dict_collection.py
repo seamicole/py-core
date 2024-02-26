@@ -206,6 +206,11 @@ class DictCollection(Collection[ItemBound]):
                 if key_value in self._item_ids_by_key:
                     raise DuplicateKeyError(key_value)
 
+                # Continue if key is None
+                # Initially did not have this constraint but it led to bugs
+                if key_value is None:
+                    continue
+
                 # Add key value to item IDs by key
                 item_ids_by_key[key_value] = item_id
 
