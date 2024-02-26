@@ -18,7 +18,7 @@ from core.api.classes.api_channel_event import APIChannelEvent
 from core.api.classes.api_endpoint import APIEndpoint
 from core.api.classes.api_endpoint_collection import APIEndpointCollection
 from core.client.enums.http_method import HTTPMethod
-from core.client.types import HTTPMethodLiteral, JSONSchema
+from core.client.types import HTTPMethodLiteral, JSONFilter, JSONSchema
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -30,6 +30,7 @@ from core.client.types import HTTPMethodLiteral, JSONSchema
 class ChannelEvent(TypedDict):
     data: NotRequired[JSONSchema]
     json_path: NotRequired[str]
+    json_filter: NotRequired[JSONFilter]
     json_schema: NotRequired[JSONSchema]
 
 
@@ -51,6 +52,7 @@ class APIMixin:
         path: str
         base_url: NotRequired[str]
         json_path: NotRequired[str]
+        json_filter: NotRequired[JSONFilter]
         json_schema: NotRequired[JSONSchema]
         params: NotRequired[dict[str, Any]]
         params_schema: NotRequired[dict[str, str]]

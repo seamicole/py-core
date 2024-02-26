@@ -2,7 +2,7 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Literal, Union
+from typing import Any, Callable, Literal, Union
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -36,3 +36,6 @@ JSON = JSONValue | JSONDict | JSONList
 
 # Define a generic JSON schema type
 JSONSchema = DictSchema
+
+# Define a generic JSON filter type
+JSONFilter = Callable[[Any, Any], bool]

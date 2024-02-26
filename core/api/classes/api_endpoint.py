@@ -19,7 +19,7 @@ from core.placeholders.types import Nothing
 if TYPE_CHECKING:
     from core.api.classes.api import API
     from core.client.classes.http_response import HTTPResponse
-    from core.client.types import HTTPMethodLiteral, JSONDict, JSONSchema
+    from core.client.types import HTTPMethodLiteral, JSONDict, JSONFilter, JSONSchema
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ TYPE VARIABLES
@@ -47,6 +47,7 @@ class APIEndpoint:
         method: HTTPMethod | HTTPMethodLiteral | None = None,
         base_url: str | None = None,
         json_path: str | None = None,
+        json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None = None,
         params: dict[str, Any] | None = None,
         params_schema: dict[str, str] | None = None,
@@ -73,6 +74,9 @@ class APIEndpoint:
 
         # Set JSON path
         self.json_path = json_path
+
+        # Set JSON filter
+        self.json_filter = json_filter
 
         # Set JSON schema
         self.json_schema = json_schema
@@ -205,6 +209,7 @@ class APIEndpoint:
     def request_dicts(
         self,
         json_path: str | None | Nothing = nothing,
+        json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
         overrides: dict[str, Any] | None = None,
@@ -226,8 +231,13 @@ class APIEndpoint:
             self.json_schema if isinstance(json_schema, Nothing) else json_schema
         )
 
+        # Get JSON filter
+        json_filter = self.json_filter if json_filter is None else json_filter
+
         # Iterate over items
-        for item in response.dicts(json_path=json_path, json_schema=json_schema):
+        for item in response.dicts(
+            json_path=json_path, json_filter=json_filter, json_schema=json_schema
+        ):
             # Check if overrides
             if item is not None and overrides is not None:
                 # Update item
@@ -282,6 +292,7 @@ class APIEndpoint:
     async def request_dicts_async(
         self,
         json_path: str | None | Nothing = nothing,
+        json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
         overrides: dict[str, Any] | None = None,
@@ -303,8 +314,13 @@ class APIEndpoint:
             self.json_schema if isinstance(json_schema, Nothing) else json_schema
         )
 
+        # Get JSON filter
+        json_filter = self.json_filter if json_filter is None else json_filter
+
         # Iterate over items
-        for item in response.dicts(json_path=json_path, json_schema=json_schema):
+        for item in response.dicts(
+            json_path=json_path, json_filter=json_filter, json_schema=json_schema
+        ):
             # Check if overrides
             if item is not None and overrides is not None:
                 # Update item
@@ -358,6 +374,7 @@ class APIEndpoint:
         self,
         InstanceClass: type[T],
         json_path: str | None | Nothing = nothing,
+        json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
         overrides: dict[str, Any] | None = None,
@@ -371,9 +388,13 @@ class APIEndpoint:
             self.json_schema if isinstance(json_schema, Nothing) else json_schema
         )
 
+        # Get JSON filter
+        json_filter = self.json_filter if json_filter is None else json_filter
+
         # Iterate over items
         for item in self.request_dicts(
             json_path=json_path,
+            json_filter=json_filter,
             json_schema=json_schema,
             params=params,
             overrides=overrides,
@@ -427,6 +448,7 @@ class APIEndpoint:
         self,
         InstanceClass: type[T],
         json_path: str | None | Nothing = nothing,
+        json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
         overrides: dict[str, Any] | None = None,
@@ -440,9 +462,13 @@ class APIEndpoint:
             self.json_schema if isinstance(json_schema, Nothing) else json_schema
         )
 
+        # Get JSON filter
+        json_filter = self.json_filter if json_filter is None else json_filter
+
         # Iterate over items
         async for item in self.request_dicts_async(
             json_path=json_path,
+            json_filter=json_filter,
             json_schema=json_schema,
             params=params,
             overrides=overrides,

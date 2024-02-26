@@ -23,7 +23,7 @@ from core.dict.functions.dfrom_schema import dfrom_schema
 
 if TYPE_CHECKING:
     from core.client.classes.http_request import HTTPRequest
-    from core.client.types import JSONDict, JSONList, JSONValue
+    from core.client.types import JSONDict, JSONFilter, JSONList, JSONValue
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ TYPE VARIABLES
@@ -199,7 +199,10 @@ class HTTPResponse:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def dicts(
-        self, json_path: str | None = None, json_schema: JSONSchema | None = None
+        self,
+        json_path: str | None = None,
+        json_filter: JSONFilter | None = None,
+        json_schema: JSONSchema | None = None,
     ) -> Generator[JSONDict, None, None]:
         """Yields a series of dicts from the response"""
 
@@ -224,6 +227,14 @@ class HTTPResponse:
 
         # Iterate over itmes
         for item in items:
+            # Continue if item is not a dict
+            if not isinstance(item, dict):
+                continue
+
+            # Continue if item should be filtered
+            if json_filter and not json_filter(response_json, item):
+                continue
+
             # Yield item
             yield dfrom_schema(
                 item, schema=json_schema, delimiter="."
@@ -259,11 +270,16 @@ class HTTPResponse:
         self,
         InstanceClass: type[T],
         json_path: str | None = None,
+        json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None = None,
     ) -> Generator[T, None, None]:
         """Yields a series of instances from the response"""
 
         # Iterate over dicts
-        for item in self.dicts(json_path=json_path, json_schema=json_schema):
+        for item in self.dicts(
+            json_path=json_path,
+            json_filter=json_filter,
+            json_schema=json_schema,
+        ):
             # Initialize and yield instance
             yield InstanceClass(**item)

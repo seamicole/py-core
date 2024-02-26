@@ -12,7 +12,7 @@ from typing import Any, AsyncGenerator, Generator, TypeVar
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.api.classes.api_endpoint import APIEndpoint
-from core.client.types import JSONDict, JSONSchema
+from core.client.types import JSONDict, JSONFilter, JSONSchema
 from core.collection.classes.dict_collection import DictCollection
 from core.placeholders import nothing
 from core.placeholders.types import Nothing
@@ -39,6 +39,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
     def request_dicts(
         self,
         json_path: str | None | Nothing = nothing,
+        json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
         with_schema: bool = False,
@@ -57,9 +58,15 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
                 else json_schema
             )
 
+            # Get JSON filter
+            json_filter_endpoint = (
+                endpoint.json_filter if json_filter is None else json_filter
+            )
+
             # Iterate over items
             for item in endpoint.request_dicts(
                 json_path=json_path_endpoint,
+                json_filter=json_filter_endpoint,
                 json_schema=json_schema_endpoint,
                 params=params,
             ):
@@ -72,6 +79,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
     async def request_dicts_async(
         self,
         json_path: str | None | Nothing = nothing,
+        json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
         with_schema: bool = False,
@@ -96,19 +104,30 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
                 else json_schema
             )
 
+            # Get JSON filter
+            json_filter_endpoint = (
+                endpoint.json_filter if json_filter is None else json_filter
+            )
+
             # Append to requests
             requests.append(endpoint.request_async(params=params))
 
             # Append to JSON arguments
-            json_arguments.append((json_path_endpoint, json_schema_endpoint))
+            json_arguments.append(
+                (json_path_endpoint, json_filter_endpoint, json_schema_endpoint)
+            )
 
         # Iterate over requests
-        for response, (json_path_endpoint, json_schema_endpoint) in zip(
-            await asyncio.gather(*requests), json_arguments
-        ):
+        for response, (
+            json_path_endpoint,
+            json_filter_endpoint,
+            json_schema_endpoint,
+        ) in zip(await asyncio.gather(*requests), json_arguments):
             # Iterate over items
             for item in response.dicts(
-                json_path=json_path_endpoint, json_schema=json_schema_endpoint
+                json_path=json_path_endpoint,
+                json_filter=json_filter_endpoint,
+                json_schema=json_schema_endpoint,
             ):
                 yield (item, deepcopy(json_schema_endpoint)) if with_schema else item
 
@@ -120,6 +139,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
         self,
         InstanceClass: type[T],
         json_path: str | None | Nothing = nothing,
+        json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
         with_schema: bool = False,
@@ -138,10 +158,16 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
                 else json_schema
             )
 
+            # Get JSON filter
+            json_filter_endpoint = (
+                endpoint.json_filter if json_filter is None else json_filter
+            )
+
             # Iterate over instances
             for instance in endpoint.request_instances(
                 InstanceClass=InstanceClass,
                 json_path=json_path_endpoint,
+                json_filter=json_filter_endpoint,
                 json_schema=json_schema_endpoint,
                 params=params,
             ):
@@ -159,6 +185,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
         self,
         InstanceClass: type,
         json_path: str | None | Nothing = nothing,
+        json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
         with_schema: bool = False,
@@ -168,6 +195,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
         # Iterate over items
         async for item in self.request_dicts_async(
             json_path=json_path,
+            json_filter=json_filter,
             json_schema=json_schema,
             params=params,
             with_schema=with_schema,
