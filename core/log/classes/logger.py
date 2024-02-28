@@ -8,6 +8,7 @@ import logging
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.datetime.functions.dtnow import dtnow_utc
 from core.log.classes.log import Log
 from core.log.classes.log_collection import LogCollection
 from core.log.exceptions import InvalidLogLevelError
@@ -194,11 +195,14 @@ class Logger:
         # Get log function
         log_func = log_funcs[level]
 
+        # Get timestamp
+        timestamp = dtnow_utc()
+
         # Log message
         log_func(message)
 
         # Initialize Log instance
-        log = Log(message=message, key=key)
+        log = Log(key=key, timestamp=timestamp, message=message, level=level)
 
         # Get logs
         logs = self._logs_by_key.setdefault(key, LogCollection(size=self.log_limit))
