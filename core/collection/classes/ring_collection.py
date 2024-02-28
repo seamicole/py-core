@@ -27,7 +27,7 @@ ItemBound = TypeVar("ItemBound", bound=Any)
 
 
 class RingCollection(Collection[ItemBound]):
-    """A ring buffer for caching deltas"""
+    """A ring collection utility class for Python object instances"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INSTANCE ATTRIBUTES
@@ -40,7 +40,7 @@ class RingCollection(Collection[ItemBound]):
     _length: int
 
     # Declare type of size
-    _size: int
+    _size: int | None
 
     # Declare type of ring
     _ring: list[ItemBound | None]
@@ -49,7 +49,7 @@ class RingCollection(Collection[ItemBound]):
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, size: int) -> None:
+    def __init__(self, size: int | None) -> None:
         """Init Method"""
 
         # Initialize cursor
@@ -62,7 +62,7 @@ class RingCollection(Collection[ItemBound]):
         self._size = size
 
         # Initialize ring
-        self._ring = [None] * size
+        self._ring = []
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __GETITEM__
@@ -137,6 +137,25 @@ class RingCollection(Collection[ItemBound]):
             yield item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _CURSOR NEXT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def _cursor_next(self) -> int:
+        """Returns the current cursor + 1"""
+
+        # Get cursor next
+        cursor_next = self._cursor + 1
+
+        # Check if size is not None
+        if self._size is not None:
+            # Wrap cursor
+            cursor_next = cursor_next % self._size
+
+        # Return next cursor
+        return cursor_next
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ NEW
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -152,6 +171,16 @@ class RingCollection(Collection[ItemBound]):
         return RingCollection(*args, **kwargs)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ NEXT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def next(self) -> ItemBound | None:
+        """Returns the next item in the collection"""
+
+        # Return next item
+        return self.get(self._cursor, default=None)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ADD
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -163,14 +192,21 @@ class RingCollection(Collection[ItemBound]):
 
         # Iterate over items
         for item in items:
-            # Add item to buffer
-            self._ring[self._cursor] = item
+            # Check if size is None
+            if self._size is None or self._length < self._size:
+                # Append item to collection
+                self._ring.append(item)
+
+            # Otherwise insert by cursor
+            else:
+                # Add item to buffer
+                self._ring[self._cursor] = item
 
             # Increment cursor
-            self._cursor = (self._cursor + 1) % self._size
+            self._cursor = self._cursor_next
 
-            # Check if length is less than size
-            if self._length < self._size:
+            # Check if no size limit or length is less than size
+            if self._size is None or self._length < self._size:
                 # Increment length
                 self._length += 1
 
@@ -193,7 +229,11 @@ class RingCollection(Collection[ItemBound]):
         # Iterate over items
         for i in range(self._length):
             # Get index
-            index = (self._cursor + i) % self._size
+            index = self._cursor + i
+
+            # Wrap if size is defined
+            if self._size:
+                index = index % self._size
 
             # Get item
             current = self._ring[index]
@@ -216,12 +256,21 @@ class RingCollection(Collection[ItemBound]):
         if not isinstance(key, int):
             return default
 
-        # Get item from buffer
-        item = self._ring[(self._cursor + key) % self._size]
+        # Get index
+        index = key
 
-        # Raise IndexError if item is None
-        if item is None:
-            raise IndexError("list index out of range")
+        # Wrap if size is defined
+        if self._size is not None:
+            # Wrap index
+            index = index % self._size
+
+        # Check if index exceeds length
+        if index > self._length - 1:
+            # Return default
+            return default
+
+        # Get item
+        item = self._ring[index]
 
         # Return item
         return item
@@ -235,3 +284,24 @@ class RingCollection(Collection[ItemBound]):
 
         # Raise NotImplementedError
         raise NotImplementedError("RingCollection does not support remove")
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ UPDATE SIZE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def update_size(self, size: int | None) -> None:
+        """Updates the size of the collection"""
+
+        # Check if size is lower than current size
+        if size is not None and self._size is not None and size < self._size:
+            # Get diff
+            diff = self._size - size
+
+            # Shrink ring by diff
+            self._ring = self._ring[diff:]
+
+            # Update cursor
+            self._cursor = max(0, self._cursor - diff)
+
+        # Set size
+        self._size = size

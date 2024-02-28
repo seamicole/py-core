@@ -168,6 +168,16 @@ class DictCollection(Collection[ItemBound]):
         return DictCollection(*args, **kwargs)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ NEXT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def next(self) -> ItemBound | None:
+        """Returns the next item in the collection"""
+
+        # Raise NotImplementedError
+        raise NotImplementedError
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ADD
     # └─────────────────────────────────────────────────────────────────────────────────
 
