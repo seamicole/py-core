@@ -227,17 +227,7 @@ class RingCollection(Collection[ItemBound]):
         id_item = id(item)
 
         # Iterate over items
-        for i in range(self._length):
-            # Get index
-            index = self._cursor + i
-
-            # Wrap if size is defined
-            if self._size:
-                index = index % self._size
-
-            # Get item
-            current = self._ring[index]
-
+        for current in self:
             # Return item if current is item
             if id(current) == id_item or current == item:
                 return current
