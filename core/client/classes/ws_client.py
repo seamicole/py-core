@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.client.classes.ws_client_session import WSClientSession
+from core.log.classes.logger import Logger
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -43,6 +44,8 @@ class WSClient:
         ping_data: str | dict[str, Any] | None = None,
         ping_interval_ms: int | None = 30000,
         sync_tolerance_ms: int = 2000,
+        logger: Logger | None = None,
+        logger_key: str | None = None,
     ) -> None:
         """Init Method"""
 
@@ -56,6 +59,18 @@ class WSClient:
 
         # Initialize websocket event loop
         self.event_loop = asyncio.get_event_loop()
+
+        # Initialize logger
+        self.logger = (
+            logger
+            if logger is not None
+            else Logger(
+                key=logger_key
+                if logger_key
+                else f"{self.__class__.__name__}.{hex(id(self))}",
+                log_limit=1000,
+            )
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ LISTEN

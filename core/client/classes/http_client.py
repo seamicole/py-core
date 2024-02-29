@@ -17,6 +17,7 @@ from typing import Any, TYPE_CHECKING
 from core.client.classes.http_client_session import HTTPClientSession
 from core.client.classes.http_response import HTTPResponse
 from core.client.functions.http_request import http_request, http_request_async
+from core.log.classes.logger import Logger
 
 if TYPE_CHECKING:
     from core.client.enums.http_method import HTTPMethod
@@ -39,6 +40,8 @@ class HTTPClient:
         self,
         weight_per_second: int | float | None = None,
         manager: SyncManager | None = None,
+        logger: Logger | None = None,
+        logger_key: str | None = None,
     ) -> None:
         """Init Method"""
 
@@ -59,6 +62,18 @@ class HTTPClient:
 
         # Set weight per second
         self.weight_per_second = weight_per_second
+
+        # Initialize logger
+        self.logger = (
+            logger
+            if logger is not None
+            else Logger(
+                key=logger_key
+                if logger_key
+                else f"{self.__class__.__name__}.{hex(id(self))}",
+                log_limit=1000,
+            )
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ GET
@@ -187,6 +202,7 @@ class HTTPClient:
         data: Any = None,
         json: dict[str, Any] | None = None,
         weight: int = 1,
+        logger: Logger | None = None,
     ) -> HTTPResponse:
         """Makes a request to the API"""
 
@@ -210,6 +226,7 @@ class HTTPClient:
             data=data,
             json=json,
             weight=weight,
+            logger=logger if logger is not None else self.logger,
         )
 
         # Log response
@@ -233,6 +250,7 @@ class HTTPClient:
         data: Any = None,
         json: dict[str, Any] | None = None,
         weight: int = 1,
+        logger: Logger | None = None,
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API"""
 
@@ -256,6 +274,7 @@ class HTTPClient:
             data=data,
             json=json,
             weight=weight,
+            logger=logger if logger is not None else self.logger,
         )
         if response.status_code != 200:
             print(response.status_code)

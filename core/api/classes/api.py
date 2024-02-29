@@ -18,6 +18,7 @@ from core.api.classes.api_channel_collection import APIChannelCollection
 from core.api.classes.api_endpoint_collection import APIEndpointCollection
 from core.client.classes.http_client import HTTPClient
 from core.client.classes.ws_client import WSClient
+from core.log.classes.logger import Logger
 
 if TYPE_CHECKING:
     from core.client.classes.http_response import HTTPResponse
@@ -44,14 +45,30 @@ class API:
         ws_uri: str | None = None,
         ws_ping_data: str | dict[str, Any] | None = None,
         ws_ping_interval_ms: int | None = None,
+        logger: Logger | None = None,
+        logger_key: str | None = None,
     ) -> None:
         """Init Method"""
 
         # Initialize manager
         manager = Manager()
 
+        # Initialize logger
+        self.logger = (
+            logger
+            if logger is not None
+            else Logger(
+                key=logger_key
+                if logger_key
+                else f"{self.__class__.__name__}.{hex(id(self))}",
+                log_limit=1000,
+            )
+        )
+
         # Initialize HTTP client
-        self.client = HTTPClient(manager=manager, weight_per_second=weight_per_second)
+        self.client = HTTPClient(
+            manager=manager, weight_per_second=weight_per_second, logger=self.logger
+        )
 
         # Set base url
         self.base_url = base_url
@@ -66,6 +83,7 @@ class API:
             manager=manager,
             ping_data=ws_ping_data,
             ping_interval_ms=ws_ping_interval_ms,
+            logger=self.logger,
         )
 
         # Set websocket URI
@@ -254,6 +272,7 @@ class API:
             data=data,
             json=json,
             weight=weight,
+            logger=self.logger,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -289,6 +308,7 @@ class API:
             data=data,
             json=json,
             weight=weight,
+            logger=self.logger,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────

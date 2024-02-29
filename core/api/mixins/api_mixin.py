@@ -108,6 +108,9 @@ class APIMixin:
         # │ ENDPOINTS
         # └─────────────────────────────────────────────────────────────────────────────
 
+        # Get logger key
+        logger_key = f"{self.__class__.__name__}.{hex(id(self))}.api"
+
         # Initialize and set API instance
         self._api = API(
             base_url=self.API_BASE_URL,
@@ -115,6 +118,7 @@ class APIMixin:
             ws_uri=getattr(self, "API_WS_URI", None),
             ws_ping_data=getattr(self, "API_WS_PING_DATA", None),
             ws_ping_interval_ms=getattr(self, "API_WS_PING_INTERVAL_MS", 30000),
+            logger_key=logger_key,
         )
 
         # Get endpoint attributes

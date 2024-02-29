@@ -153,3 +153,40 @@ def check_iin(actual: Any, expected: Any) -> bool:
     # Handle TypeError
     except TypeError:
         return False
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ CHECK CONTAINS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+def check_contains(actual: Any, expected: Any) -> bool:
+    """Checks whether an actual value contains an expected value"""
+
+    # Initialize try-except block
+    try:
+        return True if expected in actual else False
+
+    # Handle TypeError
+    except TypeError:
+        return False
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ CHECK ICONTAINS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+def check_icontains(actual: Any, expected: Any) -> bool:
+    """Checks whether an actual value contains an expected value (case-insensitive)"""
+
+    # Lowercase expected and actual
+    expected, actual = (olower(expected), olower(actual))
+
+    # Initialize try-except block
+    try:
+        return True if expected in actual else False
+
+    # Handle TypeError
+    except TypeError:
+        return False

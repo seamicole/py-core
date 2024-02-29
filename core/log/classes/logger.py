@@ -65,6 +65,11 @@ class Logger:
         # Set log level
         self.log_level = log_level
 
+        # Get log format
+        log_format = (
+            log_format or "%(asctime)s | %(levelname)7s | %(name)s | %(message)s"
+        )
+
         # Set log format
         self.log_format = log_format
 
@@ -85,10 +90,8 @@ class Logger:
             # Set log log level
             handler.setLevel(log_level)
 
-        # Check if log format is not None
-        if log_format is not None:
-            # Initialize and add formatter
-            handler.setFormatter(logging.Formatter(log_format))
+        # Initialize and add formatter
+        handler.setFormatter(logging.Formatter(log_format))
 
         # Add handler to logger
         self._logger.addHandler(handler)
@@ -134,7 +137,7 @@ class Logger:
     # │ CRITICAL
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def critical(self, message: str, key: str | None = None) -> None:
+    def critical(self, message: str, key: str | None = None) -> bool:
         """Prints and stores a critical message"""
 
         # Log message
@@ -144,7 +147,7 @@ class Logger:
     # │ DEBUG
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def debug(self, message: str, key: str | None = None) -> None:
+    def debug(self, message: str, key: str | None = None) -> bool:
         """Prints and stores a debug message"""
 
         # Log message
@@ -154,7 +157,7 @@ class Logger:
     # │ ERROR
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def error(self, message: str, key: str | None = None) -> None:
+    def error(self, message: str, key: str | None = None) -> bool:
         """Prints and stores a error message"""
 
         # Log message
@@ -164,7 +167,7 @@ class Logger:
     # │ INFO
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def info(self, message: str, key: str | None = None) -> None:
+    def info(self, message: str, key: str | None = None) -> bool:
         """Prints and stores a info message"""
 
         # Log message
@@ -174,7 +177,7 @@ class Logger:
     # │ LOG
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def log(self, message: str, level: int, key: str | None = None) -> None:
+    def log(self, message: str, level: int, key: str | None = None) -> bool:
         """Prints and stores a log message"""
 
         # Define log functions
@@ -210,6 +213,9 @@ class Logger:
         # Add log to logs
         logs.add(log)
 
+        # Return True
+        return True
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ UPDATE LOG LIMIT BY KEY
     # └─────────────────────────────────────────────────────────────────────────────────
@@ -230,7 +236,7 @@ class Logger:
     # │ WARN
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def warn(self, message: str, key: str | None = None) -> None:
+    def warn(self, message: str, key: str | None = None) -> bool:
         """Prints and stores a warn message"""
 
         # Log message
@@ -240,9 +246,7 @@ class Logger:
     # │ WARNING
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def warning(
-        self, message: str, key: str | None = None, limit: int | None = None
-    ) -> None:
+    def warning(self, message: str, key: str | None = None) -> bool:
         """Prints and stores a warning message"""
 
         # Log message

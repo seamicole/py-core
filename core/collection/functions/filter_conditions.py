@@ -9,6 +9,8 @@ from typing import Any, Callable, Generator
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collection.functions.filter_checkers import (
+    check_contains,
+    check_icontains,
     check_eq,
     check_gt,
     check_gte,
@@ -26,6 +28,8 @@ from core.collection.functions.filter_checkers import (
 
 # Define operators
 OPERATORS = (
+    ("__contains", 10, check_contains),
+    ("__icontains", 11, check_icontains),
     ("__eq", 4, check_eq),
     ("__gt", 4, check_gt),
     ("__gte", 5, check_gte),
