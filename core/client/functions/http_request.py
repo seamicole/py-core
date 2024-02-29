@@ -45,7 +45,7 @@ def construct_log(
         param_string = "&".join([f"{k}={v}" for k, v in params.items()])
 
         # Append to URL
-        url = f"{url}&{param_string}"
+        url = f"{url}?{param_string}"
 
     # Construct log
     log = f"{method_name} {url}"
