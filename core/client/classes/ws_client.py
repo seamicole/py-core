@@ -73,6 +73,17 @@ class WSClient:
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ EVENT LOOP TASK COUNT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def event_loop_task_count(self) -> int:
+        """Returns the number of tasks running in the event loop"""
+
+        # Return event loop task count
+        return sum(not task.done() for task in asyncio.all_tasks(loop=self.event_loop))
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ LISTEN
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -86,24 +97,30 @@ class WSClient:
     ) -> None:
         """Listens to a websocket connection"""
 
-        # Initialize while loop
-        while self.session.is_alive and not should_unsubscribe():
-            # Acquire connection
-            conn = await self.session.acquire_connection(uri)
+        # TEMP
 
-            # Send subscribe data
-            await conn.send(data_subscribe)
+        try:
+            # Initialize while loop
+            while self.session.is_alive and not should_unsubscribe():
+                # Acquire connection
+                conn = await self.session.acquire_connection(uri)
 
-            # Receive data
-            await self.receive(conn, receive, should_unsubscribe)
+                # Send subscribe data
+                await conn.send(data_subscribe)
 
-            # Check if connection is still open
-            if not conn.closed:
-                # Send unsubscribe data
-                await conn.send(data_unsubscribe)
+                # Receive data
+                await self.receive(conn, receive, should_unsubscribe)
 
-            # Release connection
-            await self.session.release_connection(uri, conn)
+                # Check if connection is still open
+                if not conn.closed:
+                    # Send unsubscribe data
+                    await conn.send(data_unsubscribe)
+
+                # Release connection
+                await self.session.release_connection(uri, conn)
+
+        except Exception as e:
+            self.logger.error(str(e) or "Error listening to websocket")
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ RECEIVE

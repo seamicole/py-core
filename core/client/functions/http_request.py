@@ -29,11 +29,23 @@ if TYPE_CHECKING:
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def construct_log(method: HTTPMethod, url: str) -> str:
+def construct_log(
+    method: HTTPMethod,
+    url: str,
+    params: dict[str, Any] | None = None,
+) -> str:
     """Constructs and returns a log"""
 
     # Pad method name
     method_name = f"{method.name:>7}"
+
+    # Check if params is not None
+    if params is not None:
+        # Get param string
+        param_string = "&".join([f"{k}={v}" for k, v in params.items()])
+
+        # Append to URL
+        url = f"{url}&{param_string}"
 
     # Construct log
     log = f"{method_name} {url}"
@@ -47,7 +59,12 @@ def construct_log(method: HTTPMethod, url: str) -> str:
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def log_request(logger: Logger | None, method: HTTPMethod, url: str) -> None:
+def log_request(
+    logger: Logger | None,
+    method: HTTPMethod,
+    url: str,
+    params: dict[str, Any] | None = None,
+) -> None:
     """Constructs and prints a request log"""
 
     # Return if no logger
@@ -55,7 +72,7 @@ def log_request(logger: Logger | None, method: HTTPMethod, url: str) -> None:
         return
 
     # Construct log
-    log = construct_log(method=method, url=url)
+    log = construct_log(method=method, url=url, params=params)
 
     # Print log
     logger.debug(log, key="http_requests")
@@ -66,7 +83,13 @@ def log_request(logger: Logger | None, method: HTTPMethod, url: str) -> None:
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def log_response(logger: Logger | None, method: HTTPMethod, url: str, ms: int) -> None:
+def log_response(
+    logger: Logger | None,
+    method: HTTPMethod,
+    url: str,
+    ms: int,
+    params: dict[str, Any] | None = None,
+) -> None:
     """Constructs and prints a response log"""
 
     # Return if no logger
@@ -74,7 +97,7 @@ def log_response(logger: Logger | None, method: HTTPMethod, url: str, ms: int) -
         return
 
     # Construct log
-    log = construct_log(method=method, url=url)
+    log = construct_log(method=method, url=url, params=params)
 
     # Add ms to log
     log = f"{log} ({ms} ms)"
@@ -113,7 +136,7 @@ def http_request(
         method = HTTPMethod[method]
 
     # Log request
-    log_request(logger=logger, method=method, url=url)
+    log_request(logger=logger, method=method, url=url, params=params)
 
     # Get t0
     t0 = time.time()
@@ -168,7 +191,7 @@ def http_request(
     ms = int((t1 - t0) * 1000)
 
     # Log response
-    log_response(logger=logger, method=method, url=url, ms=ms)
+    log_response(logger=logger, method=method, url=url, ms=ms, params=params)
 
     # Return response
     return response
@@ -204,7 +227,7 @@ async def http_request_async(
         method = HTTPMethod[method]
 
     # Log request
-    log_request(logger=logger, method=method, url=url)
+    log_request(logger=logger, method=method, url=url, params=params)
 
     # Get t0
     t0 = time.time()
@@ -259,7 +282,7 @@ async def http_request_async(
     ms = int((t1 - t0) * 1000)
 
     # Log response
-    log_response(logger=logger, method=method, url=url, ms=ms)
+    log_response(logger=logger, method=method, url=url, ms=ms, params=params)
 
     # Return response
     return response
