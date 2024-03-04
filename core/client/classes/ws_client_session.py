@@ -53,8 +53,9 @@ class WSClientSession:
         # Initialize a manager
         self._manager = manager or Manager()
 
-        # Initialize lock
-        self._lock = self._manager.Lock()
+        # Initialize lock and semaphor
+        self._plock = self._manager.Lock()
+        self._tlock = asyncio.Lock()
 
         # Initialize connections
         self._connections = {}
@@ -90,7 +91,7 @@ class WSClientSession:
             return self._is_alive_cache
 
         # Get is alive
-        with self._lock:
+        with self._plock:
             self._is_alive_cache = self._is_alive.value
             self._is_alive_updated_at = time.time()
 
@@ -131,7 +132,7 @@ class WSClientSession:
         """Decrement connection count"""
 
         # Decrement connection count
-        with self._lock:
+        with self._plock:
             self._connection_count.value -= 1
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -142,7 +143,7 @@ class WSClientSession:
         """Get connection ID"""
 
         # Get connection ID
-        with self._lock:
+        with self._plock:
             # Get connection ID
             connection_id = self._connection_id.value
 
@@ -160,44 +161,48 @@ class WSClientSession:
         """Increment connection count"""
 
         # Increment connection count
-        with self._lock:
+        with self._plock:
             self._connection_count.value += 1
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ACQUIRE CONNECTION
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    async def acquire_connection(
-        self, uri: str, max_channels: int | None = None
-    ) -> WebSocketClientProtocol:
+    async def acquire_connection(self, uri: str) -> WebSocketClientProtocol:
         """Acquires a free or newly initialized websocket connection"""
 
+        # Get channels per connection
+        channels_per_connection = 10
+
         # Acquire lock
-        with self._lock:
+        async with self._tlock:
             # Get connections
             connections = self._connections.setdefault(uri, {})
 
             # Iterate over connections
             for connection, channel_count in connections.items():
                 # If max channels is none or channel count is less than max channels
-                if max_channels is None or channel_count < max_channels:
+                if (
+                    channels_per_connection is None
+                    or channel_count < channels_per_connection
+                ):
                     # Increment channel count and return
                     connections[connection] += 1
 
                     # Return connection
                     return connection
 
-        # Increment connection count
-        self._increment_connection_count()
+            # Increment connection count
+            self._increment_connection_count()
 
-        # Get context
-        ctx = ssl.create_default_context()
+            # Get context
+            ctx = ssl.create_default_context()
 
-        # Create a new connection
-        connection = await websockets.connect(uri, ssl=ctx, compression=None)
+            # Create a new connection
+            connection = await websockets.connect(uri, ssl=ctx, compression=None)
 
-        # Add connection to connections
-        connections[connection] = 1
+            # Add connection to connections
+            connections[connection] = 1
 
         # Get ping data
         ping_data = self.ping_data
@@ -247,7 +252,7 @@ class WSClientSession:
         """Releases an acquired websocket connection"""
 
         # Acquire lock
-        with self._lock:
+        async with self._tlock:
             # Get connections
             connections = self._connections.get(uri)
 
@@ -255,28 +260,28 @@ class WSClientSession:
             if connections is None or connection not in connections:
                 return
 
-        # Check if channel count is 1
-        if connections[connection] <= 1:
-            # Check if connection is still open
-            if not connection.closed:
-                # Initialize try-except block
-                try:
-                    # Close connection
-                    await asyncio.wait_for(connection.close(), timeout=10)
+            # Check if channel count is 1
+            if connections[connection] <= 1:
+                # Check if connection is still open
+                if not connection.closed:
+                    # Initialize try-except block
+                    try:
+                        # Close connection
+                        await asyncio.wait_for(connection.close(), timeout=10)
 
-                # Handle any exception
-                except Exception:
-                    pass
+                    # Handle any exception
+                    except Exception:
+                        pass
 
-            # Remove connection
-            del connections[connection]
+                # Remove connection
+                del connections[connection]
 
-            # Decrement connection count
-            self._decrement_connection_count()
+                # Decrement connection count
+                self._decrement_connection_count()
 
-        # Decrement channel count
-        else:
-            connections[connection] -= 1
+            # Decrement channel count
+            else:
+                connections[connection] -= 1
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ START
@@ -286,7 +291,7 @@ class WSClientSession:
         """Starts the websocket client session"""
 
         # Acquire lock
-        with self._lock:
+        with self._plock:
             # Set is alive to true
             self._is_alive.value = True
 
@@ -298,6 +303,6 @@ class WSClientSession:
         """Stops the websocket client session"""
 
         # Acquire lock
-        with self._lock:
+        with self._plock:
             # Set is alive to false
             self._is_alive.value = False
