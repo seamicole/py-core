@@ -110,7 +110,7 @@ def log_response(
     log = f"{log} ({ms} ms)"
 
     # Print log
-    logger.info(log, key="http_responses")
+    logger.debug(log, key="http_responses")
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

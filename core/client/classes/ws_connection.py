@@ -226,7 +226,7 @@ class WSConnection:
     # │ ESTABLISH
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    async def establish(self) -> WebSocketClientProtocol:
+    async def establish(self) -> WebSocketClientProtocol | None:
         """Establishes a new websocket connection"""
 
         # Check if websockets is None
@@ -238,6 +238,9 @@ class WSConnection:
         self.session.logger.debug(
             self._log(f"Connecting to {self.uri}"), key=WEBSOCKET_EVENTS
         )
+
+        # Initialize connection
+        conn = None
 
         # Get context
         ctx = ssl.create_default_context()
@@ -264,7 +267,6 @@ class WSConnection:
                 key=WEBSOCKET_ERRORS,
                 exception=e,
             )
-            raise
 
         # Return connection
         return conn
@@ -327,6 +329,10 @@ class WSConnection:
             async with self._tlock:
                 # Establish connection
                 conn = await self.establish()
+
+                # Continue if connection is None
+                if conn is None:
+                    continue
 
                 # Cache connection
                 self._conn = conn
