@@ -53,9 +53,6 @@ class WSConnection:
     # Declare type of subscriptions cache
     _subs: dict[str, tuple[str, Callable[[], bool] | None]]
 
-    # Declare type of listen task
-    _listen_task: asyncio.Task[None] | None
-
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
@@ -88,9 +85,6 @@ class WSConnection:
 
         # Initialize subscription cache
         self._subs = {}
-
-        # Initialize listen task
-        self._listen_task = None
 
         # Set receive task callback
         self._receive_task_callback = receive
@@ -232,11 +226,6 @@ class WSConnection:
         while self.session.is_alive:
             # Acquire lock
             async with self._tlock:
-                # Set listen task to None and break if no active subscriptions
-                if len(self._subs) <= 0:
-                    self._conn = self._listen_task = None
-                    break
-
                 # Establish connection
                 conn = await self.establish()
 
@@ -245,8 +234,8 @@ class WSConnection:
 
                 # Iterate over subscriptions
                 for data_subscribe in self._subs:
-                    # Send subscribe data
-                    await conn.send(data_subscribe)
+                    # Send subscribe message
+                    await self.send_subscribe(conn=conn, data=data_subscribe)
 
             # Receive data
             await self.receive(conn=conn, event_loop=event_loop)
@@ -255,10 +244,15 @@ class WSConnection:
             async with self._tlock:
                 # Check if connection is still open
                 if not conn.closed:
-                    # Iterate over subscriptions
-                    for _, (data_unsubscribe, _) in self._subs.items():
-                        # Send unsubscribe data
-                        await conn.send(data_unsubscribe)
+                    # Iterate over keys
+                    for key in list(self._subs):
+                        # Get unsubscribe data
+                        (data_unsubscribe, _) = self._subs[key]
+
+                        # Send unsubscribe message
+                        if self.send_unsubscribe(conn=conn, data=data_unsubscribe):
+                            # Pop subscription from subscriptions
+                            self._subs.pop(key)
 
                     # Log message
                     self.session.logger.debug(
@@ -276,7 +270,7 @@ class WSConnection:
                         # Log message
                         self.session.logger.error(
                             self._log(f"Error disconnecting from {self.uri}"),
-                            key=WEBSOCKET_EVENTS,
+                            key=WEBSOCKET_ERRORS,
                         )
 
                 # Set connection to None
@@ -357,7 +351,25 @@ class WSConnection:
             if receive_task.done():
                 return
 
-            # Sleep for 1 second
+            # Iterate over keys
+            for key in list(self._subs):
+                # Get unsubscribe data
+                (data_unsubscribe, should_unsubscribe) = self._subs[key]
+
+                # Continue if should not unsubscribe
+                if should_unsubscribe is None or not should_unsubscribe():
+                    continue
+
+                # Acquire lock
+                async with self._tlock:
+                    # Check if connection is still open
+                    if not conn.closed:
+                        # Send unsubscribe message
+                        if self.send_unsubscribe(conn=conn, data=data_unsubscribe):
+                            # Pop subscription from subscriptions
+                            self._subs.pop(key)
+
+            # Sleep for n seconds
             await asyncio.sleep(self.session.sync_tolerance_s)
 
         # Cancel receive task
@@ -365,6 +377,80 @@ class WSConnection:
 
         # Cancel ping task
         ping_task and ping_task.cancel()
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ SEND
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    async def send(
+        self,
+        conn: WebSocketClientProtocol,
+        data: str,
+        info_message: str,
+        error_message: str,
+    ) -> bool:
+        """Sends a message to the open connection"""
+
+        # Initialize try-except block
+        try:
+            # Get log message
+            log_message = self._log(info_message)
+
+            # Append data to message
+            log_message = f"{log_message}\n\n\t{data}"
+
+            # Log message
+            self.session.logger.debug(self._log(log_message), key=WEBSOCKET_EVENTS)
+
+            # Send subscribe data
+            await conn.send(data)
+
+        # Handle any exception
+        except Exception:
+            # Get log message
+            log_message = self._log(error_message)
+
+            # Append data to message
+            log_message = f"{log_message}\n\n\t{data}"
+
+            # Log message
+            self.session.logger.error(log_message, key=WEBSOCKET_ERRORS)
+
+            # Return False
+            return False
+
+        # Return True
+        return True
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ SEND SUBSCRIBE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    async def send_subscribe(self, conn: WebSocketClientProtocol, data: str) -> bool:
+        """Sends a subscribe message to the open connection"""
+
+        # Set subscribe data to connection
+        return await self.send(
+            conn=conn,
+            data=data,
+            info_message=f"Subscribing to channel at {self.uri}",
+            error_message=f"Error subscribing to channel at {self.uri}",
+        )
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ SEND UNSUBSCRIBE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    async def send_unsubscribe(self, conn: WebSocketClientProtocol, data: str) -> bool:
+        """Sends an unsubscribe message to the open connection"""
+
+        # Set subscribe data to connection
+        return await self.send(
+            conn=conn,
+            data=data,
+            info_message=f"Unsubscribing to channel at {self.uri}",
+            error_message=f"Error unsubscribing to channel at {self.uri}",
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SUBSCRIBE
@@ -375,7 +461,6 @@ class WSConnection:
         data_subscribe: str,
         data_unsubscribe: str,
         should_unsubscribe: Callable[[], bool] | None = None,
-        event_loop: asyncio.AbstractEventLoop | None = None,
     ) -> None:
         """Subscribes to a websocket channel in the websocket connection listen loop"""
 
@@ -388,15 +473,7 @@ class WSConnection:
             # Add to subscriptions
             self._subs[data_subscribe] = (data_unsubscribe, should_unsubscribe)
 
-            # Check if no listen task has been started
-            if self._listen_task is None:
-                # Create listen task and return
-                self._listen_task = asyncio.create_task(
-                    self.listen(event_loop=event_loop)
-                )
-                return
-
         # Add subscription to active connection
         if self._conn is not None and not self._conn.closed:
-            # Send subscribe data
-            await self._conn.send(data_subscribe)
+            # Send subscribe message
+            await self.send_subscribe(conn=self._conn, data=data_subscribe)

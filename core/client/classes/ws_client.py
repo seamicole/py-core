@@ -121,8 +121,10 @@ class WSClient:
             for data in (data_subscribe, data_unsubscribe)
         )
 
+        # TEMP: UPDATE THIS FOR NEW CONNECTION METHOD
+
         # Get websocket connection
-        ws_connection = 
+        ws_connection = None
 
         # Create listen task
         self.event_loop.create_task(

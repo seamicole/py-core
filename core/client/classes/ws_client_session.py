@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import time
 
 from multiprocessing import Manager
@@ -217,41 +216,37 @@ class WSClientSession:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     async def release_connection(
-        self, uri: str, connection: WebSocketClientProtocol
+        self, uri: str, connection: WSConnection, key: str | None = None
     ) -> None:
         """Releases an acquired websocket connection"""
 
         # Acquire lock
         async with self._tlock:
-            # Get connections
-            connections = self._connections.get(uri)
+            # Check if key is not None
+            if key is not None:
+                # Get connections
+                connections = self._connections.setdefault(key, set())
 
-            # Return if no connections
-            if connections is None or connection not in connections:
-                return
+                # Return if no connections
+                if connection not in connections:
+                    # Check if channel count is 1
+                    if connections[connection] <= 1:
+                        # Check if connection is still open
+                        if not connection.closed:
+                            # Initialize try-except block
+                            try:
+                                # Close connection
+                                await asyncio.wait_for(connection.close(), timeout=10)
 
-            # Check if channel count is 1
-            if connections[connection] <= 1:
-                # Check if connection is still open
-                if not connection.closed:
-                    # Initialize try-except block
-                    try:
-                        # Close connection
-                        await asyncio.wait_for(connection.close(), timeout=10)
+                            # Handle any exception
+                            except Exception:
+                                pass
 
-                    # Handle any exception
-                    except Exception:
-                        pass
-
-                # Remove connection
-                del connections[connection]
+                # Discard connection
+                connections.discard(connection)
 
                 # Decrement connection count
                 self._decrement_connection_count()
-
-            # Decrement channel count
-            else:
-                connections[connection] -= 1
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ START
