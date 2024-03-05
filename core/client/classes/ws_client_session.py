@@ -9,24 +9,19 @@ import time
 
 from multiprocessing import Manager
 from multiprocessing.managers import SyncManager
-from typing import Any, Awaitable, Callable, TYPE_CHECKING
+from typing import Any, Awaitable, Callable
 
 try:
     import websockets
 except ImportError:
     websockets = None  # type: ignore
 
-if TYPE_CHECKING:
-    from websockets.legacy.client import WebSocketClientProtocol
-
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.client.classes.ws_connection import WSConnection
 from core.log.classes.logger import Logger
-
-if TYPE_CHECKING:
-    from core.client.classes.ws_connection import WSConnection
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -183,6 +178,9 @@ class WSClientSession:
 
         # Acquire lock
         async with self._tlock:
+            # Initialize connections
+            connections = None
+
             # Check if key is not None
             if key is not None:
                 # Get connections
@@ -206,7 +204,8 @@ class WSClientSession:
             connection = WSConnection(uri=uri, session=self, receive=receive)
 
             # Add connection to connections
-            connections.add(connection)
+            if connections is not None:
+                connections.add(connection)
 
         # Return connection
         return connection
@@ -216,12 +215,15 @@ class WSClientSession:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     async def release_connection(
-        self, uri: str, connection: WSConnection, key: str | None = None
+        self, connection: WSConnection, key: str | None = None
     ) -> None:
         """Releases an acquired websocket connection"""
 
         # Acquire lock
         async with self._tlock:
+            # Initialize connections
+            connections = None
+
             # Check if key is not None
             if key is not None:
                 # Get connections
@@ -229,14 +231,16 @@ class WSClientSession:
 
                 # Return if no connections
                 if connection not in connections:
-                    # Check if channel count is 1
-                    if connections[connection] <= 1:
+                    # Check if subscription count is 1 or less
+                    if await connection.subscription_count <= 1:
                         # Check if connection is still open
-                        if not connection.closed:
+                        if connection._conn is not None and not connection._conn.closed:
                             # Initialize try-except block
                             try:
                                 # Close connection
-                                await asyncio.wait_for(connection.close(), timeout=10)
+                                await asyncio.wait_for(
+                                    connection._conn.close(), timeout=10
+                                )
 
                             # Handle any exception
                             except Exception:

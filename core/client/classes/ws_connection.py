@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import json
 import ssl
+import time
 
 try:
     import websockets
@@ -52,6 +53,11 @@ class WSConnection:
 
     # Declare type of subscriptions cache
     _subs: dict[str, tuple[str, Callable[[], bool] | None]]
+    _subs_updated_at: float | None
+
+    # Declare type of listen attributes
+    _is_listening: bool
+    _listen_tolerance_ms: int | None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -85,9 +91,14 @@ class WSConnection:
 
         # Initialize subscription cache
         self._subs = {}
+        self._subs_updated_at = None
 
         # Set receive task callback
         self._receive_task_callback = receive
+
+        # Initialize listen attributes
+        self._is_listening = False
+        self._listen_tolerance_ms = None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _LOG
@@ -162,6 +173,32 @@ class WSConnection:
         return self.ping_interval_ms / 1000
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ IS ALIVE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def is_alive(self) -> bool:
+        """Returns whether websocket connection is alive"""
+
+        # Return False is session is not alive
+        if not self.session.is_alive:
+            return False
+
+        # Check if listen tolerance is not None
+        if self._listen_tolerance_ms is not None:
+            # Check if there are no subsriptions
+            if len(self._subs) <= 0:
+                # Check if listen tolerance has been exceeded
+                if self._subs_updated_at is not None and (
+                    time.time() - self._subs_updated_at
+                    > self._listen_tolerance_ms / 1000
+                ):
+                    return False
+
+        # Return True
+        return True
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SUBSCRIPTION COUNT
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -216,14 +253,56 @@ class WSConnection:
     # │ LISTEN
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    async def listen(self, event_loop: asyncio.AbstractEventLoop | None = None) -> None:
+    async def listen(
+        self,
+        event_loop: asyncio.AbstractEventLoop | None = None,
+        listen_tolerance_ms: int | None = None,
+    ) -> None:
+        """Creates an asynchronous listen task"""
+
+        # Acquire lock
+        async with self._tlock:
+            # Return if is listening is already True
+            if self._is_listening:
+                # Check if listen tolerance can be updated
+                if listen_tolerance_ms is not None and (
+                    self._listen_tolerance_ms is None
+                    or listen_tolerance_ms > self._listen_tolerance_ms
+                ):
+                    self._listen_tolerance_ms = listen_tolerance_ms
+
+                return
+
+        # Create listen task
+        asyncio.create_task(
+            self._listen(
+                event_loop=event_loop,
+                listen_tolerance_ms=listen_tolerance_ms,
+            )
+        )
+
+    async def _listen(
+        self,
+        event_loop: asyncio.AbstractEventLoop | None = None,
+        listen_tolerance_ms: int | None = None,
+    ) -> None:
         """Listens to the websocket connection"""
+
+        # Acquire lock
+        async with self._tlock:
+            # Return if is listening is already True
+            if self._is_listening:
+                return
+
+            # Set listen attributes
+            self._is_listening = True
+            self._listen_tolerance_ms = listen_tolerance_ms
 
         # Get event loop
         event_loop = event_loop if event_loop is not None else asyncio.get_event_loop()
 
         # Initialize while loop
-        while self.session.is_alive:
+        while self.is_alive:
             # Acquire lock
             async with self._tlock:
                 # Establish connection
@@ -250,9 +329,14 @@ class WSConnection:
                         (data_unsubscribe, _) = self._subs[key]
 
                         # Send unsubscribe message
-                        if self.send_unsubscribe(conn=conn, data=data_unsubscribe):
+                        if await self.send_unsubscribe(
+                            conn=conn, data=data_unsubscribe
+                        ):
                             # Pop subscription from subscriptions
                             self._subs.pop(key)
+
+                            # Set subscriptions updated at
+                            self._subs_updated_at = time.time()
 
                     # Log message
                     self.session.logger.debug(
@@ -266,15 +350,22 @@ class WSConnection:
                         await asyncio.wait_for(conn.close(), timeout=10)
 
                     # Handle any exception
-                    except Exception:
+                    except Exception as e:
                         # Log message
                         self.session.logger.error(
                             self._log(f"Error disconnecting from {self.uri}"),
                             key=WEBSOCKET_ERRORS,
+                            exception=e,
                         )
 
                 # Set connection to None
                 self._conn = None
+
+        # Acquire lock
+        async with self._tlock:
+            # Set listen attributes
+            self._is_listening = False
+            self._listen_tolerance_ms = None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ RECEIVE
@@ -298,7 +389,7 @@ class WSConnection:
                 # Define ping loop
                 async def ping_loop() -> None:
                     # Initialize while loop
-                    while not conn.closed and self.session.is_alive:
+                    while not conn.closed and self.is_alive:
                         # Get ping data string
                         ping_data_str = self.ping_data_str
 
@@ -318,7 +409,7 @@ class WSConnection:
         # Define receive loop
         async def receive_loop() -> None:
             # Initialize while loop
-            while not conn.closed and self.session.is_alive:
+            while not conn.closed and self.is_alive:
                 # Initialize try-except block
                 try:
                     # Receive message
@@ -346,7 +437,7 @@ class WSConnection:
         receive_task = event_loop.create_task(receive_loop())
 
         # Initialize while loop
-        while self.session.is_alive:
+        while self.is_alive:
             # Return if receive task is done
             if receive_task.done():
                 return
@@ -365,9 +456,14 @@ class WSConnection:
                     # Check if connection is still open
                     if not conn.closed:
                         # Send unsubscribe message
-                        if self.send_unsubscribe(conn=conn, data=data_unsubscribe):
+                        if await self.send_unsubscribe(
+                            conn=conn, data=data_unsubscribe
+                        ):
                             # Pop subscription from subscriptions
                             self._subs.pop(key)
+
+                            # Set subscriptions updated at
+                            self._subs_updated_at = time.time()
 
             # Sleep for n seconds
             await asyncio.sleep(self.session.sync_tolerance_s)
@@ -406,7 +502,7 @@ class WSConnection:
             await conn.send(data)
 
         # Handle any exception
-        except Exception:
+        except Exception as e:
             # Get log message
             log_message = self._log(error_message)
 
@@ -414,7 +510,7 @@ class WSConnection:
             log_message = f"{log_message}\n\n\t{data}"
 
             # Log message
-            self.session.logger.error(log_message, key=WEBSOCKET_ERRORS)
+            self.session.logger.error(log_message, key=WEBSOCKET_ERRORS, exception=e)
 
             # Return False
             return False

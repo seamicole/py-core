@@ -57,6 +57,7 @@ class APIChannel:
         data_subscribe: str | dict[Any, Any] | None = None,
         data_unsubscribe: str | dict[Any, Any] | None = None,
         should_unsubscribe: Callable[[], bool] = lambda: False,
+        connection_key: str | None = None,
     ) -> None:
         """Subscribes to an API channel"""
 
@@ -75,4 +76,5 @@ class APIChannel:
             ),
             receive=receive,
             should_unsubscribe=should_unsubscribe,
+            connection_key=connection_key,
         )

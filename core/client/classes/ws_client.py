@@ -94,6 +94,7 @@ class WSClient:
         data_unsubscribe: str | dict[Any, Any],
         receive: Callable[[str | bytes], Awaitable[None] | None],
         should_unsubscribe: Callable[[], bool] = lambda: False,
+        connection_key: str | None = None,
     ) -> None:
         """Subscribes to a websocket connection and listens for messages"""
 
@@ -121,18 +122,17 @@ class WSClient:
             for data in (data_subscribe, data_unsubscribe)
         )
 
-        # TEMP: UPDATE THIS FOR NEW CONNECTION METHOD
-
-        # Get websocket connection
-        ws_connection = None
-
-        # Create listen task
-        self.event_loop.create_task(
-            self.listen(
-                uri,
-                data_subscribe,
-                data_unsubscribe,
-                receive,
-                should_unsubscribe,
-            )
+        # Acquire websocket connection
+        ws_connection = await self.session.acquire_connection(
+            uri=uri, receive=receive, key=connection_key
         )
+
+        # Subscribe to channel
+        await ws_connection.subscribe(
+            data_subscribe=data_subscribe,
+            data_unsubscribe=data_unsubscribe,
+            should_unsubscribe=should_unsubscribe,
+        )
+
+        # Listen to websocket connection
+        await ws_connection.listen(event_loop=self.event_loop, listen_tolerance_ms=0)
