@@ -33,11 +33,17 @@ def construct_log(
     method: HTTPMethod,
     url: str,
     params: dict[str, Any] | None = None,
+    status_code: int | None = None,
 ) -> str:
     """Constructs and returns a log"""
 
     # Pad method name
     method_name = f"{method.name:>7}"
+
+    # Check if status code is not None
+    if status_code is not None:
+        # Add to method name
+        method_name = f"{method_name} {status_code}"
 
     # Check if params is not None
     if params is not None:
@@ -86,6 +92,7 @@ def log_request(
 def log_response(
     logger: Logger | None,
     method: HTTPMethod,
+    status_code: int,
     url: str,
     ms: int,
     params: dict[str, Any] | None = None,
@@ -97,7 +104,7 @@ def log_response(
         return
 
     # Construct log
-    log = construct_log(method=method, url=url, params=params)
+    log = construct_log(method=method, status_code=status_code, url=url, params=params)
 
     # Add ms to log
     log = f"{log} ({ms} ms)"
@@ -191,7 +198,14 @@ def http_request(
     ms = int((t1 - t0) * 1000)
 
     # Log response
-    log_response(logger=logger, method=method, url=url, ms=ms, params=params)
+    log_response(
+        logger=logger,
+        method=method,
+        status_code=response.status_code,
+        url=url,
+        ms=ms,
+        params=params,
+    )
 
     # Return response
     return response
@@ -282,7 +296,14 @@ async def http_request_async(
     ms = int((t1 - t0) * 1000)
 
     # Log response
-    log_response(logger=logger, method=method, url=url, ms=ms, params=params)
+    log_response(
+        logger=logger,
+        method=method,
+        status_code=response.status_code,
+        url=url,
+        ms=ms,
+        params=params,
+    )
 
     # Return response
     return response

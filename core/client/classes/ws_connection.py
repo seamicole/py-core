@@ -184,6 +184,17 @@ class WSConnection:
         if not self.session.is_alive:
             return False
 
+        # Check is not idle
+        return not self.is_idle
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ IS IDLE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def is_idle(self) -> bool:
+        """Returns whether the websocket connection is idle"""
+
         # Check if listen tolerance is not None
         if self._listen_tolerance_ms is not None:
             # Check if there are no subsriptions
@@ -193,10 +204,10 @@ class WSConnection:
                     time.time() - self._subs_updated_at
                     > self._listen_tolerance_ms / 1000
                 ):
-                    return False
+                    return True
 
-        # Return True
-        return True
+        # Return False
+        return False
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SUBSCRIPTION COUNT
@@ -234,9 +245,18 @@ class WSConnection:
         # Initialize try-except block
         try:
             # Create a new connection
-            conn = await websockets.connect(self.uri, ssl=ctx, compression=None)
+            conn = await asyncio.wait_for(websockets.connect(self.uri, ssl=ctx), 30)
 
-        # Handle any exception
+        # Handle TimeoutError
+        except asyncio.TimeoutError as e:
+            # Log message
+            self.session.logger.error(
+                self._log(f"Connection timeout to {self.uri} (30s)"),
+                key=WEBSOCKET_ERRORS,
+                exception=e,
+            )
+
+        # Handle any other exception
         except Exception as e:
             # Log message
             self.session.logger.error(
@@ -363,6 +383,11 @@ class WSConnection:
 
         # Acquire lock
         async with self._tlock:
+            # Check if idle
+            if self.is_idle:
+                # Release connection
+                await self.session.release_connection(self)
+
             # Set listen attributes
             self._is_listening = False
             self._listen_tolerance_ms = None

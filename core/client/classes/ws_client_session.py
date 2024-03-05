@@ -174,7 +174,7 @@ class WSClientSession:
         """Acquires a free or newly initialized websocket connection"""
 
         # Get subscriptions per connection
-        subscriptions_per_connection = 10
+        subscriptions_per_connection = 20
 
         # Acquire lock
         async with self._tlock:
@@ -214,43 +214,41 @@ class WSClientSession:
     # │ RELEASE CONNECTION
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    async def release_connection(
-        self, connection: WSConnection, key: str | None = None
-    ) -> None:
+    async def release_connection(self, connection: WSConnection) -> None:
         """Releases an acquired websocket connection"""
+
+        # Initialize is found
+        is_found = False
 
         # Acquire lock
         async with self._tlock:
-            # Initialize connections
-            connections = None
-
-            # Check if key is not None
-            if key is not None:
-                # Get connections
-                connections = self._connections.setdefault(key, set())
-
-                # Return if no connections
+            # Iterate over connections
+            for key, connections in self._connections.items():
+                # Continue if connection not in connections
                 if connection not in connections:
-                    # Check if subscription count is 1 or less
-                    if await connection.subscription_count <= 1:
-                        # Check if connection is still open
-                        if connection._conn is not None and not connection._conn.closed:
-                            # Initialize try-except block
-                            try:
-                                # Close connection
-                                await asyncio.wait_for(
-                                    connection._conn.close(), timeout=10
-                                )
+                    continue
 
-                            # Handle any exception
-                            except Exception:
-                                pass
+                # Check if connection is still open
+                if connection._conn is not None and not connection._conn.closed:
+                    # Initialize try-except block
+                    try:
+                        # Close connection
+                        await asyncio.wait_for(connection._conn.close(), timeout=30)
+
+                    # Handle any exception
+                    except Exception:
+                        pass
 
                 # Discard connection
                 connections.discard(connection)
 
-                # Decrement connection count
-                self._decrement_connection_count()
+                # Set is found
+                is_found = True
+
+        # Check if found
+        if is_found:
+            # Decrement connection count
+            self._decrement_connection_count()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ START
