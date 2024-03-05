@@ -30,6 +30,7 @@ class Log:
         level: int,
         key: str | None = None,
         timestamp: datetime | None = None,
+        exception: Exception | None = None,
     ) -> None:
         """Init Method"""
 
@@ -54,3 +55,6 @@ class Log:
 
         # Set level
         self.level = level
+
+        # Set exception
+        self.exception = exception

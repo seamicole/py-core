@@ -137,11 +137,18 @@ class Logger:
     # │ CRITICAL
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def critical(self, message: str, key: str | None = None) -> bool:
+    def critical(
+        self,
+        message: str,
+        key: str | None = None,
+        exception: Exception | None = None,
+    ) -> bool:
         """Prints and stores a critical message"""
 
         # Log message
-        return self.log(message=message, level=logging.CRITICAL, key=key)
+        return self.log(
+            message=message, level=logging.CRITICAL, key=key, exception=exception
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ DEBUG
@@ -157,11 +164,18 @@ class Logger:
     # │ ERROR
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def error(self, message: str, key: str | None = None) -> bool:
+    def error(
+        self,
+        message: str,
+        key: str | None = None,
+        exception: Exception | None = None,
+    ) -> bool:
         """Prints and stores a error message"""
 
         # Log message
-        return self.log(message=message, level=logging.ERROR, key=key)
+        return self.log(
+            message=message, level=logging.ERROR, key=key, exception=exception
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INFO
@@ -177,7 +191,13 @@ class Logger:
     # │ LOG
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def log(self, message: str, level: int, key: str | None = None) -> bool:
+    def log(
+        self,
+        message: str,
+        level: int,
+        key: str | None = None,
+        exception: Exception | None = None,
+    ) -> bool:
         """Prints and stores a log message"""
 
         # Define log functions
@@ -205,7 +225,13 @@ class Logger:
         log_func(message)
 
         # Initialize Log instance
-        log = Log(key=key, timestamp=timestamp, message=message, level=level)
+        log = Log(
+            key=key,
+            timestamp=timestamp,
+            message=message,
+            level=level,
+            exception=exception,
+        )
 
         # Get logs
         logs = self._logs_by_key.setdefault(key, LogCollection(size=self.log_limit))

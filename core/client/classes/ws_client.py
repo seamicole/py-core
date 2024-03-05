@@ -84,95 +84,6 @@ class WSClient:
         return sum(not task.done() for task in asyncio.all_tasks(loop=self.event_loop))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ LISTEN
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    async def listen(
-        self,
-        uri: str,
-        data_subscribe: str | dict[Any, Any],
-        data_unsubscribe: str | dict[Any, Any],
-        receive: Callable[[str | bytes], Awaitable[None] | None],
-        should_unsubscribe: Callable[[], bool] = lambda: False,
-    ) -> None:
-        """Listens to a websocket connection"""
-
-        # TEMP
-
-        try:
-            # Initialize while loop
-            while self.session.is_alive and not should_unsubscribe():
-                # Acquire connection
-                conn = await self.session.acquire_connection(uri)
-
-                # Send subscribe data
-                await conn.send(data_subscribe)
-
-                # Receive data
-                await self.receive(conn, receive, should_unsubscribe)
-
-                # Check if connection is still open
-                if not conn.closed:
-                    # Send unsubscribe data
-                    await conn.send(data_unsubscribe)
-
-                # Release connection
-                await self.session.release_connection(uri, conn)
-
-        except Exception as e:
-            self.logger.error(str(e) or "Error listening to websocket")
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ RECEIVE
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    async def receive(
-        self,
-        conn: WebSocketClientProtocol,
-        receive: Callable[[str | bytes], Awaitable[None] | None],
-        should_unsubscribe: Callable[[], bool],
-    ) -> None:
-        """Receives messages from a websocket connection"""
-
-        # Define receive loop
-        async def receive_loop() -> None:
-            # Initialize while loop
-            while (
-                not conn.closed and self.session.is_alive and not should_unsubscribe()
-            ):
-                # Initialize try-except block
-                try:
-                    # Receive message
-                    message = await conn.recv()
-
-                # Handle case of connection error
-                except websockets.exceptions.ConnectionClosedError:
-                    return
-
-                # Handle case of coroutine function
-                if asyncio.iscoroutinefunction(receive):
-                    await receive(message)
-
-                # Handle case of normal function
-                else:
-                    receive(message)
-
-        # Create receive task
-        receive_task = self.event_loop.create_task(receive_loop())
-
-        # Initialize while loop
-        while self.session.is_alive and not should_unsubscribe():
-            # Return if receive task is done
-            if receive_task.done():
-                return
-
-            # Sleep for 1 second
-            await asyncio.sleep(self.session.sync_tolerance_s)
-
-        # Cancel receive task
-        receive_task.cancel()
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SUBSCRIBE
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -209,6 +120,9 @@ class WSClient:
             json.dumps(data) if isinstance(data, dict) else data
             for data in (data_subscribe, data_unsubscribe)
         )
+
+        # Get websocket connection
+        ws_connection = 
 
         # Create listen task
         self.event_loop.create_task(

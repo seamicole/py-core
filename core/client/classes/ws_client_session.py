@@ -7,11 +7,10 @@ from __future__ import annotations
 import asyncio
 import json
 import time
-import ssl
 
 from multiprocessing import Manager
 from multiprocessing.managers import SyncManager
-from typing import Any, TYPE_CHECKING
+from typing import Any, Awaitable, Callable, TYPE_CHECKING
 
 try:
     import websockets
@@ -20,6 +19,15 @@ except ImportError:
 
 if TYPE_CHECKING:
     from websockets.legacy.client import WebSocketClientProtocol
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ PROJECT IMPORTS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+from core.log.classes.logger import Logger
+
+if TYPE_CHECKING:
+    from core.client.classes.ws_connection import WSConnection
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -35,7 +43,7 @@ class WSClientSession:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     # Declare type of connections
-    _connections: dict[str, dict[WebSocketClientProtocol, int]]
+    _connections: dict[str, set[WSConnection]]
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -47,13 +55,15 @@ class WSClientSession:
         ping_data: str | dict[str, Any] | None = None,
         ping_interval_ms: int | None = 30000,
         sync_tolerance_ms: int = 2000,
+        logger: Logger | None = None,
+        logger_key: str | None = None,
     ) -> None:
         """Init Method"""
 
         # Initialize a manager
         self._manager = manager or Manager()
 
-        # Initialize lock and semaphor
+        # Initialize process and thread locks
         self._plock = self._manager.Lock()
         self._tlock = asyncio.Lock()
 
@@ -65,8 +75,7 @@ class WSClientSession:
         self._is_alive_cache = False
         self._is_alive_updated_at = time.time()
 
-        # Initialize connection ID and connection count
-        self._connection_id = self._manager.Value("i", 0)  # Not used yet
+        # Initialize connection count
         self._connection_count = self._manager.Value("i", 0)
 
         # Set ping data
@@ -77,6 +86,18 @@ class WSClientSession:
 
         # Set sync tolerance
         self.sync_tolerance_ms = sync_tolerance_ms
+
+        # Initialize logger
+        self.logger = (
+            logger
+            if logger is not None
+            else Logger(
+                key=logger_key
+                if logger_key
+                else f"{self.__class__.__name__}.{hex(id(self))}",
+                log_limit=1000,
+            )
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ IS ALIVE
@@ -136,24 +157,6 @@ class WSClientSession:
             self._connection_count.value -= 1
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ _GET CONNECTION ID
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def _get_connection_id(self) -> int:
-        """Get connection ID"""
-
-        # Get connection ID
-        with self._plock:
-            # Get connection ID
-            connection_id = self._connection_id.value
-
-            # Increment connection ID
-            self._connection_id.value += 1
-
-            # Return connection ID
-            return connection_id
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _INCREMENT CONNECTION COUNT
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -168,76 +171,43 @@ class WSClientSession:
     # │ ACQUIRE CONNECTION
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    async def acquire_connection(self, uri: str) -> WebSocketClientProtocol:
+    async def acquire_connection(
+        self,
+        uri: str,
+        receive: Callable[[str | bytes], Awaitable[None] | None],
+        key: str | None = None,
+    ) -> WSConnection:
         """Acquires a free or newly initialized websocket connection"""
 
-        # Get channels per connection
-        channels_per_connection = 10
+        # Get subscriptions per connection
+        subscriptions_per_connection = 10
 
         # Acquire lock
         async with self._tlock:
-            # Get connections
-            connections = self._connections.setdefault(uri, {})
+            # Check if key is not None
+            if key is not None:
+                # Get connections
+                connections = self._connections.setdefault(key, set())
 
-            # Iterate over connections
-            for connection, channel_count in connections.items():
-                # If max channels is none or channel count is less than max channels
-                if (
-                    channels_per_connection is None
-                    or channel_count < channels_per_connection
-                ):
-                    # Increment channel count and return
-                    connections[connection] += 1
-
-                    # Return connection
-                    return connection
+                # Iterate over connections
+                for connection in connections:
+                    # Check if subscriptions per connection does not exceed the maximum
+                    if (
+                        subscriptions_per_connection is None
+                        or (await connection.subscription_count)
+                        < subscriptions_per_connection
+                    ):
+                        # Return connection
+                        return connection
 
             # Increment connection count
             self._increment_connection_count()
 
-            # Get context
-            ctx = ssl.create_default_context()
-
             # Create a new connection
-            connection = await websockets.connect(uri, ssl=ctx, compression=None)
+            connection = WSConnection(uri=uri, session=self, receive=receive)
 
             # Add connection to connections
-            connections[connection] = 1
-
-        # Get ping data
-        ping_data = self.ping_data
-
-        # Check if ping data is not None
-        if ping_data is not None:
-            # Get ping interval
-            ping_interval_s = self.ping_interval_s
-
-            # Check if ping interval is not None
-            if ping_interval_s is not None:
-                # Evaluate ping data if dictionary
-                ping_data = (
-                    {k: v({}, {}) if callable(v) else v for k, v in ping_data.items()}
-                    if isinstance(ping_data, dict)
-                    else ping_data
-                )
-
-                # Ensure ping data is a string
-                ping_data = (
-                    json.dumps(ping_data) if isinstance(ping_data, dict) else ping_data
-                )
-
-                # Define ping loop
-                async def ping_loop() -> None:
-                    # Initialize while loop
-                    while not connection.closed:
-                        # Send ping
-                        await connection.send(ping_data)
-
-                        # Wait for ping interval
-                        await asyncio.sleep(ping_interval_s)
-
-                # Create ping task
-                asyncio.create_task(ping_loop())
+            connections.add(connection)
 
         # Return connection
         return connection
