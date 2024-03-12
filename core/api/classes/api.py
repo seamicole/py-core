@@ -9,6 +9,7 @@ import posixpath
 
 from multiprocessing import Manager
 from typing import Any, Awaitable, Callable, TYPE_CHECKING
+from typing_extensions import TypedDict
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -25,6 +26,21 @@ if TYPE_CHECKING:
     from core.client.enums.http_method import HTTPMethod
     from core.client.types import HTTPMethodLiteral
 
+# ┌─────────────────────────────────────────────────────────────────────────────────
+# │ TYPE ALIASES
+# └─────────────────────────────────────────────────────────────────────────────────
+
+
+# Define an account kwargs type alias
+class AccountKwargs(TypedDict):
+    base_url: str
+    weight_per_second: float | int | None
+    ws_uri: str | None
+    ws_ping_data: str | dict[str, Any] | None
+    ws_ping_interval_ms: int | None
+    logger: Logger | None
+    logger_key: str | None
+
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ API
@@ -40,6 +56,7 @@ class API:
 
     def __init__(
         self,
+        # Public Arguments
         base_url: str,
         weight_per_second: float | int | None = None,
         ws_uri: str | None = None,
@@ -47,8 +64,28 @@ class API:
         ws_ping_interval_ms: int | None = None,
         logger: Logger | None = None,
         logger_key: str | None = None,
+        # Account-level Arguments
+        api_uid: str | None = None,
+        api_key: str | None = None,
+        api_sec: str | None = None,
     ) -> None:
         """Init Method"""
+
+        # Set API credentials
+        self.api_uid = api_uid
+        self.api_key = api_key
+        self.api_sec = api_sec
+
+        # Initialize account kwargs
+        self._account_kwargs: AccountKwargs = {
+            "base_url": base_url,
+            "weight_per_second": weight_per_second,
+            "ws_uri": ws_uri,
+            "ws_ping_data": ws_ping_data,
+            "ws_ping_interval_ms": ws_ping_interval_ms,
+            "logger": logger,
+            "logger_key": logger_key,
+        }
 
         # Initialize manager
         manager = Manager()
@@ -102,6 +139,50 @@ class API:
 
         # Return websocket event loop
         return self.ws.event_loop
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ ACCOUNT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def Account(
+        self, api_key: str, api_uid: str | None = None, api_sec: str | None = None
+    ) -> API:
+        """Initializes a new API instance with account-level credentials"""
+
+        # Get kwargs
+        kwargs = self._account_kwargs
+
+        # Get last digits digits of API key
+        api_key_tail = api_key[:-4]
+
+        # Get logger key
+        logger_key = kwargs.get("logger_key")
+        logger_key = (
+            logger_key + f"_account_{api_key_tail}"
+            if logger_key
+            else f"{self.__class__.__name__}.Account.{api_key_tail}"
+        )
+
+        # Initialize account-level API instance
+        account = self.__class__(
+            api_uid=api_uid,
+            api_key=api_key,
+            api_sec=api_sec,
+            base_url=kwargs["base_url"],
+            weight_per_second=kwargs["weight_per_second"],
+            ws_uri=kwargs["ws_uri"],
+            ws_ping_data=kwargs["ws_ping_data"],
+            ws_ping_interval_ms=kwargs["ws_ping_interval_ms"],
+            logger=kwargs["logger"],
+            logger_key=logger_key,
+        )
+
+        # Copy over endpoints and channels
+        account.endpoints = self.endpoints
+        account.channels = self.channels
+
+        # Return account-level API instance
+        return account
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CONSTRUCT URL

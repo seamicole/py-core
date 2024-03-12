@@ -74,7 +74,7 @@ class APIMixin:
     API_BASE_URL: str
 
     # Declare type of API weight per second
-    API_WEIGHT_PER_SECOND: int | float
+    API_WEIGHT_PER_SECOND: int | float | None
 
     # Declare type of API WS URI
     API_WS_URI: str | None
