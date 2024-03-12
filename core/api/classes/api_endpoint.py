@@ -123,6 +123,7 @@ class APIEndpoint:
         self,
         params: dict[str, Any] | None = None,
         params_schema: dict[str, str] | None = None,
+        substitutions: dict[str, Any] | None = None,
         weight: int | None = None,
     ) -> HTTPResponse:
         """Makes a synchronous request to the API endpoint"""
@@ -132,10 +133,20 @@ class APIEndpoint:
             # Apply schema to params
             params = dfrom_schema(params, {v: k for k, v in params_schema.items()})
 
+        # Get path
+        path = self.path
+
+        # Check if substitutions
+        if substitutions is not None:
+            # Iterate over substitions
+            for key, val in substitutions.items():
+                # Replace in path
+                path = path.replace(f":{key}", val)
+
         # Make request and return response
         return self.api.request(
             self.method or HTTPMethod.GET,
-            self.path,
+            path,
             base_url=self.base_url,
             params=params if params is not None else self.params,
             weight=weight if weight is not None else self.weight,
@@ -150,7 +161,9 @@ class APIEndpoint:
         self,
         params: dict[str, Any] | None = None,
         params_schema: dict[str, str] | None = None,
+        substitutions: dict[str, Any] | None = None,
         weight: int | None = None,
+        **subs: str,
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API endpoint"""
 
@@ -159,10 +172,20 @@ class APIEndpoint:
             # Apply schema to params
             params = dfrom_schema(params, {v: k for k, v in params_schema.items()})
 
+        # Get path
+        path = self.path
+
+        # Check if substitutions
+        if substitutions is not None:
+            # Iterate over substitions
+            for key, val in substitutions.items():
+                # Replace in path
+                path = path.replace(f":{key}", val)
+
         # Make request and return response
         return await self.api.request_async(
             self.method or HTTPMethod.GET,
-            self.path,
+            path,
             base_url=self.base_url,
             params=params if params is not None else self.params,
             weight=weight if weight is not None else self.weight,
