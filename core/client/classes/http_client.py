@@ -8,7 +8,7 @@ import asyncio
 import time
 
 from multiprocessing.managers import SyncManager
-from typing import Any, TYPE_CHECKING
+from typing import Any, Callable, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -20,6 +20,7 @@ from core.client.functions.http_request import http_request, http_request_async
 from core.log.classes.logger import Logger
 
 if TYPE_CHECKING:
+    from core.client.classes.http_request import HTTPRequest
     from core.client.enums.http_method import HTTPMethod
     from core.client.types import HTTPMethodLiteral
 
@@ -42,6 +43,7 @@ class HTTPClient:
         manager: SyncManager | None = None,
         logger: Logger | None = None,
         logger_key: str | None = None,
+        authenticate_request: Callable[[HTTPRequest], HTTPRequest] | None = None,
     ) -> None:
         """Init Method"""
 
@@ -75,6 +77,81 @@ class HTTPClient:
             )
         )
 
+        # Set authenticate request
+        self._authenticate_request = authenticate_request
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ DELETE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def delete(
+        self,
+        url: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        cookies: dict[str, Any] | None = None,
+        timeout: int | float | None = None,
+        weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
+    ) -> HTTPResponse:
+        """Makes a DELETE request to the API"""
+
+        # Make DELETE request and return response
+        return self.request(
+            url=url,
+            method=HTTPMethod.DELETE,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            timeout=timeout,
+            weight=weight,
+            authenticate=(
+                authenticate
+                if callable(authenticate)
+                else (
+                    self._authenticate_request
+                    if authenticate is True and self._authenticate_request is not None
+                    else False
+                )
+            ),
+        )
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ DELETE ASYNC
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    async def delete_async(
+        self,
+        url: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        cookies: dict[str, Any] | None = None,
+        timeout: int | float | None = None,
+        weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
+    ) -> HTTPResponse:
+        """Makes an asynchronous DELETE request to the API"""
+
+        # Make DELETE request and return response
+        return await self.request_async(
+            url=url,
+            method=HTTPMethod.DELETE,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            timeout=timeout,
+            weight=weight,
+            authenticate=(
+                authenticate
+                if callable(authenticate)
+                else (
+                    self._authenticate_request
+                    if authenticate is True and self._authenticate_request is not None
+                    else False
+                )
+            ),
+        )
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ GET
     # └─────────────────────────────────────────────────────────────────────────────────
@@ -87,6 +164,7 @@ class HTTPClient:
         cookies: dict[str, Any] | None = None,
         timeout: int | float | None = None,
         weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes a GET request to the API"""
 
@@ -99,6 +177,15 @@ class HTTPClient:
             cookies=cookies,
             timeout=timeout,
             weight=weight,
+            authenticate=(
+                authenticate
+                if callable(authenticate)
+                else (
+                    self._authenticate_request
+                    if authenticate is True and self._authenticate_request is not None
+                    else False
+                )
+            ),
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -113,6 +200,7 @@ class HTTPClient:
         cookies: dict[str, Any] | None = None,
         timeout: int | float | None = None,
         weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes an asynchronous GET request to the API"""
 
@@ -125,6 +213,15 @@ class HTTPClient:
             cookies=cookies,
             timeout=timeout,
             weight=weight,
+            authenticate=(
+                authenticate
+                if callable(authenticate)
+                else (
+                    self._authenticate_request
+                    if authenticate is True and self._authenticate_request is not None
+                    else False
+                )
+            ),
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -141,6 +238,7 @@ class HTTPClient:
         data: Any = None,
         json: dict[str, Any] | None = None,
         weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes a POST request to the API"""
 
@@ -155,6 +253,15 @@ class HTTPClient:
             data=data,
             json=json,
             weight=weight,
+            authenticate=(
+                authenticate
+                if callable(authenticate)
+                else (
+                    self._authenticate_request
+                    if authenticate is True and self._authenticate_request is not None
+                    else False
+                )
+            ),
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -171,6 +278,7 @@ class HTTPClient:
         data: Any = None,
         json: dict[str, Any] | None = None,
         weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes an asynchronous POST request to the API"""
 
@@ -185,6 +293,15 @@ class HTTPClient:
             data=data,
             json=json,
             weight=weight,
+            authenticate=(
+                authenticate
+                if callable(authenticate)
+                else (
+                    self._authenticate_request
+                    if authenticate is True and self._authenticate_request is not None
+                    else False
+                )
+            ),
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -203,6 +320,7 @@ class HTTPClient:
         json: dict[str, Any] | None = None,
         weight: int = 1,
         logger: Logger | None = None,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes a request to the API"""
 
@@ -227,6 +345,11 @@ class HTTPClient:
             json=json,
             weight=weight,
             logger=logger if logger is not None else self.logger,
+            authenticate=(
+                authenticate
+                if callable(authenticate)
+                else (self._authenticate_request if authenticate is True else None)
+            ),
         )
 
         # Log response
@@ -251,6 +374,7 @@ class HTTPClient:
         json: dict[str, Any] | None = None,
         weight: int = 1,
         logger: Logger | None = None,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API"""
 
@@ -275,6 +399,11 @@ class HTTPClient:
             json=json,
             weight=weight,
             logger=logger if logger is not None else self.logger,
+            authenticate=(
+                authenticate
+                if callable(authenticate)
+                else (self._authenticate_request if authenticate is True else None)
+            ),
         )
         if response.status_code != 200:
             print(response.status_code)

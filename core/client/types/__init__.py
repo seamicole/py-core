@@ -16,7 +16,7 @@ from core.dict.types import DictSchema
 # │ HTTP METHOD
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-HTTPMethodLiteral = Literal["GET", "POST"]
+HTTPMethodLiteral = Literal["DELETE", "GET", "POST"]
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ JSON

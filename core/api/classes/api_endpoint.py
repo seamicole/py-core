@@ -52,6 +52,7 @@ class APIEndpoint:
         params: dict[str, Any] | None = None,
         params_schema: dict[str, str] | None = None,
         weight: int = 1,
+        authenticate: bool = False,
     ) -> None:
         """Init Method"""
 
@@ -89,6 +90,9 @@ class APIEndpoint:
 
         # Set weight
         self.weight = weight
+
+        # Set authenticate
+        self.authenticate = authenticate
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
@@ -135,6 +139,7 @@ class APIEndpoint:
             base_url=self.base_url,
             params=params if params is not None else self.params,
             weight=weight if weight is not None else self.weight,
+            authenticate=self.authenticate,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -161,6 +166,7 @@ class APIEndpoint:
             base_url=self.base_url,
             params=params if params is not None else self.params,
             weight=weight if weight is not None else self.weight,
+            authenticate=self.authenticate,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────

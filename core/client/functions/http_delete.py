@@ -33,17 +33,6 @@ from core.client.classes.http_response import HTTPResponse
 def http_delete(request: HTTPRequest) -> HTTPResponse:
     """Makes an HTTP DELETE request and returns a HTTPResponse instance"""
 
-    # Initialize request
-    request = HTTPRequest(
-        url=request.url,
-        method=request.method,
-        params=request.params,
-        headers=request.headers,
-        cookies=request.cookies,
-        timeout=request.timeout,
-        weight=request.weight,
-    )
-
     # Get the requester
     requester = httpx or requests
 
@@ -92,17 +81,6 @@ def http_delete(request: HTTPRequest) -> HTTPResponse:
 
 async def http_delete_async(request: HTTPRequest) -> HTTPResponse:
     """Makes an HTTP DELETE request and returns a HTTPResponse instance"""
-
-    # Initialize request
-    request = HTTPRequest(
-        url=request.url,
-        method=request.method,
-        params=request.params,
-        headers=request.headers,
-        cookies=request.cookies,
-        timeout=request.timeout,
-        weight=request.weight,
-    )
 
     # Check if aiohttp is being used
     if aiohttp:

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import time
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, Callable, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -125,6 +125,7 @@ def http_request(
     json: dict[str, Any] | None = None,
     weight: int = 1,
     logger: Logger | None = None,
+    authenticate: Callable[[HTTPRequest], HTTPRequest] | None = None,
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
@@ -150,6 +151,10 @@ def http_request(
         timeout=timeout,
         weight=weight,
     )
+
+    # Authenticate request
+    if authenticate is not None:
+        request = authenticate(request)
 
     # Log request
     log_request(logger=logger, request=request)
@@ -208,6 +213,7 @@ async def http_request_async(
     json: dict[str, Any] | None = None,
     weight: int = 1,
     logger: Logger | None = None,
+    authenticate: Callable[[HTTPRequest], HTTPRequest] | None = None,
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
@@ -233,6 +239,10 @@ async def http_request_async(
         timeout=timeout,
         weight=weight,
     )
+
+    # Authenticate request
+    if authenticate is not None:
+        request = authenticate(request)
 
     # Log request
     log_request(logger=logger, request=request)

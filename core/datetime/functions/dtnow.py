@@ -2,13 +2,7 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from datetime import datetime
-
-# ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ PROJECT IMPORTS
-# └─────────────────────────────────────────────────────────────────────────────────────
-
-from core.datetime.functions.dtto_utc import dtto_utc
+from datetime import datetime, timezone
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -32,4 +26,4 @@ def dtnow_utc() -> datetime:
     """Returns a datetime object with the current date and time in UTC"""
 
     # Return datetime
-    return dtto_utc(dtnow())
+    return datetime.now(timezone.utc)

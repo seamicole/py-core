@@ -9,7 +9,6 @@ import posixpath
 
 from multiprocessing import Manager
 from typing import Any, Awaitable, Callable, TYPE_CHECKING
-from typing_extensions import TypedDict
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -22,6 +21,7 @@ from core.client.classes.ws_client import WSClient
 from core.log.classes.logger import Logger
 
 if TYPE_CHECKING:
+    from core.client.classes.http_request import HTTPRequest
     from core.client.classes.http_response import HTTPResponse
     from core.client.enums.http_method import HTTPMethod
     from core.client.types import HTTPMethodLiteral
@@ -48,6 +48,7 @@ class API:
         ws_ping_interval_ms: int | None = None,
         logger: Logger | None = None,
         logger_key: str | None = None,
+        authenticate_request: Callable[[HTTPRequest], HTTPRequest] | None = None,
     ) -> None:
         """Init Method"""
 
@@ -68,7 +69,10 @@ class API:
 
         # Initialize HTTP client
         self.client = HTTPClient(
-            manager=manager, weight_per_second=weight_per_second, logger=self.logger
+            manager=manager,
+            weight_per_second=weight_per_second,
+            logger=self.logger,
+            authenticate_request=authenticate_request,
         )
 
         # Set base url
@@ -133,6 +137,7 @@ class API:
         cookies: dict[str, Any] | None = None,
         timeout: int | float | None = None,
         weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes a GET request to the API"""
 
@@ -146,6 +151,7 @@ class API:
             cookies=cookies,
             timeout=timeout,
             weight=weight,
+            authenticate=authenticate,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -161,6 +167,7 @@ class API:
         cookies: dict[str, Any] | None = None,
         timeout: int | float | None = None,
         weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes an asynchronous GET request to the API"""
 
@@ -174,6 +181,7 @@ class API:
             cookies=cookies,
             timeout=timeout,
             weight=weight,
+            authenticate=authenticate,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -191,6 +199,7 @@ class API:
         data: Any = None,
         json: dict[str, Any] | None = None,
         weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes a POST request to the API"""
 
@@ -206,6 +215,7 @@ class API:
             data=data,
             json=json,
             weight=weight,
+            authenticate=authenticate,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -223,6 +233,7 @@ class API:
         data: Any = None,
         json: dict[str, Any] | None = None,
         weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes an asynchronous POST request to the API"""
 
@@ -238,6 +249,7 @@ class API:
             data=data,
             json=json,
             weight=weight,
+            authenticate=authenticate,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -256,6 +268,7 @@ class API:
         data: Any = None,
         json: dict[str, Any] | None = None,
         weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes a request to the API"""
 
@@ -274,6 +287,7 @@ class API:
             json=json,
             weight=weight,
             logger=self.logger,
+            authenticate=authenticate,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -292,6 +306,7 @@ class API:
         data: Any = None,
         json: dict[str, Any] | None = None,
         weight: int = 1,
+        authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API"""
 
@@ -310,6 +325,7 @@ class API:
             json=json,
             weight=weight,
             logger=self.logger,
+            authenticate=authenticate,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────

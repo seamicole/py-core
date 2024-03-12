@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from typing_extensions import NotRequired, TypedDict
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -19,6 +19,9 @@ from core.api.classes.api_endpoint import APIEndpoint
 from core.api.classes.api_endpoint_collection import APIEndpointCollection
 from core.client.enums.http_method import HTTPMethod
 from core.client.types import HTTPMethodLiteral, JSONFilter, JSONSchema
+
+if TYPE_CHECKING:
+    from core.client.classes.http_request import HTTPRequest
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -57,6 +60,7 @@ class APIMixin:
         params: NotRequired[dict[str, Any]]
         params_schema: NotRequired[dict[str, str]]
         weight: NotRequired[int]
+        authenticate: NotRequired[bool]
 
     # Define an endpoint list type alias
     Endpoints = list[Endpoint] | None
@@ -119,6 +123,7 @@ class APIMixin:
             ws_ping_data=getattr(self, "API_WS_PING_DATA", None),
             ws_ping_interval_ms=getattr(self, "API_WS_PING_INTERVAL_MS", 30000),
             logger_key=logger_key,
+            authenticate_request=self.authenticate_request,
         )
 
         # Get endpoint attributes
@@ -242,3 +247,13 @@ class APIMixin:
 
         # Return cached API instance
         return self._api
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ AUTHENTICATE REQUEST
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def authenticate_request(self, request: HTTPRequest) -> HTTPRequest:
+        """Authenticates a request before being sent"""
+
+        # Return request
+        return request

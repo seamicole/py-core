@@ -33,19 +33,6 @@ from core.client.classes.http_response import HTTPResponse
 def http_post(request: HTTPRequest) -> HTTPResponse:
     """Makes an HTTP POST request and returns a HTTPResponse instance"""
 
-    # Initialize request
-    request = HTTPRequest(
-        url=request.url,
-        method=request.method,
-        params=request.params,
-        headers=request.headers,
-        cookies=request.cookies,
-        timeout=request.timeout,
-        data=request.data,
-        json=request.json,
-        weight=request.weight,
-    )
-
     # Get the requester
     requester = httpx or requests
 
@@ -97,19 +84,6 @@ def http_post(request: HTTPRequest) -> HTTPResponse:
 
 async def http_post_async(request: HTTPRequest) -> HTTPResponse:
     """Makes an HTTP POST request and returns a HTTPResponse instance"""
-
-    # Initialize request
-    request = HTTPRequest(
-        url=request.url,
-        method=request.method,
-        params=request.params,
-        headers=request.headers,
-        cookies=request.cookies,
-        timeout=request.timeout,
-        data=request.data,
-        json=request.json,
-        weight=request.weight,
-    )
 
     # Check if aiohttp is being used
     if aiohttp:
