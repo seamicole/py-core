@@ -16,6 +16,7 @@ from core.client.functions.http_delete import http_delete, http_delete_async
 from core.client.functions.http_get import http_get, http_get_async
 from core.client.functions.http_post import http_post, http_post_async
 from core.client.enums.http_method import HTTPMethod
+from core.client.classes.http_request import HTTPRequest
 from core.client.exceptions import InvalidHTTPMethodError
 
 if TYPE_CHECKING:
@@ -65,12 +66,7 @@ def construct_log(
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def log_request(
-    logger: Logger | None,
-    method: HTTPMethod,
-    url: str,
-    params: dict[str, Any] | None = None,
-) -> None:
+def log_request(logger: Logger | None, request: HTTPRequest) -> None:
     """Constructs and prints a request log"""
 
     # Return if no logger
@@ -78,7 +74,7 @@ def log_request(
         return
 
     # Construct log
-    log = construct_log(method=method, url=url, params=params)
+    log = construct_log(method=request.method, url=request.url, params=request.params)
 
     # Print log
     logger.debug(log, key="http_requests")
@@ -90,12 +86,7 @@ def log_request(
 
 
 def log_response(
-    logger: Logger | None,
-    method: HTTPMethod,
-    status_code: int,
-    url: str,
-    ms: int,
-    params: dict[str, Any] | None = None,
+    logger: Logger | None, request: HTTPRequest, status_code: int, ms: int
 ) -> None:
     """Constructs and prints a response log"""
 
@@ -104,7 +95,12 @@ def log_response(
         return
 
     # Construct log
-    log = construct_log(method=method, status_code=status_code, url=url, params=params)
+    log = construct_log(
+        method=request.method,
+        status_code=status_code,
+        url=request.url,
+        params=request.params,
+    )
 
     # Add ms to log
     log = f"{log} ({ms} ms)"
@@ -142,8 +138,21 @@ def http_request(
         # Convert to enum
         method = HTTPMethod[method]
 
+    # Initialize request
+    request = HTTPRequest(
+        url=url,
+        method=method,
+        params=params,
+        data=data,
+        json=json,
+        headers=headers,
+        cookies=cookies,
+        timeout=timeout,
+        weight=weight,
+    )
+
     # Log request
-    log_request(logger=logger, method=method, url=url, params=params)
+    log_request(logger=logger, request=request)
 
     # Get t0
     t0 = time.time()
@@ -151,40 +160,17 @@ def http_request(
     # Check if GET
     if method == HTTPMethod.GET:
         # Make a GET request
-        response = http_get(
-            url=url,
-            params=params,
-            headers=headers,
-            cookies=cookies,
-            timeout=timeout,
-            weight=weight,
-        )
+        response = http_get(request=request)
 
     # Otherwise, check if POST
     elif method == HTTPMethod.POST:
         # Make a POST request
-        response = http_post(
-            url=url,
-            params=params,
-            headers=headers,
-            cookies=cookies,
-            timeout=timeout,
-            data=data,
-            json=json,
-            weight=weight,
-        )
+        response = http_post(request=request)
 
     # Otherwise, check if DELETE
     elif method == HTTPMethod.DELETE:
         # Make a DELETE request
-        response = http_delete(
-            url=url,
-            params=params,
-            headers=headers,
-            cookies=cookies,
-            timeout=timeout,
-            weight=weight,
-        )
+        response = http_delete(request=request)
 
     # Otherwise, raise an exception
     else:
@@ -199,12 +185,7 @@ def http_request(
 
     # Log response
     log_response(
-        logger=logger,
-        method=method,
-        status_code=response.status_code,
-        url=url,
-        ms=ms,
-        params=params,
+        logger=logger, request=request, status_code=response.status_code, ms=ms
     )
 
     # Return response
@@ -240,8 +221,21 @@ async def http_request_async(
         # Convert to enum
         method = HTTPMethod[method]
 
+    # Initialize request
+    request = HTTPRequest(
+        url=url,
+        method=method,
+        params=params,
+        data=data,
+        json=json,
+        headers=headers,
+        cookies=cookies,
+        timeout=timeout,
+        weight=weight,
+    )
+
     # Log request
-    log_request(logger=logger, method=method, url=url, params=params)
+    log_request(logger=logger, request=request)
 
     # Get t0
     t0 = time.time()
@@ -249,40 +243,17 @@ async def http_request_async(
     # Check if GET
     if method == HTTPMethod.GET:
         # Make a GET request
-        response = await http_get_async(
-            url=url,
-            params=params,
-            headers=headers,
-            cookies=cookies,
-            timeout=timeout,
-            weight=weight,
-        )
+        response = await http_get_async(request=request)
 
     # Otherwise, check if POST
     elif method == HTTPMethod.POST:
         # Make a POST request
-        response = await http_post_async(
-            url=url,
-            params=params,
-            headers=headers,
-            cookies=cookies,
-            timeout=timeout,
-            data=data,
-            json=json,
-            weight=weight,
-        )
+        response = await http_post_async(request=request)
 
     # Otherwise, check if DELETE
     elif method == HTTPMethod.DELETE:
         # Make a DELETE request
-        response = await http_delete_async(
-            url=url,
-            params=params,
-            headers=headers,
-            cookies=cookies,
-            timeout=timeout,
-            weight=weight,
-        )
+        response = await http_delete_async(request=request)
 
     # Otherwise, raise an exception
     else:
@@ -297,12 +268,7 @@ async def http_request_async(
 
     # Log response
     log_response(
-        logger=logger,
-        method=method,
-        status_code=response.status_code,
-        url=url,
-        ms=ms,
-        params=params,
+        logger=logger, request=request, status_code=response.status_code, ms=ms
     )
 
     # Return response

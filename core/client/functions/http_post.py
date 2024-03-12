@@ -2,8 +2,6 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Any
-
 try:
     import aiohttp
 except ImportError:
@@ -25,7 +23,6 @@ except ImportError:
 
 from core.client.classes.http_request import HTTPRequest
 from core.client.classes.http_response import HTTPResponse
-from core.client.enums.http_method import HTTPMethod
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -33,29 +30,20 @@ from core.client.enums.http_method import HTTPMethod
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def http_post(
-    url: str,
-    params: dict[str, Any] | None = None,
-    headers: dict[str, Any] | None = None,
-    cookies: dict[str, Any] | None = None,
-    timeout: int | float | None = None,
-    data: Any = None,
-    json: dict[str, Any] | None = None,
-    weight: int = 1,
-) -> HTTPResponse:
+def http_post(request: HTTPRequest) -> HTTPResponse:
     """Makes an HTTP POST request and returns a HTTPResponse instance"""
 
     # Initialize request
     request = HTTPRequest(
-        url=url,
-        method=HTTPMethod.POST,
-        params=params,
-        headers=headers,
-        cookies=cookies,
-        timeout=timeout,
-        data=data,
-        json=json,
-        weight=weight,
+        url=request.url,
+        method=request.method,
+        params=request.params,
+        headers=request.headers,
+        cookies=request.cookies,
+        timeout=request.timeout,
+        data=request.data,
+        json=request.json,
+        weight=request.weight,
     )
 
     # Get the requester
@@ -68,13 +56,13 @@ def http_post(
 
     # Make the request
     response = requester.post(
-        url=url,
-        params=params,
-        headers=headers,
-        cookies=cookies,
-        timeout=timeout,
-        data=data,
-        json=json,
+        url=request.url,
+        params=request.params,
+        headers=request.headers,
+        cookies=request.cookies,
+        timeout=request.timeout,
+        data=request.data,
+        json=request.json,
     )
 
     # Initialize try-except block
@@ -92,7 +80,7 @@ def http_post(
         obj=response,
         text=response.text,
         json=response_json,
-        weight=weight,
+        weight=request.weight,
     )
 
     # Set response
@@ -107,42 +95,36 @@ def http_post(
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-async def http_post_async(
-    url: str,
-    params: dict[str, Any] | None = None,
-    headers: dict[str, Any] | None = None,
-    cookies: dict[str, Any] | None = None,
-    timeout: int | float | None = None,
-    data: Any = None,
-    json: dict[str, Any] | None = None,
-    weight: int = 1,
-) -> HTTPResponse:
+async def http_post_async(request: HTTPRequest) -> HTTPResponse:
     """Makes an HTTP POST request and returns a HTTPResponse instance"""
 
     # Initialize request
     request = HTTPRequest(
-        url=url,
-        method=HTTPMethod.POST,
-        params=params,
-        headers=headers,
-        cookies=cookies,
-        timeout=timeout,
-        data=data,
-        json=json,
-        weight=weight,
+        url=request.url,
+        method=request.method,
+        params=request.params,
+        headers=request.headers,
+        cookies=request.cookies,
+        timeout=request.timeout,
+        data=request.data,
+        json=request.json,
+        weight=request.weight,
     )
 
     # Check if aiohttp is being used
     if aiohttp:
         # Initialize the session
         async with aiohttp.ClientSession(
-            headers=headers,
-            cookies=cookies,
-            timeout=aiohttp.ClientTimeout(total=timeout),
+            headers=request.headers,
+            cookies=request.cookies,
+            timeout=aiohttp.ClientTimeout(total=request.timeout),
         ) as session:
             # Make the request
             async with session.post(
-                url=url, params=params, data=data, json=json
+                url=request.url,
+                params=request.params,
+                data=request.data,
+                json=request.json,
             ) as response_aiohttp:
                 # Initialize try-except block
                 try:
@@ -159,7 +141,7 @@ async def http_post_async(
                     obj=response_aiohttp,
                     text=await response_aiohttp.text(),
                     json=response_json,
-                    weight=weight,
+                    weight=request.weight,
                 )
 
                 # Set response
@@ -175,10 +157,17 @@ async def http_post_async(
 
     # Initialize the client
     async with httpx.AsyncClient(
-        headers=headers, cookies=cookies, timeout=timeout
+        headers=request.headers,
+        cookies=request.cookies,
+        timeout=request.timeout,
     ) as client:
         # Make the request
-        response_httpx = await client.post(url=url, params=params, data=data, json=json)
+        response_httpx = await client.post(
+            url=request.url,
+            params=request.params,
+            data=request.data,
+            json=request.json,
+        )
 
     # Initialize try-except block
     try:
@@ -195,7 +184,7 @@ async def http_post_async(
         obj=response_httpx,
         text=response_httpx.text,
         json=response_json,
-        weight=weight,
+        weight=request.weight,
     )
 
     # Set response

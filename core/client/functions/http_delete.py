@@ -2,8 +2,6 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Any
-
 try:
     import aiohttp
 except ImportError:
@@ -25,7 +23,6 @@ except ImportError:
 
 from core.client.classes.http_request import HTTPRequest
 from core.client.classes.http_response import HTTPResponse
-from core.client.enums.http_method import HTTPMethod
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -33,25 +30,18 @@ from core.client.enums.http_method import HTTPMethod
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def http_delete(
-    url: str,
-    params: dict[str, Any] | None = None,
-    headers: dict[str, Any] | None = None,
-    cookies: dict[str, Any] | None = None,
-    timeout: int | float | None = None,
-    weight: int = 1,
-) -> HTTPResponse:
+def http_delete(request: HTTPRequest) -> HTTPResponse:
     """Makes an HTTP DELETE request and returns a HTTPResponse instance"""
 
     # Initialize request
     request = HTTPRequest(
-        url=url,
-        method=HTTPMethod.DELETE,
-        params=params,
-        headers=headers,
-        cookies=cookies,
-        timeout=timeout,
-        weight=weight,
+        url=request.url,
+        method=request.method,
+        params=request.params,
+        headers=request.headers,
+        cookies=request.cookies,
+        timeout=request.timeout,
+        weight=request.weight,
     )
 
     # Get the requester
@@ -64,11 +54,11 @@ def http_delete(
 
     # Make the request
     response = requester.delete(
-        url=url,
-        params=params,
-        headers=headers,
-        cookies=cookies,
-        timeout=timeout,
+        url=request.url,
+        params=request.params,
+        headers=request.headers,
+        cookies=request.cookies,
+        timeout=request.timeout,
     )
 
     # Initialize try-except block
@@ -85,7 +75,7 @@ def http_delete(
         obj=response,
         text=response.text,
         json=response_json,
-        weight=weight,
+        weight=request.weight,
     )
 
     # Set response
@@ -100,37 +90,33 @@ def http_delete(
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-async def http_delete_async(
-    url: str,
-    params: dict[str, Any] | None = None,
-    headers: dict[str, Any] | None = None,
-    cookies: dict[str, Any] | None = None,
-    timeout: int | float | None = None,
-    weight: int = 1,
-) -> HTTPResponse:
+async def http_delete_async(request: HTTPRequest) -> HTTPResponse:
     """Makes an HTTP DELETE request and returns a HTTPResponse instance"""
 
     # Initialize request
     request = HTTPRequest(
-        url=url,
-        method=HTTPMethod.DELETE,
-        params=params,
-        headers=headers,
-        cookies=cookies,
-        timeout=timeout,
-        weight=weight,
+        url=request.url,
+        method=request.method,
+        params=request.params,
+        headers=request.headers,
+        cookies=request.cookies,
+        timeout=request.timeout,
+        weight=request.weight,
     )
 
     # Check if aiohttp is being used
     if aiohttp:
         # Initialize the session
         async with aiohttp.ClientSession(
-            headers=headers,
-            cookies=cookies,
-            timeout=aiohttp.ClientTimeout(total=timeout),
+            headers=request.headers,
+            cookies=request.cookies,
+            timeout=aiohttp.ClientTimeout(total=request.timeout),
         ) as session:
             # Make the request
-            async with session.delete(url=url, params=params) as response_aiohttp:
+            async with session.delete(
+                url=request.url,
+                params=request.params,
+            ) as response_aiohttp:
                 # Initialize try-except block
                 try:
                     # Get the response JSON
@@ -146,7 +132,7 @@ async def http_delete_async(
                     obj=response_aiohttp,
                     text=await response_aiohttp.text(),
                     json=response_json,
-                    weight=weight,
+                    weight=request.weight,
                 )
 
                 # Set response
@@ -162,10 +148,15 @@ async def http_delete_async(
 
     # Initialize the client
     async with httpx.AsyncClient(
-        headers=headers, cookies=cookies, timeout=timeout
+        headers=request.headers,
+        cookies=request.cookies,
+        timeout=request.timeout,
     ) as client:
         # Make the request
-        response_httpx = await client.delete(url=url, params=params)
+        response_httpx = await client.delete(
+            url=request.url,
+            params=request.params,
+        )
 
     # Initialize try-except block
     try:
@@ -182,7 +173,7 @@ async def http_delete_async(
         obj=response_httpx,
         text=response_httpx.text,
         json=response_json,
-        weight=weight,
+        weight=request.weight,
     )
 
     # Set response
