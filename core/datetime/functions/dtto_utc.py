@@ -8,9 +8,9 @@ except ImportError:
     pytz = None  # type: ignore
 
 try:
-    from tzlocal import get_localzone
+    from dateutil.tz import tzlocal, tzutc
 except ImportError:
-    get_localzone = None  # type: ignore
+    tzlocal = None  # type: ignore
 
 from datetime import datetime
 
@@ -30,13 +30,13 @@ def dtto_utc(dt: datetime) -> datetime:
 
     # Check if timezone is None
     if dt.tzinfo is None:
-        # Check if get localzone is None
-        if get_localzone is None:
+        # Check if get tzlocal is None
+        if tzlocal is None:
             # Raise an ImportError
-            raise ImportError("pytz is required to use this function")
+            raise ImportError("dateutil is required to use this function")
 
         # Convert to UTC
-        return get_localzone().localize(dt).astimezone(pytz.utc)
+        return dt.replace(tzinfo=tzlocal()).astimezone(tzutc())
 
     # Return converted datetime
     return dt.astimezone(pytz.utc)
