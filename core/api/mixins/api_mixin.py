@@ -54,6 +54,7 @@ class APIMixin:
         method: HTTPMethod | HTTPMethodLiteral
         path: str
         base_url: NotRequired[str]
+        json: NotRequired[dict[str, Any]]
         json_path: NotRequired[str]
         json_filter: NotRequired[JSONFilter]
         json_schema: NotRequired[JSONSchema]

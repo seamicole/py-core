@@ -46,6 +46,7 @@ class APIEndpoint:
         path: str,
         method: HTTPMethod | HTTPMethodLiteral | None = None,
         base_url: str | None = None,
+        json: dict[str, Any] | None = None,
         json_path: str | None = None,
         json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None = None,
@@ -72,6 +73,9 @@ class APIEndpoint:
 
         # Set base URL
         self.base_url = base_url
+
+        # Set JSON
+        self.json = json
 
         # Set JSON path
         self.json_path = json_path
@@ -121,9 +125,10 @@ class APIEndpoint:
 
     def request(
         self,
+        json: dict[str, Any] | None = None,
+        path_schema: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
         params_schema: dict[str, str] | None = None,
-        substitutions: dict[str, Any] | None = None,
         weight: int | None = None,
     ) -> HTTPResponse:
         """Makes a synchronous request to the API endpoint"""
@@ -136,10 +141,10 @@ class APIEndpoint:
         # Get path
         path = self.path
 
-        # Check if substitutions
-        if substitutions is not None:
-            # Iterate over substitions
-            for key, val in substitutions.items():
+        # Check if path schema
+        if path_schema is not None:
+            # Iterate over path schema
+            for key, val in path_schema.items():
                 # Replace in path
                 path = path.replace(f":{key}", val)
 
@@ -149,6 +154,7 @@ class APIEndpoint:
             path,
             base_url=self.base_url,
             params=params if params is not None else self.params,
+            json=json,
             weight=weight if weight is not None else self.weight,
             authenticate=self.authenticate,
         )
@@ -159,9 +165,10 @@ class APIEndpoint:
 
     async def request_async(
         self,
+        json: dict[str, Any] | None = None,
+        path_schema: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
         params_schema: dict[str, str] | None = None,
-        substitutions: dict[str, Any] | None = None,
         weight: int | None = None,
         **subs: str,
     ) -> HTTPResponse:
@@ -175,10 +182,10 @@ class APIEndpoint:
         # Get path
         path = self.path
 
-        # Check if substitutions
-        if substitutions is not None:
-            # Iterate over substitions
-            for key, val in substitutions.items():
+        # Check if path schema
+        if path_schema is not None:
+            # Iterate over path schema
+            for key, val in path_schema.items():
                 # Replace in path
                 path = path.replace(f":{key}", val)
 
@@ -188,6 +195,7 @@ class APIEndpoint:
             path,
             base_url=self.base_url,
             params=params if params is not None else self.params,
+            json=json,
             weight=weight if weight is not None else self.weight,
             authenticate=self.authenticate,
         )
@@ -198,6 +206,7 @@ class APIEndpoint:
 
     def request_dict(
         self,
+        json: dict[str, Any] | None = None,
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
@@ -207,7 +216,7 @@ class APIEndpoint:
         """Yields an object dict from the current API endpoint"""
 
         # Make request
-        response = self.request(params=params, weight=weight)
+        response = self.request(params=params, json=json, weight=weight)
 
         # Check if response status code is not in 200 range
         if not response.did_succeed:
@@ -237,6 +246,7 @@ class APIEndpoint:
 
     def request_dicts(
         self,
+        json: dict[str, Any] | None = None,
         json_path: str | None | Nothing = nothing,
         json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
@@ -247,7 +257,7 @@ class APIEndpoint:
         """Yields a series of object dicts from the current API endpoint"""
 
         # Make request
-        response = self.request(params=params, weight=weight)
+        response = self.request(params=params, json=json, weight=weight)
 
         # Check if response status code is not in 200 range
         if not response.did_succeed:
@@ -281,6 +291,7 @@ class APIEndpoint:
 
     async def request_dict_async(
         self,
+        json: dict[str, Any] | None = None,
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
@@ -290,7 +301,7 @@ class APIEndpoint:
         """Yields an object dict from the current API endpoint"""
 
         # Make request
-        response = await self.request_async(params=params, weight=weight)
+        response = await self.request_async(params=params, json=json, weight=weight)
 
         # Check if response status code is not in 200 range
         if not response.did_succeed:
@@ -320,6 +331,7 @@ class APIEndpoint:
 
     async def request_dicts_async(
         self,
+        json: dict[str, Any] | None = None,
         json_path: str | None | Nothing = nothing,
         json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
@@ -330,7 +342,7 @@ class APIEndpoint:
         """Yields a series of object dicts from the current API endpoint"""
 
         # Make request
-        response = await self.request_async(params=params, weight=weight)
+        response = await self.request_async(params=params, json=json, weight=weight)
 
         # Check if response status code is not in 200 range
         if not response.did_succeed:
@@ -365,6 +377,7 @@ class APIEndpoint:
     def request_instance(
         self,
         InstanceClass: type[T],
+        json: dict[str, Any] | None = None,
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
@@ -381,6 +394,7 @@ class APIEndpoint:
 
         # Get item
         item = self.request_dict(
+            json=json,
             json_path=json_path,
             json_schema=json_schema,
             params=params,
@@ -402,6 +416,7 @@ class APIEndpoint:
     def request_instances(
         self,
         InstanceClass: type[T],
+        json: dict[str, Any] | None = None,
         json_path: str | None | Nothing = nothing,
         json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
@@ -422,6 +437,7 @@ class APIEndpoint:
 
         # Iterate over items
         for item in self.request_dicts(
+            json=json,
             json_path=json_path,
             json_filter=json_filter,
             json_schema=json_schema,
@@ -439,6 +455,7 @@ class APIEndpoint:
     async def request_instance_async(
         self,
         InstanceClass: type[T],
+        json: dict[str, Any] | None = None,
         json_path: str | None | Nothing = nothing,
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
@@ -455,6 +472,7 @@ class APIEndpoint:
 
         # Get item
         item = await self.request_dict_async(
+            json=json,
             json_path=json_path,
             json_schema=json_schema,
             params=params,
@@ -476,6 +494,7 @@ class APIEndpoint:
     async def request_instances_async(
         self,
         InstanceClass: type[T],
+        json: dict[str, Any] | None = None,
         json_path: str | None | Nothing = nothing,
         json_filter: JSONFilter | None = None,
         json_schema: JSONSchema | None | Nothing = nothing,
@@ -496,6 +515,7 @@ class APIEndpoint:
 
         # Iterate over items
         async for item in self.request_dicts_async(
+            json=json,
             json_path=json_path,
             json_filter=json_filter,
             json_schema=json_schema,
