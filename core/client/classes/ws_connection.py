@@ -144,7 +144,10 @@ class WSConnection:
 
         # Evaluate ping data if dictionary
         ping_data = (
-            {k: v({}, {}) if callable(v) else v for k, v in ping_data.items()}
+            {
+                k: v(DictSchemaContext(data={})) if callable(v) else v
+                for k, v in ping_data.items()
+            }
             if isinstance(ping_data, dict)
             else ping_data
         )

@@ -12,6 +12,7 @@ from typing import Any, TYPE_CHECKING
 
 from core.dict.functions.dget import dget
 from core.dict.functions.dset import dset
+from core.dict.classes.dict_schema_context import DictSchemaContext
 
 if TYPE_CHECKING:
     from core.dict.types import DictSchema
@@ -43,7 +44,7 @@ def dfrom_schema(
             # Check if getter is callable
             if callable(getter):
                 # Get value to set
-                value_to_set = getter(root_data, data)
+                value_to_set = getter(DictSchemaContext(data=root_data, item=data))
 
             # Otherwise handle case of string path
             else:

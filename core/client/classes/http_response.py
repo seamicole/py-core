@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.client.types import JSONSchema
+from core.dict.classes.dict_schema_context import DictSchemaContext
 from core.dict.functions.dget import dget
 from core.dict.functions.dfrom_schema import dfrom_schema
 
@@ -232,7 +233,9 @@ class HTTPResponse:
                 continue
 
             # Continue if item should be filtered
-            if json_filter and not json_filter(response_json, item):
+            if json_filter and not json_filter(
+                DictSchemaContext(data=response_json, item=item)
+            ):
                 continue
 
             # Yield item

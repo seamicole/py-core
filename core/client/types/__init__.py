@@ -2,13 +2,14 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Any, Callable, Literal, Union
+from typing import Callable, Literal, Union
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.client.enums.http_method import HTTPMethod as HTTPMethod  # noqa: F401
+from core.dict.classes.dict_schema_context import DictSchemaContext
 from core.dict.types import DictSchema
 
 
@@ -38,4 +39,4 @@ JSON = JSONValue | JSONDict | JSONList
 JSONSchema = DictSchema
 
 # Define a generic JSON filter type
-JSONFilter = Callable[[Any, Any], bool]
+JSONFilter = Callable[[DictSchemaContext], bool]

@@ -13,16 +13,14 @@ except ImportError:
     websockets = None  # type: ignore
 
 from multiprocessing.managers import SyncManager
-from typing import Any, Awaitable, Callable, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from websockets.legacy.client import WebSocketClientProtocol
+from typing import Any, Awaitable, Callable
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.client.classes.ws_client_session import WSClientSession
+from core.dict.classes.dict_schema_context import DictSchemaContext
 from core.log.classes.logger import Logger
 
 
@@ -109,7 +107,10 @@ class WSClient:
         # Evaluate data if dictionary
         data_subscribe, data_unsubscribe = (
             json.dumps(
-                {k: v({}, {}) if callable(v) else v for k, v in (data or {}).items()}
+                {
+                    k: v(DictSchemaContext(data={})) if callable(v) else v
+                    for k, v in (data or {}).items()
+                }
             )
             if isinstance(data, dict)
             else data
