@@ -3,6 +3,16 @@
 
 > There should be one -- and preferably only one -- obvious way to do it.
 
+## Installation
+
+You know the drill:
+
+```bash
+pip install python-core-utilities
+```
+
+> Just Do It ✓
+
 ## Collection
 
 An abstract container intended to store a collection of items in an arbitrary data structure.
