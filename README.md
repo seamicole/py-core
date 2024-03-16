@@ -47,29 +47,21 @@ class Song:
 songs = ListCollection[Song]()
 
 # Add songs to songs collection
-songs.add(Song(artist="Children of Bodom", title="Kissing the Shadows", year=2000))
 songs.add(
+    Song(artist="Children of Bodom", title="Kissing the Shadows", year=2000),
     Song(artist="Dio", title="Holy Diver", year=1983),
     Song(artist="Dio", title="The Last In Line", year=1984),
-)
-songs.add(Song(artist="Disturbed", title="Overburdened", year=2005))
-songs.add(
+    Song(artist="Disturbed", title="Overburdened", year=2005),
     Song(artist="Dream Theater", title="The Glass Prison", year=2002),
     Song(artist="Dream Theater", title="Breaking All Illusions", year=2011),
-)
-songs.add(
     Song(artist="Greta Van Fleet", title="Brave New World", year=2018),
     Song(artist="Greta Van Fleet", title="Built By Nations", year=2021),
-)
-songs.add(
     Song(artist="Iron Maiden", title="Revelations", year=1983),
     Song(artist="Iron Maiden", title="Brave New World", year=2000),
-)
-songs.add(
     Song(artist="Led Zeppelin", title="No Quarter", year=1983),
     Song(artist="Led Zeppelin", title="The Rover", year=2000),
+    Song(artist="Queensrÿche", title="Eyes Of A Stranger", year=2000)
 )
-songs.add(Song(artist="Queensrÿche", title="Eyes Of A Stranger", year=2000))
 
 # Print songs
 print(songs)
