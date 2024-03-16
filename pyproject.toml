@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-core-utilities"
-version = "0.2.5"
+version = "0.2.6"
 description = "A core utility suite written in Python"
 authors = ["Sean O'Leary <seamicole@gmail.com>"]
 license = "MIT"
