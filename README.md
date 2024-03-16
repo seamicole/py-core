@@ -178,6 +178,8 @@ print(songs.filter(title__icontains="in") | songs.filter(artist__icontains="of")
 
 > If you were a list, the ListCollection would be her ex.
 
+---
+
 ### DictCollection
 
 A dictionary-based collection utility class with integrated support for efficient key lookups.
@@ -312,3 +314,5 @@ print(countries)
 **Q.E.D. | Quite Easily Done.**
 
 > Don't be a dict, use a DictCollection.
+
+---
