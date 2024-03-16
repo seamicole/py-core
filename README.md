@@ -106,7 +106,9 @@ countries.get("XYZ", countries["THA"])
 # Thailand
 
 # CAVEAT: The get method assumes a return value of the collection generic
-# i.e. DictCollection[Country].get(key: Hashable, default: Country | None) -> Country | None
+# i.e. countries.get(key: Hashable, default: Country | Hashable | None) -> Country | None
+
+# ... did you catch the spoiler?
 ```
 
 Keys are treated as synonymous with the items to which they are associated:
