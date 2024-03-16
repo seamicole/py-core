@@ -42,48 +42,30 @@ class Song:
 # Initialize a songs ListCollection
 songs = ListCollection[Song]()
 
-# Iterate over artists
-for artist, artist_songs in (
-    (
-        "Children of Bodom",
-        [("Kissing the Shadows", 2000)],
-    ),
-    (
-        "Dio",
-        [("Holy Diver", 1983), ("The Last In Line", 1984)],
-    ),
-    (
-        "Disturbed",
-        [("Overburdened", 2005)],
-    ),
-    (
-        "Dream Theater",
-        [("The Glass Prison", 2002), ("Breaking All Illusions", 2011)],
-    ),
-    (
-        "Greta Van Fleet",
-        [("Brave New World", 2018), ("Built By Nations", 2021)],
-    ),
-    (
-        "Iron Maiden",
-        [("Revelations", 1983), ("Brave New World", 2000)],
-    ),
-    (
-        "Led Zeppelin",
-        [("No Quarter", 1973), ("The Rover", 1975)],
-    ),
-    (
-        "Queensrÿche",
-        [("Eyes Of A Stranger", 1988)],
-    ),
-):
-    # Iterate over artist songs
-    for title, year in artist_songs:
-        # Initialize song instance
-        song = Song(artist=artist, title=title, year=year)
-
-        # Add song to songs collection
-        songs.add(song)
+# Add songs to songs collection
+songs.add(Song(artist="Children of Bodom", title="Kissing the Shadows", year=2000))
+songs.add(
+    Song(artist="Dio", title="Holy Diver", year=1983),
+    Song(artist="Dio", title="The Last In Line", year=1984),
+)
+songs.add(Song(artist="Disturbed", title="Overburdened", year=2005))
+songs.add(
+    Song(artist="Dream Theater", title="The Glass Prison", year=2002),
+    Song(artist="Dream Theater", title="Breaking All Illusions", year=2011),
+)
+songs.add(
+    Song(artist="Greta Van Fleet", title="Brave New World", year=2018),
+    Song(artist="Greta Van Fleet", title="Built By Nations", year=2021),
+)
+songs.add(
+    Song(artist="Iron Maiden", title="Revelations", year=1983),
+    Song(artist="Iron Maiden", title="Brave New World", year=2000),
+)
+songs.add(
+    Song(artist="Led Zeppelin", title="No Quarter", year=1983),
+    Song(artist="Led Zeppelin", title="The Rover", year=2000),
+)
+songs.add(Song(artist="Queensrÿche", title="Eyes Of A Stranger", year=2000))
 
 # Print songs
 print(songs)
@@ -100,7 +82,7 @@ print(songs)
 
 ```
 
-Filter items by their attributes:
+Filter items by their attributes. Attribute **equals**:
 
 ```python
 # Filter songs by title (strict / case-insensitive equality)
@@ -109,7 +91,11 @@ print(songs.filter(title__ieq="brave new world"))
 
 # <ListCollection: 2 [Greta Van Fleet | Brave New World (2018),
 #                     Iron Maiden | Brave New World (2000)]>
+```
 
+Attribute **contains**:
+
+```python
 # Filter songs by title (strict contains)
 print(songs.filter(title__contains="Over"))
 
@@ -119,7 +105,11 @@ print(songs.filter(title__contains="Over"))
 print(songs.filter(title__icontains="over"))
 
 # <ListCollection: 2 [Disturbed | Overburdened (2005), Led Zeppelin | The Rover (1975)]>
+```
 
+Attribute **is in**:
+
+```python
 # Filter songs by artist (strict / case-insensitive in)
 print(songs.filter(artist__in=["Dream Theater", "Iron Maiden"]))
 print(songs.filter(artist__iin=["dream theater", "IRON MAIDEN"]))
@@ -127,7 +117,11 @@ print(songs.filter(artist__iin=["dream theater", "IRON MAIDEN"]))
 # <ListCollection: 4 [Dream Theater | The Glass Prison (2002),
 #                     Dream Theater | Breaking All Illusions (2011),
 #                     Iron Maiden | Revelations (1983), Iron Maiden | Brave New World (2000)]>
+```
 
+Attribute is **greater than / less than / equal to**:
+
+```python
 # Filter songs by year (greater than)
 print(songs.filter(year__gt=2000))
 
@@ -162,10 +156,9 @@ print(songs.filter(year__lte=2000))
 #                     Iron Maiden | Brave New World (2000), Led Zeppelin | No Quarter (1973),
 #                     Led Zeppelin | The Rover (1975),
 #                     Queensrÿche | Eyes Of A Stranger (1988)]>
-
 ```
 
-And of course by multiple attributes:
+And of course by **multiple attributes**:
 
 ```python
 # Filter songs by title and artist
@@ -180,7 +173,6 @@ print(songs.filter(title__icontains="in") | songs.filter(artist__icontains="of")
 #                     Dio | The Last In Line (1984),
 #                     Dream Theater | Breaking All Illusions (2011)]>
 ```
-
 
 **Q.E.D. | Quite Easily Done.**
 
