@@ -27,7 +27,7 @@ ItemBound = TypeVar("ItemBound", bound=Any)
 
 
 class RingCollection(Collection[ItemBound]):
-    """A ring collection utility class for Python object instances"""
+    """A ring collection utility class"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INSTANCE ATTRIBUTES
@@ -269,7 +269,7 @@ class RingCollection(Collection[ItemBound]):
     # │ REMOVE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def remove(self, *items: ItemBound) -> int:
+    def remove(self, *items: Any | ItemBound) -> int:
         """Removes an item from the collection"""
 
         # Raise NotImplementedError

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import Any, Generic, Hashable, Iterator, TypeVar
+from typing import Any, Callable, Generic, Hashable, Iterator, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -109,7 +109,7 @@ class Collection(Generic[ItemBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def remove(self, *items: ItemBound) -> int:
+    def remove(self, *items: Any | ItemBound) -> int:
         """Removes an item from the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -189,6 +189,16 @@ class Collection(Generic[ItemBound], ABC):
     def __repr__(self) -> str:
         """Representation Method"""
 
+        # Return __reprstr__ with repr
+        return self.__reprstr__(repr)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __REPRSTR__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __reprstr__(self, func: Callable[[ItemBound], str]) -> str:
+        """A utility function to be used with __repr__ and __str__"""
+
         # Get item count
         item_count = len(self)
 
@@ -198,7 +208,7 @@ class Collection(Generic[ItemBound], ABC):
         # Iterate over items
         for i, item in enumerate(self):
             # Add item representation to representation
-            representation += repr(item)
+            representation += func(item)
 
             # Check if should truncate
             if i > 19:
@@ -217,6 +227,16 @@ class Collection(Generic[ItemBound], ABC):
 
         # Return representation
         return representation
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __STR__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __str__(self) -> str:
+        """String Method"""
+
+        # Return __reprstr__ with str
+        return self.__reprstr__(str)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COPY DEEP

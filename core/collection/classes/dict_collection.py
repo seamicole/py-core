@@ -29,7 +29,7 @@ ItemBound = TypeVar("ItemBound", bound=Any)
 
 
 class DictCollection(Collection[ItemBound]):
-    """A dict-based collection utility class for Python object instances"""
+    """A dict-based collection utility class"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INSTANCE ATTRIBUTES
@@ -288,7 +288,7 @@ class DictCollection(Collection[ItemBound]):
     # │ REMOVE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def remove(self, *items: ItemBound) -> int:
+    def remove(self, *items: Any | ItemBound) -> int:
         """Removes an item from the collection"""
 
         # Initialize count
@@ -296,6 +296,9 @@ class DictCollection(Collection[ItemBound]):
 
         # Iterate over items
         for item in items:
+            # Find item
+            item = self.find(item)
+
             # Continue if item is None
             if item is None:
                 continue
