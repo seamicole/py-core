@@ -80,6 +80,35 @@ print(countries["THA"], repr(countries["THA"]))
 # Thailand <__main__.Country object at 0x7f8d085e2560>
 ```
 
+A sense of familiarity in behavior is always a nice touch:
+
+```python
+# Attempt to retrieve a non-existent country
+countries["XYZ"]
+
+# core.collection.exceptions.NonExistentKeyError: Non-existent key detected: 'XYZ'
+
+try:
+    countries["XYZ"]
+except KeyError:
+    print("Just a KeyError under the hood!")
+
+# Just a KeyError under the hood!
+
+# Retrieve a non-existent country with a dict-like 'get'
+countries.get("XYZ")
+
+# None
+
+# Provide a default country if applicable
+countries.get("XYZ", countries["THA"])
+
+# Thailand
+
+# CAVEAT: The get method assumes a return value of the collection generic
+# i.e. DictCollection[Country].get(key: Hashable, default: Country | None) -> Country | None
+```
+
 Keys are treated as synonymous with the items to which they are associated:
 
 ```python
