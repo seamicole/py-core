@@ -116,7 +116,7 @@ class Collection(Generic[ItemBound], ABC):
     # │ __AND__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __and__(self, other: ItemBound) -> Collection[ItemBound]:
+    def __and__(self, other: Any) -> Collection[ItemBound]:
         """And Method"""
 
         # Check if other is not a Collection instance
@@ -155,7 +155,7 @@ class Collection(Generic[ItemBound], ABC):
     # │ __OR__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __or__(self, other: ItemBound) -> Collection[ItemBound]:
+    def __or__(self, other: Any) -> Collection[ItemBound]:
         """Or Method"""
 
         # Check if other is not a Collection instance
