@@ -17,11 +17,180 @@ pip install python-core-utilities
 
 An abstract container intended to store a collection of items in an arbitrary data structure.
 
-> If you were a list, a Collection would be her ex.
+### ListCollection
+
+A list-based collection utility class with intuitive methods that extend traditional list functionality.
+
+```python
+from core.collection import ListCollection
+
+class Song:
+    """A class that represents songs of someone with good taste in music"""
+
+    def __init__(self, title: str, artist: str, year: int):
+        """Init Method"""
+
+        self.artist = artist
+        self.title = title
+        self.year = year
+
+    def __str__(self) -> str:
+        """String Method"""
+
+        return f"{self.artist} | {self.title} ({self.year})"
+
+# Initialize a songs ListCollection
+songs = ListCollection[Song]()
+
+# Iterate over artists
+for artist, artist_songs in (
+    (
+        "Children of Bodom",
+        [("Kissing the Shadows", 2000)],
+    ),
+    (
+        "Dio",
+        [("Holy Diver", 1983), ("The Last In Line", 1984)],
+    ),
+    (
+        "Disturbed",
+        [("Overburdened", 2005)],
+    ),
+    (
+        "Dream Theater",
+        [("The Glass Prison", 2002), ("Breaking All Illusions", 2011)],
+    ),
+    (
+        "Greta Van Fleet",
+        [("Brave New World", 2018), ("Built By Nations", 2021)],
+    ),
+    (
+        "Iron Maiden",
+        [("Revelations", 1983), ("Brave New World", 2000)],
+    ),
+    (
+        "Led Zeppelin",
+        [("No Quarter", 1973), ("The Rover", 1975)],
+    ),
+    (
+        "Queensrÿche",
+        [("Eyes Of A Stranger", 1988)],
+    ),
+):
+    # Iterate over artist songs
+    for title, year in artist_songs:
+        # Initialize song instance
+        song = Song(artist=artist, title=title, year=year)
+
+        # Add song to songs collection
+        songs.add(song)
+
+# Print songs
+print(songs)
+
+# <ListCollection: 13 [Children of Bodom | Kissing the Shadows (2000), Dio | Holy Diver (1983),
+#                      Dio | The Last In Line (1984), Disturbed | Overburdened (2005),
+#                      Dream Theater | The Glass Prison (2002),
+#                      Dream Theater | Breaking All Illusions (2011),
+#                      Greta Van Fleet | Brave New World (2018),
+#                      Greta Van Fleet | Built By Nations (2021),
+#                      Iron Maiden | Revelations (1983), Iron Maiden | Brave New World (2000),
+#                      Led Zeppelin | No Quarter (1973), Led Zeppelin | The Rover (1975),
+#                      Queensrÿche | Eyes Of A Stranger (1988)]>
+
+```
+
+Filter items by their attributes:
+
+```python
+# Filter songs by title (strict / case-insensitive equality)
+print(songs.filter(title="Brave New World"))
+print(songs.filter(title__ieq="brave new world"))
+
+# <ListCollection: 2 [Greta Van Fleet | Brave New World (2018),
+#                     Iron Maiden | Brave New World (2000)]>
+
+# Filter songs by title (strict contains)
+print(songs.filter(title__contains="Over"))
+
+# <ListCollection: 1 [Disturbed | Overburdened (2005)]>
+
+# Filter songs by title (case-insensitive contains)
+print(songs.filter(title__icontains="over"))
+
+# <ListCollection: 2 [Disturbed | Overburdened (2005), Led Zeppelin | The Rover (1975)]>
+
+# Filter songs by artist (strict / case-insensitive in)
+print(songs.filter(artist__in=["Dream Theater", "Iron Maiden"]))
+print(songs.filter(artist__iin=["dream theater", "IRON MAIDEN"]))
+
+# <ListCollection: 4 [Dream Theater | The Glass Prison (2002),
+#                     Dream Theater | Breaking All Illusions (2011),
+#                     Iron Maiden | Revelations (1983), Iron Maiden | Brave New World (2000)]>
+
+# Filter songs by year (greater than)
+print(songs.filter(year__gt=2000))
+
+# <ListCollection: 5 [Disturbed | Overburdened (2005), Dream Theater | The Glass Prison (2002),
+#                     Dream Theater | Breaking All Illusions (2011),
+#                     Greta Van Fleet | Brave New World (2018),
+#                     Greta Van Fleet | Built By Nations (2021)]>
+
+# Filter songs by year (greater than or equal to)
+print(songs.filter(year__gte=2000))
+
+# <ListCollection: 7 [Children of Bodom | Kissing the Shadows (2000),
+#                     Disturbed | Overburdened (2005), Dream Theater | The Glass Prison (2002),
+#                     Dream Theater | Breaking All Illusions (2011),
+#                     Greta Van Fleet | Brave New World (2018),
+#                     Greta Van Fleet | Built By Nations (2021),
+#                     Iron Maiden | Brave New World (2000)]>
+
+# Filter songs by year (less than)
+print(songs.filter(year__lt=2000))
+
+# <ListCollection: 6 [Dio | Holy Diver (1983), Dio | The Last In Line (1984),
+#                     Iron Maiden | Revelations (1983), Led Zeppelin | No Quarter (1973),
+#                     Led Zeppelin | The Rover (1975),
+#                     Queensrÿche | Eyes Of A Stranger (1988)]>
+
+# Filter songs by year (less than or equal to)
+print(songs.filter(year__lte=2000))
+
+# <ListCollection: 8 [Children of Bodom | Kissing the Shadows (2000), Dio | Holy Diver (1983),
+#                     Dio | The Last In Line (1984), Iron Maiden | Revelations (1983),
+#                     Iron Maiden | Brave New World (2000), Led Zeppelin | No Quarter (1973),
+#                     Led Zeppelin | The Rover (1975),
+#                     Queensrÿche | Eyes Of A Stranger (1988)]>
+
+```
+
+And of course by multiple attributes:
+
+```python
+# Filter songs by title and artist
+print(songs.filter(title="Brave New World", artist="Iron Maiden"))
+
+# <ListCollection: 1 [Iron Maiden | Brave New World (2000)]>
+
+# Filter songs by title or artist
+print(songs.filter(title__icontains="in") | songs.filter(artist__icontains="of"))
+
+# <ListCollection: 3 [Children of Bodom | Kissing the Shadows (2000),
+#                     Dio | The Last In Line (1984),
+#                     Dream Theater | Breaking All Illusions (2011)]>
+```
+
+
+**Q.E.D. | Quite Easily Done.**
+
+> If you were a list, the ListCollection would be her ex.
 
 ### DictCollection
 
 A dictionary-based collection utility class with integrated support for efficient key lookups.
+
+**...in addition** to all of the useful methods discussed above, of course!
 
 ```python
 from core.collection import DictCollection
@@ -114,7 +283,7 @@ countries.get("XYZ", countries["THA"])
 Keys are treated as synonymous with the items to which they are associated:
 
 ```python
-# Retrieve Thailand country instance
+# Retrieve Thailand country instance by ISO3 key
 thailand = countries["THA"]
 
 # Show that she is present in the countries collection
@@ -147,5 +316,7 @@ print(countries)
 
 # <DictCollection: 5 [Cambodia, China, Fiji, Guam, United States]>
 ```
+
+**Q.E.D. | Quite Easily Done.**
 
 > Don't be a dict, use a DictCollection.
