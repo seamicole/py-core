@@ -83,7 +83,7 @@ print(countries["THA"], repr(countries["THA"]))
 A sense of familiarity in behavior is always a nice touch:
 
 ```python
-# Attempt to retrieve a non-existent country
+# Attempt to retrieve a non-existent country by key
 countries["XYZ"]
 
 # core.collection.exceptions.NonExistentKeyError: Non-existent key detected: 'XYZ'
@@ -95,7 +95,7 @@ except KeyError:
 
 # Just a KeyError under the hood!
 
-# Retrieve a non-existent country with a dict-like 'get'
+# Retrieve a non-existent country by key with a dict-like 'get'
 countries.get("XYZ")
 
 # None
