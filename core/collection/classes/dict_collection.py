@@ -274,15 +274,20 @@ class DictCollection(Collection[ItemBound]):
     # │ GET
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def get(self, key: Hashable, default: ItemBound | None = None) -> ItemBound | None:
+    def get(
+        self, key: Hashable, default: ItemBound | Hashable | None = None
+    ) -> ItemBound | None:
         """Gets an item from the collection by key"""
 
         # Return item if key is in collection
         if key in self._item_ids_by_key:
             return self._items_by_id[self._item_ids_by_key[key]]
 
-        # Return default
-        return default
+        # Get resolved default
+        default_resolved = default if default is None else self.find(default)
+
+        # Return resolved default
+        return default_resolved
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ REMOVE

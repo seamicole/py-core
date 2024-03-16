@@ -14,7 +14,7 @@ try:
 except ImportError:
     websockets = None  # type: ignore
 
-from typing import TYPE_CHECKING
+from typing import Any, Awaitable, Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from websockets.legacy.client import WebSocketClientProtocol
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from typing import Any, Awaitable, Callable
+from core.dict.classes.dict_schema_context import DictSchemaContext
 
 if TYPE_CHECKING:
     from core.client.classes.ws_client_session import WSClientSession
