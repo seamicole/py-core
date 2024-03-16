@@ -73,7 +73,7 @@ class NoItemsError(Exception):
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class NonExistentKeyError(Exception):
+class NonExistentKeyError(KeyError):
     """Raised when no resource with given key is detected"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
