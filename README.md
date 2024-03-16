@@ -17,6 +17,10 @@ pip install python-core-utilities
 
 An abstract container intended to store a collection of items in an arbitrary data structure.
 
+<details>
+
+<summary><b>ListCollection</b></summary>
+
 ### ListCollection
 
 A list-based collection utility class with intuitive methods that extend traditional list functionality.
@@ -180,6 +184,12 @@ print(songs.filter(title__icontains="in") | songs.filter(artist__icontains="of")
 
 ---
 
+</details>
+
+<details>
+
+<summary><b>DictCollection</b></summary>
+
 ### DictCollection
 
 A dictionary-based collection utility class with integrated support for efficient key lookups.
@@ -314,5 +324,6 @@ print(countries)
 **Q.E.D. | Quite Easily Done.**
 
 > Don't be a dict, use a DictCollection.
-
 ---
+
+</details>
