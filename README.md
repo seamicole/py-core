@@ -17,6 +17,8 @@ pip install python-core-utilities
 
 An abstract container intended to store a collection of items in an arbitrary data structure.
 
+> For the collective good, as it were.
+
 <details>
 
 <summary><b>ListCollection</b></summary>
