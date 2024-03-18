@@ -143,6 +143,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
         with_schema: bool = False,
+        overrides: dict[str, Any] | None = None,
     ) -> Generator[Any, None, None]:
         """Yields a series of object instances for all APIEndpoints in the collection"""
 
@@ -170,6 +171,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
                 json_filter=json_filter_endpoint,
                 json_schema=json_schema_endpoint,
                 params=params,
+                overrides=overrides,
             ):
                 # Yield instance
                 yield (
@@ -189,6 +191,7 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
         json_schema: JSONSchema | None | Nothing = nothing,
         params: dict[str, Any] | None = None,
         with_schema: bool = False,
+        overrides: dict[str, Any] | None = None,
     ) -> AsyncGenerator[Any | tuple[Any, JSONSchema], None]:
         """Yields a series of object instances for all APIEndpoints in the collection"""
 
@@ -202,10 +205,18 @@ class APIEndpointCollection(DictCollection[APIEndpoint]):
         ):
             # Check if with schema
             if isinstance(item, tuple):
+                # Get kwargs
+                kwargs = item[0]
+                overrides and kwargs.update(overrides)
+
                 # Yield instance
-                yield (InstanceClass(**item[0]), item[1])
+                yield (InstanceClass(**kwargs), item[1])
 
             # Otherwise, yield instance
             else:
+                # Get kwargs
+                kwargs = item
+                overrides and kwargs.update(overrides)
+
                 # Initialize and yield instance
-                yield InstanceClass(**item)
+                yield InstanceClass(**kwargs)
