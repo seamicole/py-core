@@ -321,6 +321,7 @@ class HTTPClient:
         weight: int = 1,
         logger: Logger | None = None,
         authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
+        cached_responses: dict[str, HTTPResponse] | None = None,
     ) -> HTTPResponse:
         """Makes a request to the API"""
 
@@ -350,6 +351,7 @@ class HTTPClient:
                 if callable(authenticate)
                 else (self._authenticate_request if authenticate is True else None)
             ),
+            cached_responses=cached_responses,
         )
 
         # Log response
@@ -375,6 +377,7 @@ class HTTPClient:
         weight: int = 1,
         logger: Logger | None = None,
         authenticate: Callable[[HTTPRequest], HTTPRequest] | bool = False,
+        cached_responses: dict[str, HTTPResponse] | None = None,
     ) -> HTTPResponse:
         """Makes an asynchronous request to the API"""
 
@@ -404,6 +407,7 @@ class HTTPClient:
                 if callable(authenticate)
                 else (self._authenticate_request if authenticate is True else None)
             ),
+            cached_responses=cached_responses,
         )
         if response.status_code != 200:
             print(response.status_code)

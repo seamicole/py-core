@@ -8,7 +8,9 @@ import asyncio
 import posixpath
 
 from multiprocessing import Manager
+from types import TracebackType
 from typing import Any, Awaitable, Callable, TYPE_CHECKING
+
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -34,6 +36,13 @@ if TYPE_CHECKING:
 
 class API:
     """An API utility class"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ INSTANCE ATTRIBUTES
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    # Declare type of cached responses
+    _cached_responses: dict[str, HTTPResponse] | None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -96,6 +105,20 @@ class API:
 
         # Initialize channels
         self.channels: APIChannelCollection = APIChannelCollection()
+
+        # Initialize cached responses
+        self._cached_responses = None
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ CACHED RESPONSES
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def cached_responses(self) -> API.CachedResponses:
+        """Returns a context manager for response caching"""
+
+        # Return cached responses context manager
+        return self.CachedResponses(self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ WS EVENT LOOP
@@ -288,6 +311,7 @@ class API:
             weight=weight,
             logger=self.logger,
             authenticate=authenticate,
+            cached_responses=self._cached_responses,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -326,6 +350,7 @@ class API:
             weight=weight,
             logger=self.logger,
             authenticate=authenticate,
+            cached_responses=self._cached_responses,
         )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -350,3 +375,45 @@ class API:
             receive=receive,
             should_unsubscribe=should_unsubscribe,
         )
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ CACHED RESPONSES
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    class CachedResponses:
+        """A context manager for caching requests"""
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ __INIT__
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        def __init__(self, api: API):
+            """Init Method"""
+
+            # Set API
+            self.api = api
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ __ENTER__
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        def __enter__(self) -> None:
+            """Enter Method"""
+
+            # Initialize response cache
+            self.api._cached_responses = {}
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ __EXIT__
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        def __exit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc_value: BaseException | None,
+            traceback: TracebackType | None,
+        ) -> None:
+            """Exit Method"""
+
+            # Set response cache to None
+            self.api._cached_responses = None

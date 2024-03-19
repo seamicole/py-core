@@ -33,6 +33,7 @@ if TYPE_CHECKING:
 def construct_log(
     method: HTTPMethod,
     url: str,
+    is_cached: bool,
     params: dict[str, Any] | None = None,
     status_code: int | None = None,
 ) -> str:
@@ -57,6 +58,10 @@ def construct_log(
     # Construct log
     log = f"{method_name} {url}"
 
+    # Check if cached
+    if is_cached:
+        log = f"{log} [CACHED]"
+
     # Return log
     return log
 
@@ -66,7 +71,7 @@ def construct_log(
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def log_request(logger: Logger | None, request: HTTPRequest) -> None:
+def log_request(logger: Logger | None, request: HTTPRequest, is_cached: bool) -> None:
     """Constructs and prints a request log"""
 
     # Return if no logger
@@ -74,7 +79,12 @@ def log_request(logger: Logger | None, request: HTTPRequest) -> None:
         return
 
     # Construct log
-    log = construct_log(method=request.method, url=request.url, params=request.params)
+    log = construct_log(
+        method=request.method,
+        url=request.url,
+        is_cached=is_cached,
+        params=request.params,
+    )
 
     # Print log
     logger.debug(log, key="http_requests")
@@ -86,7 +96,11 @@ def log_request(logger: Logger | None, request: HTTPRequest) -> None:
 
 
 def log_response(
-    logger: Logger | None, request: HTTPRequest, status_code: int, ms: int
+    logger: Logger | None,
+    request: HTTPRequest,
+    status_code: int,
+    ms: int,
+    is_cached: bool,
 ) -> None:
     """Constructs and prints a response log"""
 
@@ -99,6 +113,7 @@ def log_response(
         method=request.method,
         status_code=status_code,
         url=request.url,
+        is_cached=is_cached,
         params=request.params,
     )
 
@@ -126,6 +141,7 @@ def http_request(
     weight: int = 1,
     logger: Logger | None = None,
     authenticate: Callable[[HTTPRequest], HTTPRequest] | None = None,
+    cached_responses: dict[str, HTTPResponse] | None = None,
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
@@ -152,12 +168,35 @@ def http_request(
         weight=weight,
     )
 
+    # Check if a response cache was passed
+    if cached_responses:
+        # Get response
+        response = cached_responses.get(request.signature)
+
+        # Check if response is not None
+        if response is not None:
+            # Log request and response
+            log_request(logger=logger, request=request, is_cached=True)
+            log_response(
+                logger=logger,
+                request=request,
+                status_code=response.status_code,
+                ms=0,
+                is_cached=True,
+            )
+
+            # Return response
+            return response
+
+    # Get request signature before applying authentication
+    request_signature = request.signature if cached_responses is not None else None
+
     # Authenticate request
     if authenticate is not None:
         request = authenticate(request)
 
     # Log request
-    log_request(logger=logger, request=request)
+    log_request(logger=logger, request=request, is_cached=False)
 
     # Get t0
     t0 = time.time()
@@ -190,8 +229,17 @@ def http_request(
 
     # Log response
     log_response(
-        logger=logger, request=request, status_code=response.status_code, ms=ms
+        logger=logger,
+        request=request,
+        status_code=response.status_code,
+        ms=ms,
+        is_cached=False,
     )
+
+    # Check if a response cache was passed
+    if cached_responses is not None and request_signature is not None:
+        # Cache response
+        cached_responses[request_signature] = response
 
     # Return response
     return response
@@ -214,6 +262,7 @@ async def http_request_async(
     weight: int = 1,
     logger: Logger | None = None,
     authenticate: Callable[[HTTPRequest], HTTPRequest] | None = None,
+    cached_responses: dict[str, HTTPResponse] | None = None,
 ) -> HTTPResponse:
     """Makes an HTTP request and returns a HTTPResponse instance"""
 
@@ -240,12 +289,35 @@ async def http_request_async(
         weight=weight,
     )
 
+    # Check if a response cache was passed
+    if cached_responses:
+        # Get response
+        response = cached_responses.get(request.signature)
+
+        # Check if response is not None
+        if response is not None:
+            # Log request and response
+            log_request(logger=logger, request=request, is_cached=True)
+            log_response(
+                logger=logger,
+                request=request,
+                status_code=response.status_code,
+                ms=0,
+                is_cached=True,
+            )
+
+            # Return response
+            return response
+
+    # Get request signature before applying authentication
+    request_signature = request.signature if cached_responses is not None else None
+
     # Authenticate request
     if authenticate is not None:
         request = authenticate(request)
 
     # Log request
-    log_request(logger=logger, request=request)
+    log_request(logger=logger, request=request, is_cached=False)
 
     # Get t0
     t0 = time.time()
@@ -278,8 +350,17 @@ async def http_request_async(
 
     # Log response
     log_response(
-        logger=logger, request=request, status_code=response.status_code, ms=ms
+        logger=logger,
+        request=request,
+        status_code=response.status_code,
+        ms=ms,
+        is_cached=False,
     )
+
+    # Check if a response cache was passed
+    if cached_responses is not None and request_signature is not None:
+        # Cache response
+        cached_responses[request_signature] = response
 
     # Return response
     return response

@@ -4,6 +4,9 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+
 from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -45,7 +48,7 @@ class HTTPRequest:
     # Declare type of timeout
     timeout: int | float | None
 
-    # Declare type of date
+    # Declare type of data
     data: Any
 
     # Declare type of data
@@ -111,3 +114,23 @@ class HTTPRequest:
 
         # Set is retry
         self.is_retry = is_retry
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ SIGNATURE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def signature(self) -> str:
+        """Returns a signature for the HTTPRequest instance"""
+
+        # Convert attributes to strings in a consistent manner
+        attrs = [
+            self.url,
+            json.dumps(self.params, sort_keys=True) if self.params else "",
+            json.dumps(self.headers, sort_keys=True) if self.headers else "",
+            json.dumps(self.data, sort_keys=True) if self.data else "",
+            json.dumps(self.json, sort_keys=True) if self.json else "",
+        ]
+
+        # Generate a hash of the concatenated string
+        return hashlib.sha256("".join(attrs).encode()).hexdigest()
