@@ -45,8 +45,8 @@ class HTTPResponse:
     # │ INSTANCE ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    # Declare type of obj
-    _obj: AioHTTPResponse | HTTPXResponse | RequestsResponse
+    # Declare type of request
+    request: HTTPRequest
 
     # Declare type of text
     text: str | None
@@ -56,6 +56,9 @@ class HTTPResponse:
 
     # Declare type of weight
     weight: int
+
+    # Declare type of obj
+    _obj: AioHTTPResponse | HTTPXResponse | RequestsResponse
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__

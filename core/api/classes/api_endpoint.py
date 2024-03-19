@@ -148,12 +148,16 @@ class APIEndpoint:
                 # Replace in path
                 path = path.replace(f":{key}", val)
 
+        # Get request params
+        request_params = params if params is not None else self.params
+        request_params = params and params.copy()
+
         # Make request and return response
         return self.api.request(
             self.method or HTTPMethod.GET,
             path,
             base_url=self.base_url,
-            params=params if params is not None else self.params,
+            params=request_params,
             json=json,
             weight=weight if weight is not None else self.weight,
             authenticate=self.authenticate,
@@ -189,12 +193,16 @@ class APIEndpoint:
                 # Replace in path
                 path = path.replace(f":{key}", val)
 
+        # Get request params
+        request_params = params if params is not None else self.params
+        request_params = params and params.copy()
+
         # Make request and return response
         return await self.api.request_async(
             self.method or HTTPMethod.GET,
             path,
             base_url=self.base_url,
-            params=params if params is not None else self.params,
+            params=request_params,
             json=json,
             weight=weight if weight is not None else self.weight,
             authenticate=self.authenticate,
