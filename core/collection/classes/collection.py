@@ -33,6 +33,12 @@ class Collection(Generic[ItemBound], ABC):
     """A collection utility class for Python object instances"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ TYPE VARIABLES
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    CollectionBound = TypeVar("CollectionBound", bound="Collection[ItemBound]")
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __GETITEM__
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -69,7 +75,7 @@ class Collection(Generic[ItemBound], ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def New(self, *args: Any, **kwargs: Any) -> Collection[ItemBound]:
+    def New(self: CollectionBound, *args: Any, **kwargs: Any) -> CollectionBound:
         """Returns a new collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -116,7 +122,7 @@ class Collection(Generic[ItemBound], ABC):
     # │ __AND__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __and__(self, other: Any) -> Collection[ItemBound]:
+    def __and__(self: CollectionBound, other: Any) -> CollectionBound:
         """And Method"""
 
         # Check if other is not a Collection instance
@@ -155,7 +161,7 @@ class Collection(Generic[ItemBound], ABC):
     # │ __OR__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __or__(self, other: Any) -> Collection[ItemBound]:
+    def __or__(self: CollectionBound, other: Any) -> CollectionBound:
         """Or Method"""
 
         # Check if other is not a Collection instance
@@ -168,7 +174,7 @@ class Collection(Generic[ItemBound], ABC):
             )
 
         # Make a shallow copy of the collection
-        collection: Collection[ItemBound] = self.copy_shallow()
+        collection = self.copy_shallow()
 
         # Iterate over other collection
         for item in other:
@@ -242,11 +248,11 @@ class Collection(Generic[ItemBound], ABC):
     # │ COPY DEEP
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def copy_deep(self) -> Collection[ItemBound]:
+    def copy_deep(self: CollectionBound) -> CollectionBound:
         """Returns a deep copy of the collection"""
 
         # Initialize collection
-        collection: Collection[ItemBound] = self.New()
+        collection = self.New()
 
         # Iterate over the collection
         for item in self:
@@ -260,11 +266,11 @@ class Collection(Generic[ItemBound], ABC):
     # │ COPY SHALLOW
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def copy_shallow(self) -> Collection[ItemBound]:
+    def copy_shallow(self: CollectionBound) -> CollectionBound:
         """Returns a shallow copy of the collection"""
 
         # Initialize collection
-        collection: Collection[ItemBound] = self.New()
+        collection = self.New()
 
         # Iterate over the collection
         for item in self:
@@ -288,11 +294,11 @@ class Collection(Generic[ItemBound], ABC):
     # │ FILTER
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def filter(self, **kwargs: Any) -> Collection[ItemBound]:
+    def filter(self: CollectionBound, **kwargs: Any) -> CollectionBound:
         """Filters the collection by keyword args"""
 
         # Initialize collection
-        collection: Collection[ItemBound] = self.New()
+        collection = self.New()
 
         # Initialize conditions
         conditions = list(get_filter_conditions(kwargs))
@@ -421,11 +427,11 @@ class Collection(Generic[ItemBound], ABC):
     # │ HEAD
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def head(self, n: int = 5) -> Collection[ItemBound]:
+    def head(self: CollectionBound, n: int = 5) -> CollectionBound:
         """Returns a new collection of the first n items of the collection"""
 
         # Initialize collection
-        collection: Collection[ItemBound] = self.New()
+        collection = self.New()
 
         # Get n
         n = max(0, min(n, len(self)))
@@ -497,11 +503,11 @@ class Collection(Generic[ItemBound], ABC):
     # │ TAIL
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def tail(self, n: int = 5) -> Collection[ItemBound]:
+    def tail(self: CollectionBound, n: int = 5) -> CollectionBound:
         """Returns a new collection of the last n items of the collection"""
 
         # Initialize collection
-        collection: Collection[ItemBound] = self.New()
+        collection = self.New()
 
         # Get n
         n = max(0, min(n, len(self)))

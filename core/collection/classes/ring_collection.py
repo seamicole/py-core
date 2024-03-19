@@ -159,7 +159,7 @@ class RingCollection(Collection[ItemBound]):
     # │ NEW
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def New(self, *args: Any, **kwargs: Any) -> Collection[ItemBound]:
+    def New(self, *args: Any, **kwargs: Any) -> RingCollection[ItemBound]:
         """Returns a new collection"""
 
         # Check if size not in kwargs

@@ -171,7 +171,7 @@ class ListCollection(Collection[ItemBound]):
     # │ NEW
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def New(self, *args: Any, **kwargs: Any) -> Collection[ItemBound]:
+    def New(self, *args: Any, **kwargs: Any) -> ListCollection[ItemBound]:
         """Returns a new collection"""
 
         # Return new collection
