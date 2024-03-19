@@ -233,7 +233,19 @@ print(countries)
 # <DictCollection: 7 [Cambodia, China, Fiji, Guam, Singapore, Thailand, United States]>
 ```
 
-Retrieve items by any of their keys:
+Key unicity is enforced within a given collection:
+
+```python
+# Create a duplicate Thailand instance
+thailand_duplicate = Country(name="Thailand Duplicate", iso2="TH", iso3="THA")
+
+# Attempt to add the duplicate Thailand instance to the countries collection
+countries.add(thailand_duplicate)
+
+# core.collection.exceptions.DuplicateKeyError: Duplicate key detected: 'TH'
+```
+
+Retrieve existing items by any of their keys:
 
 ```python
 # Look up Thailand by ISO2
