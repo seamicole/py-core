@@ -11,7 +11,7 @@ from typing import Any, Hashable, Iterable, Iterator, TypeVar
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.collection.classes.collection import Collection
-from core.collection.exceptions import DuplicateKeyError, NonExistentKeyError
+from core.collection.exceptions import DuplicateKeyError, NoSuchKeyError
 from core.object.functions.oget import oget
 from core.object.functions.ohasattr import ohasattr
 from core.placeholders import nothing
@@ -113,9 +113,9 @@ class DictCollection(Collection[ItemBound]):
     def __getitem__(self, key_value: Hashable) -> ItemBound:
         """Get Item Method"""
 
-        # Raise NonExistentKeyError if key value is not in collection
+        # Raise NoSuchKeyError if key value is not in collection
         if key_value not in self._item_ids_by_key:
-            raise NonExistentKeyError(key_value)
+            raise NoSuchKeyError(key_value)
 
         # Get and return item
         return self._items_by_id[self._item_ids_by_key[key_value]]

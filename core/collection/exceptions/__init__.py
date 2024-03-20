@@ -69,11 +69,11 @@ class NoItemsError(Exception):
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ NON-EXISTENT KEY ERROR
+# │ NO SUCH KEY ERROR
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class NonExistentKeyError(KeyError):
+class NoSuchKeyError(KeyError):
     """Raised when no resource with given key is detected"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -84,7 +84,7 @@ class NonExistentKeyError(KeyError):
         """Init Method"""
 
         # Initialize the exception
-        super().__init__(f"Non-existent key detected: {key_value!r}")
+        super().__init__(f"No such key: {key_value!r}")
 
         # Set the key value
         self.key_value = key_value
