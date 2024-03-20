@@ -409,8 +409,6 @@ class HTTPClient:
             ),
             cached_responses=cached_responses,
         )
-        if response.status_code != 200:
-            print(response.status_code)
 
         # Log response
         self.session.log_response(response)

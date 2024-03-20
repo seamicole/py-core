@@ -2,6 +2,9 @@
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.object.functions.assert_isinstance import (  # noqa: F401
+    assert_isinstance as assert_isinstance,
+)
 from core.object.functions.oagg import oagg as oagg  # noqa: F401
 from core.object.functions.oget import oget as oget  # noqa: F401
 from core.object.functions.ohasattr import ohasattr as ohasattr  # noqa: F401
