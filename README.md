@@ -265,7 +265,7 @@ A sense of familiarity in behavior is always a nice touch:
 # Attempt to retrieve a non-existent country by key
 countries["XYZ"]
 
-# core.collection.exceptions.NonSuchKeyError: No such key: 'XYZ'
+# core.collection.exceptions.NoSuchKeyError: No such key: 'XYZ'
 
 try:
     countries["XYZ"]
