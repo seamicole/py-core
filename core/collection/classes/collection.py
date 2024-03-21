@@ -4,9 +4,11 @@
 
 from __future__ import annotations
 
+import random
+
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import Any, Callable, Generic, Hashable, Iterator, TypeVar
+from typing import Any, Callable, Generator, Generic, Hashable, Iterator, TypeVar
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -243,6 +245,56 @@ class Collection(Generic[ItemBound], ABC):
 
         # Return __reprstr__ with str
         return self.__reprstr__(str)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __TRUEDIV__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __truediv__(
+        self: CollectionBound, other: int
+    ) -> Generator[CollectionBound, None, None]:
+        """True Division Method"""
+
+        # Check if invalid
+        if other <= 0:
+            return
+
+        # Get item count
+        item_count = len(self)
+
+        # Calculate the number of items in most collections (minimum size)
+        min_items_per_collection = item_count // other
+
+        # Calculate how many collections need one extra item
+        extra_item_collections = item_count % other
+
+        # Initialize variables
+        collection = None
+        current_count = 0
+
+        # Iterate over the collection
+        for item in self:
+            # Check current count
+            if current_count == 0:
+                if collection is not None:
+                    yield collection
+                collection = self.New()
+
+            # Add to collection
+            if collection is not None:
+                collection.add(item)
+                current_count += 1
+
+            # Determine if we should start a new collection
+            limit = min_items_per_collection + (1 if extra_item_collections > 0 else 0)
+            if current_count == limit:
+                current_count = 0
+                if extra_item_collections > 0:
+                    extra_item_collections -= 1
+
+        # Yield the last collection if it exists and has items
+        if collection is not None and len(collection) > 0:
+            yield collection
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COPY DEEP
@@ -498,6 +550,28 @@ class Collection(Generic[ItemBound], ABC):
 
         # Return None
         return None
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ SAMPLE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def sample(self: CollectionBound, n: int) -> CollectionBound:
+        """Returns a random sample of n items in the collection"""
+
+        # Convert collection to list
+        items = list(self)
+
+        # Get sample
+        items = random.sample(items, n)
+
+        # Initialize sample
+        sample = self.New()
+
+        # Add items to sample
+        sample.add(*items)
+
+        # Return sample
+        return sample
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ TAIL
