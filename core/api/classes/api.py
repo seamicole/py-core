@@ -20,12 +20,12 @@ from core.api.classes.api_channel_collection import APIChannelCollection
 from core.api.classes.api_endpoint_collection import APIEndpointCollection
 from core.client.classes.http_client import HTTPClient
 from core.client.classes.ws_client import WSClient
+from core.client.enums.http_method import HTTPMethod
 from core.log.classes.logger import Logger
 
 if TYPE_CHECKING:
     from core.client.classes.http_request import HTTPRequest
     from core.client.classes.http_response import HTTPResponse
-    from core.client.enums.http_method import HTTPMethod
     from core.client.types import HTTPMethodLiteral
 
 

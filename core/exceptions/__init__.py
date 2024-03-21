@@ -6,42 +6,19 @@ from typing import Any
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ INVALID SCHEMA ERROR
+# │ LABEL EXCEPTION
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class InvalidSchemaError(Exception):
-    """An exception class for invalid schemas"""
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ __INIT__
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def __init__(self, message: str | None = None):
-        """Init Method"""
-
-        # Initialize message
-        self.message = "Invalid Schema"
-
-        # Check if message
-        if message:
-            self.message = f"{self.message}: {message}"
-
-        # Call super init
-        super().__init__(self.message)
-
-
-# ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ UNSUCCESSFUL ERROR
-# └─────────────────────────────────────────────────────────────────────────────────────
-
-
-class UnsuccessfulError(Exception):
-    """An exception class for unsuccessful events"""
+class LabelException(Exception):
+    """An exception class for labeled exceptions"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CLASS ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
+
+    # Initialize adjective
+    ADJECTIVE: str = "Unknown"
 
     # Initialize label
     LABEL: str | None = None
@@ -54,7 +31,7 @@ class UnsuccessfulError(Exception):
         """Init Method"""
 
         # Initialize message
-        self.message = "Unsuccessful"
+        self.message = self.ADJECTIVE
 
         # Check if label is not None
         if self.LABEL is not None:
@@ -67,6 +44,54 @@ class UnsuccessfulError(Exception):
 
         # Call super init
         super().__init__(self.message)
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ INVALID ERROR
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+class InvalidError(LabelException):
+    """An exception class for invalid inputs"""
+
+    # Define adjective
+    ADJECTIVE: str = "Invalid"
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ INVALID ARGUMENT ERROR
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+class InvalidArgumentError(InvalidError):
+    """An exception class for invalid arguments"""
+
+    # Define label
+    LABEL: str = "Argument"
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ INVALID SCHEMA ERROR
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+class InvalidSchemaError(InvalidError):
+    """An exception class for invalid schemas"""
+
+    # Define label
+    LABEL: str = "Schema"
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ UNSUCCESSFUL ERROR
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+class UnsuccessfulError(LabelException):
+    """An exception class for unsuccessful events"""
+
+    # Define adjective
+    ADJECTIVE: str = "Unsuccessful"
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -77,10 +102,6 @@ class UnsuccessfulError(Exception):
 class UnsuccessfulActionError(UnsuccessfulError):
     """An exception class for unsuccessful actions"""
 
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ CLASS ATTRIBUTES
-    # └─────────────────────────────────────────────────────────────────────────────────
-
     # Define label
     LABEL: str | None = "Action"
 
@@ -90,37 +111,11 @@ class UnsuccessfulActionError(UnsuccessfulError):
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class UnsupportedError(Exception):
+class UnsupportedError(LabelException):
     """An exception class for unsupported inputs"""
 
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ CLASS ATTRIBUTES
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    # Initialize label
-    LABEL: str | None = None
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ __INIT__
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def __init__(self, message: Any = None):
-        """Init Method"""
-
-        # Initialize message
-        self.message = "Unsupported"
-
-        # Check if label is not None
-        if self.LABEL is not None:
-            self.message = f"{self.message} {self.LABEL}"
-
-        # Check if message is not None
-        if message is not None:
-            message = message if isinstance(message, str) else repr(message)
-            self.message = f"{self.message}: {message}"
-
-        # Call super init
-        super().__init__(self.message)
+    # Define adjective
+    ADJECTIVE: str = "Unsupported"
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -130,10 +125,6 @@ class UnsupportedError(Exception):
 
 class UnsupportedActionError(UnsupportedError):
     """An exception class for unsupported actions"""
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ CLASS ATTRIBUTES
-    # └─────────────────────────────────────────────────────────────────────────────────
 
     # Define label
     LABEL: str | None = "Action"
