@@ -82,6 +82,16 @@ class WSClient:
         return sum(not task.done() for task in asyncio.all_tasks(loop=self.event_loop))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ SET EVENT LOOP
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def set_event_loop(self, event_loop: asyncio.AbstractEventLoop) -> None:
+        """Sets the event loop"""
+
+        # Set event loop
+        self.event_loop = event_loop
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SUBSCRIBE
     # └─────────────────────────────────────────────────────────────────────────────────
 
