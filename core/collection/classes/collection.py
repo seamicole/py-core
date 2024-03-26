@@ -247,6 +247,28 @@ class Collection(Generic[ItemBound], ABC):
         return self.__reprstr__(str)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __SUB__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __sub__(self: CollectionBound, other: Any) -> CollectionBound:
+        """Subtract Method"""
+
+        # Check if other is not a Collection instance
+        if not isinstance(other, Collection):
+            # Raise TypeError
+            raise TypeError(
+                "Unsupported operand type(s) for -: 'Collection' and '{}'".format(
+                    type(other).__name__
+                )
+            )
+
+        # Make a shallow copy of the collection
+        collection = self.copy_shallow(exclude=other)  # type: ignore
+
+        # Return collection
+        return collection
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __TRUEDIV__
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -300,7 +322,9 @@ class Collection(Generic[ItemBound], ABC):
     # │ COPY DEEP
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def copy_deep(self: CollectionBound) -> CollectionBound:
+    def copy_deep(
+        self: CollectionBound, exclude: CollectionBound | None = None
+    ) -> CollectionBound:
         """Returns a deep copy of the collection"""
 
         # Initialize collection
@@ -309,7 +333,8 @@ class Collection(Generic[ItemBound], ABC):
         # Iterate over the collection
         for item in self:
             # Add item to collection
-            collection.add(deepcopy(item))
+            if exclude is None or item not in exclude:
+                collection.add(deepcopy(item))
 
         # Return collection
         return collection
@@ -318,7 +343,9 @@ class Collection(Generic[ItemBound], ABC):
     # │ COPY SHALLOW
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def copy_shallow(self: CollectionBound) -> CollectionBound:
+    def copy_shallow(
+        self: CollectionBound, exclude: CollectionBound | None = None
+    ) -> CollectionBound:
         """Returns a shallow copy of the collection"""
 
         # Initialize collection
@@ -327,7 +354,9 @@ class Collection(Generic[ItemBound], ABC):
         # Iterate over the collection
         for item in self:
             # Add item to collection
-            collection.add(item)
+            if exclude is None or item not in exclude:
+                # Add item to collection
+                collection.add(item)
 
         # Return collection
         return collection
