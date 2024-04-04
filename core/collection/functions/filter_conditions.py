@@ -19,6 +19,10 @@ from core.collection.functions.filter_checkers import (
     check_ieq,
     check_iin,
     check_in,
+    check_startswith,
+    check_istartswith,
+    check_endswith,
+    check_iendswith,
 )
 
 
@@ -38,6 +42,10 @@ OPERATORS = (
     ("__ieq", 5, check_ieq),
     ("__in", 4, check_in),
     ("__iin", 5, check_iin),
+    ("__startswith", 12, check_startswith),
+    ("__istartswith", 13, check_istartswith),
+    ("__endswith", 10, check_endswith),
+    ("__iendswith", 11, check_iendswith),
 )
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

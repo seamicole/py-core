@@ -190,3 +190,79 @@ def check_icontains(actual: Any, expected: Any) -> bool:
     # Handle TypeError
     except TypeError:
         return False
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ CHECK STARTSWITH
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+def check_startswith(actual: Any, expected: Any) -> bool:
+    """Checks whether an actual value starts with an expected value"""
+
+    # Initialize try-except block
+    try:
+        return True if actual.startswith(expected) else False
+
+    # Handle Exception
+    except Exception:
+        return False
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ CHECK ISTARTSWITH
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+def check_istartswith(actual: Any, expected: Any) -> bool:
+    """
+    Checks whether an actual value starts with an expected value (case-insensitive)
+    """
+
+    # Lowercase expected and actual
+    expected, actual = (olower(expected), olower(actual))
+
+    # Initialize try-except block
+    try:
+        return True if actual.startswith(expected) else False
+
+    # Handle Exception
+    except Exception:
+        return False
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ CHECK ENDSWITH
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+def check_endswith(actual: Any, expected: Any) -> bool:
+    """Checks whether an actual value ends with an expected value"""
+
+    # Initialize try-except block
+    try:
+        return True if actual.endswith(expected) else False
+
+    # Handle Exception
+    except Exception:
+        return False
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ CHECK IENDSWITH
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+def check_iendswith(actual: Any, expected: Any) -> bool:
+    """Checks whether an actual value ends with an expected value (case-insensitive)"""
+
+    # Lowercase expected and actual
+    expected, actual = (olower(expected), olower(actual))
+
+    # Initialize try-except block
+    try:
+        return True if actual.endswith(expected) else False
+
+    # Handle Exception
+    except Exception:
+        return False
