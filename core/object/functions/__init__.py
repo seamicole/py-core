@@ -12,5 +12,6 @@ from core.object.functions.olower import olower as olower  # noqa: F401
 from core.object.functions.oset import oset as oset  # noqa: F401
 from core.object.functions.oto_datetime import (  # noqa: F401
     oto_datetime as oto_datetime,
+    oto_datetime_utc as oto_datetime_utc,
 )
 from core.object.functions.oupdate import oupdate as oupdate  # noqa: F401

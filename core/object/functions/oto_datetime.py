@@ -2,11 +2,6 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-try:
-    import pytz
-except ImportError:
-    pytz = None  # type: ignore
-
 from datetime import datetime, tzinfo
 from typing import Any
 
@@ -14,6 +9,7 @@ from typing import Any
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.datetime.functions.dtto_utc import dtto_utc
 from core.object.functions.olower import olower
 
 
@@ -87,13 +83,10 @@ def oto_datetime(instance: Any, unit: str = "ms", tz: tzinfo | None = None) -> d
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def oto_datetime_utc(instance: Any, unit: str = "ms") -> datetime:
+def oto_datetime_utc(
+    instance: Any, unit: str = "ms", tz: tzinfo | None = None
+) -> datetime:
     """Converts an arbitrary object to a datetime object with a UTC timezone"""
 
-    # Check if requester is None
-    if pytz is None:
-        # Raise an ImportError
-        raise ImportError("pytz is required to use this function")
-
     # Return datetime
-    return oto_datetime(instance=instance, unit=unit, tz=pytz.utc)
+    return dtto_utc(oto_datetime(instance=instance, unit=unit, tz=tz))
