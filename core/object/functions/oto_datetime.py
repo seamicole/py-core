@@ -28,6 +28,13 @@ def oto_datetime(instance: Any, unit: str = "ms", tz: tzinfo | None = None) -> d
     if isinstance(instance, datetime):
         dt = instance
 
+    # Check if string
+    if isinstance(instance, str):
+        # Check if is digit
+        if instance.isdigit():
+            # Convert to int
+            instance = int(instance)
+
     # Check if instance is int
     if isinstance(instance, int):
         # Initialize seconds
