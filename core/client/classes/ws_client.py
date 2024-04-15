@@ -63,9 +63,11 @@ class WSClient:
             logger
             if logger is not None
             else Logger(
-                key=logger_key
-                if logger_key
-                else f"{self.__class__.__name__}.{hex(id(self))}",
+                key=(
+                    logger_key
+                    if logger_key
+                    else f"{self.__class__.__name__}.{hex(id(self))}"
+                ),
                 log_limit=1000,
             )
         )
@@ -116,14 +118,16 @@ class WSClient:
 
         # Evaluate data if dictionary
         data_subscribe, data_unsubscribe = (
-            json.dumps(
-                {
-                    k: v(DictSchemaContext(data={})) if callable(v) else v
-                    for k, v in (data or {}).items()
-                }
+            (
+                json.dumps(
+                    {
+                        k: v(DictSchemaContext(data={})) if callable(v) else v
+                        for k, v in (data or {}).items()
+                    }
+                )
+                if isinstance(data, dict)
+                else data
             )
-            if isinstance(data, dict)
-            else data
             for data in (data_subscribe, data_unsubscribe)
         )
 

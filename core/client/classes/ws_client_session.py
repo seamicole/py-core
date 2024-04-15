@@ -86,9 +86,11 @@ class WSClientSession:
             logger
             if logger is not None
             else Logger(
-                key=logger_key
-                if logger_key
-                else f"{self.__class__.__name__}.{hex(id(self))}",
+                key=(
+                    logger_key
+                    if logger_key
+                    else f"{self.__class__.__name__}.{hex(id(self))}"
+                ),
                 log_limit=1000,
             )
         )
@@ -174,7 +176,7 @@ class WSClientSession:
         """Acquires a free or newly initialized websocket connection"""
 
         # Get subscriptions per connection
-        subscriptions_per_connection = 20
+        subscriptions_per_connection = 10
 
         # Acquire lock
         async with self._tlock:
@@ -201,7 +203,13 @@ class WSClientSession:
             self._increment_connection_count()
 
             # Create a new connection
-            connection = WSConnection(uri=uri, session=self, receive=receive)
+            connection = WSConnection(
+                uri=uri,
+                session=self,
+                receive=receive,
+                ping_data=self.ping_data,
+                ping_interval_ms=self.ping_interval_ms,
+            )
 
             # Add connection to connections
             if connections is not None:

@@ -431,11 +431,26 @@ class WSConnection:
                         if ping_data_str is None:
                             continue
 
-                        # Send ping
-                        await conn.send(ping_data_str)
+                        # Initialize try-except block
+                        try:
+
+                            # Send ping
+                            await conn.send(ping_data_str)
+
+                        # Handle ConnectionClosedError
+                        except websockets.exceptions.ConnectionClosedError as e:
+                            # Log message
+                            self.session.logger.error(
+                                self._log(f"Connection interrupted: {self.uri}"),
+                                key=WEBSOCKET_ERRORS,
+                                exception=e,
+                            )
+                            print("CLOSED:", conn.closed)
+                            break
 
                         # Wait for ping interval
-                        await asyncio.sleep(ping_interval_s)
+                        if ping_interval_s is not None:
+                            await asyncio.sleep(ping_interval_s)
 
                 # Create ping task
                 ping_task = asyncio.create_task(ping_loop())
