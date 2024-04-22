@@ -445,7 +445,6 @@ class WSConnection:
                                 key=WEBSOCKET_ERRORS,
                                 exception=e,
                             )
-                            print("CLOSED:", conn.closed)
                             break
 
                         # Wait for ping interval
@@ -469,6 +468,16 @@ class WSConnection:
                     # Log message
                     self.session.logger.error(
                         self._log(f"Connection interrupted: {self.uri}"),
+                        key=WEBSOCKET_ERRORS,
+                        exception=e,
+                    )
+                    return
+
+                # Handle general exception
+                except Exception as e:
+                    # Log message
+                    self.session.logger.error(
+                        self._log(f"Error receiving message from {self.uri}"),
                         key=WEBSOCKET_ERRORS,
                         exception=e,
                     )
