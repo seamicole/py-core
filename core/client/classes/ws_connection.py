@@ -435,6 +435,8 @@ class WSConnection:
                         try:
 
                             # Send ping
+                            # if "method" in ping_data_str and "PING" in ping_data_str:
+                            #    self.session.logger.info(f"{self.id} | {ping_data_str}")
                             await conn.send(ping_data_str)
 
                         # Handle any other exception
