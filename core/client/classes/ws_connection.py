@@ -437,15 +437,14 @@ class WSConnection:
                             # Send ping
                             await conn.send(ping_data_str)
 
-                        # Handle ConnectionClosedError
-                        except websockets.exceptions.ConnectionClosedError as e:
+                        # Handle any other exception
+                        except Exception as e:
                             # Log message
                             self.session.logger.error(
-                                self._log(f"Connection interrupted: {self.uri}"),
+                                self._log(f"Error sending ping to {self.uri}"),
                                 key=WEBSOCKET_ERRORS,
                                 exception=e,
                             )
-                            break
 
                         # Wait for ping interval
                         if ping_interval_s is not None:
