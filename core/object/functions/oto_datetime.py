@@ -36,7 +36,7 @@ def oto_datetime(instance: Any, unit: str = "ms", tz: tzinfo | None = None) -> d
             instance = int(instance)
 
     # Check if instance is int
-    if isinstance(instance, int):
+    if isinstance(instance, int) or isinstance(instance, float):
         # Initialize seconds
         seconds: float = float(instance)
 
