@@ -19,5 +19,11 @@ class HTTPMethod(Enum):
     # Set GET
     GET = "GET"
 
+    # Set PATCH
+    PATCH = "PATCH"
+
     # Set POST
     POST = "POST"
+
+    # Set PUT
+    PUT = "PUT"

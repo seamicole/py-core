@@ -14,7 +14,9 @@ from typing import Any, Callable, TYPE_CHECKING
 
 from core.client.functions.http_delete import http_delete, http_delete_async
 from core.client.functions.http_get import http_get, http_get_async
+from core.client.functions.http_patch import http_patch, http_patch_async
 from core.client.functions.http_post import http_post, http_post_async
+from core.client.functions.http_put import http_put, http_put_async
 from core.client.enums.http_method import HTTPMethod
 from core.client.classes.http_request import HTTPRequest
 from core.client.exceptions import InvalidHTTPMethodError
@@ -206,10 +208,20 @@ def http_request(
         # Make a GET request
         response = http_get(request=request)
 
+    # Otherwise, check if PATCH
+    elif method == HTTPMethod.PATCH:
+        # Make a POST request
+        response = http_patch(request=request)
+
     # Otherwise, check if POST
     elif method == HTTPMethod.POST:
         # Make a POST request
         response = http_post(request=request)
+
+    # Otherwise, check if PUT
+    elif method == HTTPMethod.PUT:
+        # Make a POST request
+        response = http_put(request=request)
 
     # Otherwise, check if DELETE
     elif method == HTTPMethod.DELETE:
@@ -327,10 +339,20 @@ async def http_request_async(
         # Make a GET request
         response = await http_get_async(request=request)
 
+    # Otherwise, check if PATCH
+    elif method == HTTPMethod.PATCH:
+        # Make a POST request
+        response = await http_patch_async(request=request)
+
     # Otherwise, check if POST
     elif method == HTTPMethod.POST:
         # Make a POST request
         response = await http_post_async(request=request)
+
+    # Otherwise, check if PUT
+    elif method == HTTPMethod.PUT:
+        # Make a POST request
+        response = await http_put_async(request=request)
 
     # Otherwise, check if DELETE
     elif method == HTTPMethod.DELETE:
