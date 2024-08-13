@@ -57,6 +57,9 @@ class HTTPResponse:
     # Declare type of weight
     weight: int
 
+    # Declare type of time
+    time: int
+
     # Declare type of obj
     _obj: AioHTTPResponse | HTTPXResponse | RequestsResponse
 
@@ -88,6 +91,9 @@ class HTTPResponse:
 
         # Set weight
         self.weight = weight
+
+        # Initialize time
+        self.time = 0
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ DID SUCCEED
@@ -242,9 +248,11 @@ class HTTPResponse:
                 continue
 
             # Yield item
-            yield dfrom_schema(
-                item, schema=json_schema, delimiter="."
-            ) if json_schema is not None else item
+            yield (
+                dfrom_schema(item, schema=json_schema, delimiter=".")
+                if json_schema is not None
+                else item
+            )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INSTANCE

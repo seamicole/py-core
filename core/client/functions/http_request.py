@@ -239,6 +239,9 @@ def http_request(
     # Get ms
     ms = int((t1 - t0) * 1000)
 
+    # Set response time
+    response.time = ms
+
     # Log response
     log_response(
         logger=logger,
@@ -369,6 +372,9 @@ async def http_request_async(
 
     # Get ms
     ms = int((t1 - t0) * 1000)
+
+    # Set response time
+    response.time = ms
 
     # Log response
     log_response(
