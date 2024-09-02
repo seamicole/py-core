@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import time
 
+from contextlib import nullcontext
 from multiprocessing import Manager
 from multiprocessing.managers import SyncManager
 from typing import Any, Awaitable, Callable
@@ -55,22 +56,25 @@ class WSClientSession:
         """Init Method"""
 
         # Initialize a manager
-        self._manager = manager or Manager()
+        try:
+            self._manager = manager or Manager()
+        except AssertionError:
+            self._manager = None
 
         # Initialize process and thread locks
-        self._plock = self._manager.Lock()
+        self._plock = self._manager.Lock() if self._manager else None
         self._tlock = asyncio.Lock()
 
         # Initialize connections
         self._connections = {}
 
         # Initialize is alive
-        self._is_alive = self._manager.Value("b", False)
+        self._is_alive = self._manager.Value("b", False) if self._manager else False
         self._is_alive_cache = False
         self._is_alive_updated_at = time.time()
 
         # Initialize connection count
-        self._connection_count = self._manager.Value("i", 0)
+        self._connection_count = self._manager.Value("i", 0) if self._manager else 0
 
         # Set ping data
         self.ping_data = ping_data
@@ -108,8 +112,12 @@ class WSClientSession:
             return self._is_alive_cache
 
         # Get is alive
-        with self._plock:
-            self._is_alive_cache = self._is_alive.value
+        with self._plock if self._plock else nullcontext():
+            self._is_alive_cache = (
+                self._is_alive
+                if isinstance(self._is_alive, bool)
+                else self._is_alive.value
+            )
             self._is_alive_updated_at = time.time()
 
         # Return is alive cache
@@ -149,8 +157,11 @@ class WSClientSession:
         """Decrement connection count"""
 
         # Decrement connection count
-        with self._plock:
-            self._connection_count.value -= 1
+        with self._plock if self._plock is not None else nullcontext():
+            if isinstance(self._connection_count, int):
+                self._connection_count -= 1
+            else:
+                self._connection_count.value -= 1
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _INCREMENT CONNECTION COUNT
@@ -160,8 +171,11 @@ class WSClientSession:
         """Increment connection count"""
 
         # Increment connection count
-        with self._plock:
-            self._connection_count.value += 1
+        with self._plock if self._plock is not None else nullcontext():
+            if isinstance(self._connection_count, int):
+                self._connection_count += 1
+            else:
+                self._connection_count.value += 1
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ACQUIRE CONNECTION
@@ -266,9 +280,12 @@ class WSClientSession:
         """Starts the websocket client session"""
 
         # Acquire lock
-        with self._plock:
+        with self._plock if self._plock is not None else nullcontext():
             # Set is alive to true
-            self._is_alive.value = True
+            if isinstance(self._is_alive, bool):
+                self._is_alive = True
+            else:
+                self._is_alive.value = True
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ STOP
@@ -278,6 +295,9 @@ class WSClientSession:
         """Stops the websocket client session"""
 
         # Acquire lock
-        with self._plock:
-            # Set is alive to false
-            self._is_alive.value = False
+        with self._plock if self._plock is not None else nullcontext():
+            # Set is alive to False
+            if isinstance(self._is_alive, bool):
+                self._is_alive = False
+            else:
+                self._is_alive.value = False

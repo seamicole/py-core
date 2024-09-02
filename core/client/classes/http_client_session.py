@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import time
 
+from contextlib import nullcontext
 from multiprocessing import Manager
 from multiprocessing.managers import DictProxy, SyncManager
 from typing import Literal, TYPE_CHECKING
@@ -42,10 +43,16 @@ class HTTPClientSession:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     # Declare type of usage
-    _usage: DictProxy[Literal["wt"] | Literal["ts"], int | float]
+    _usage: (
+        DictProxy[Literal["wt"] | Literal["ts"], int | float]
+        | dict[Literal["wt"] | Literal["ts"], int | float]
+    )
 
     # Declare type of requests
-    _requests: DictProxy[str, dict[str, HTTPClientSession.RequestLog]]
+    _requests: (
+        DictProxy[str, dict[str, HTTPClientSession.RequestLog]]
+        | dict[str, dict[str, HTTPClientSession.RequestLog]]
+    )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -55,16 +62,23 @@ class HTTPClientSession:
         """Init Method"""
 
         # Initialize a manager
-        self._manager = manager or Manager()
+        try:
+            self._manager = manager or Manager()
+        except AssertionError:
+            self._manager = None
 
         # Initialize lock
-        self._lock = self._manager.Lock()
+        self._lock = self._manager.Lock() if self._manager is not None else None
 
         # Initialize usage
-        self._usage = self._manager.dict({"wt": 0, "ts": time.time()})
+        self._usage = (
+            self._manager.dict({"wt": 0, "ts": time.time()})
+            if self._manager is not None
+            else {}
+        )
 
         # Initialize requests
-        self._requests = self._manager.dict()
+        self._requests = self._manager.dict() if self._manager is not None else {}
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ LOG REQUEST
@@ -103,7 +117,7 @@ class HTTPClientSession:
         method_key = request.method.value
 
         # Initialize lock
-        with self._lock:
+        with self._lock if self._lock is not None else nullcontext():
             # Get URL dict
             url_dict = self._requests.setdefault(request.url, {})
 
