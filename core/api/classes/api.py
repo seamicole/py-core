@@ -62,7 +62,10 @@ class API:
         """Init Method"""
 
         # Initialize manager
-        manager = Manager()
+        try:
+        	manager = Manager()
+        except AssertionError:  # Happens when run in a daemonic process like a Heroku worker dyno
+        	manager = None
 
         # Initialize logger
         self.logger = (
