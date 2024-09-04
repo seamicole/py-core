@@ -74,7 +74,7 @@ class HTTPClientSession:
         self._usage = (
             self._manager.dict({"wt": 0, "ts": time.time()})
             if self._manager is not None
-            else {}
+            else {"wt": 0, "ts": time.time()}
         )
 
         # Initialize requests
