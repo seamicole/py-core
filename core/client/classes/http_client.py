@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import time
 
+from contextlib import nullcontext
 from multiprocessing.managers import SyncManager
 from typing import Any, Callable, TYPE_CHECKING
 
@@ -70,9 +71,11 @@ class HTTPClient:
             logger
             if logger is not None
             else Logger(
-                key=logger_key
-                if logger_key
-                else f"{self.__class__.__name__}.{hex(id(self))}",
+                key=(
+                    logger_key
+                    if logger_key
+                    else f"{self.__class__.__name__}.{hex(id(self))}"
+                ),
                 log_limit=1000,
             )
         )
@@ -428,7 +431,7 @@ class HTTPClient:
             return 0
 
         # Acquire lock
-        with self.session._lock:
+        with self.session._lock if self.session._lock is not None else nullcontext():
             # Log request
             self.session.log_request(weight, self.weight_interval)
 
