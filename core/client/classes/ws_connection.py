@@ -100,6 +100,9 @@ class WSConnection:
         self._is_listening = False
         self._listen_tolerance_ms = None
 
+        # Initialize was disconnected
+        self._was_disconnected = False
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _LOG
     # └─────────────────────────────────────────────────────────────────────────────────
@@ -347,6 +350,14 @@ class WSConnection:
 
             # Receive data
             await self.receive(conn=conn, event_loop=event_loop)
+            if self._was_disconnected:
+                self._was_disconnected = False
+                self.session.logger.warning(
+                    self._log(f"Re-establishing connection to {self.uri}"),
+                    key=WEBSOCKET_EVENTS,
+                )
+                await asyncio.sleep(2)
+                continue
 
             # Acquire lock
             async with self._tlock:
@@ -466,6 +477,10 @@ class WSConnection:
 
                 # Handle case of connection error
                 except websockets.exceptions.ConnectionClosedError as e:
+                    # Mark as disconnected
+                    self._was_disconnected = True
+                    ping_task and ping_task.cancel()
+
                     # Log message
                     self.session.logger.error(
                         self._log(f"Connection interrupted: {self.uri}"),
