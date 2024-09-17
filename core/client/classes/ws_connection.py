@@ -102,6 +102,7 @@ class WSConnection:
 
         # Initialize was disconnected
         self._was_disconnected = False
+        self._was_disconnected_msg = False
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _LOG
@@ -474,11 +475,18 @@ class WSConnection:
                 try:
                     # Receive message
                     message = await conn.recv()
+                    if self._was_disconnected_msg:
+                        self._was_disconnected_msg = False
+                        self.session.logger.warning(
+                            self._log("WS connection active"),
+                            key=WEBSOCKET_EVENTS,
+                        )
 
                 # Handle case of connection error
                 except websockets.exceptions.ConnectionClosedError as e:
                     # Mark as disconnected
                     self._was_disconnected = True
+                    self._was_disconnected_msg = True
                     ping_task and ping_task.cancel()
 
                     # Log message
