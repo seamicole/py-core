@@ -190,7 +190,7 @@ class WSClientSession:
         """Acquires a free or newly initialized websocket connection"""
 
         # Get subscriptions per connection
-        subscriptions_per_connection = 20
+        subscriptions_per_connection = 10
 
         # Acquire lock
         async with self._tlock:
